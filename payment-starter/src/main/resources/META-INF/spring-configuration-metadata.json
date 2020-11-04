@@ -1,0 +1,140 @@
+{
+  "group": [
+    {
+      "name": "application.pay.providers.alipay",
+      "type": "com.labijie.application.payment.providers.alipay.AlipayPaymentOptions"
+    },
+    {
+      "name": "application.pay.providers.wechat",
+      "type": "com.labijie.application.payment.providers.wechat.WechatPaymentOptions"
+    },
+    {
+      "name": "application.pay.providers.wechat.exchange",
+      "type": "com.labijie.application.payment.PaymentExchangeUrls"
+    },
+    {
+      "name": "application.pay",
+      "type": "com.labijie.application.payment.configuration.PaymentProperties"
+    }
+  ],
+  "properties": [
+    {
+      "name": "application.pay.callback-base-url",
+      "type": "java.lang.String",
+      "sourceType": "com.labijie.application.payment.configuration.PaymentProperties",
+      "defaultValue": "http://localhost"
+    },
+    {
+      "name": "application.pay.providers.alipay.enabled",
+      "type": "java.lang.Boolean",
+      "defaultValue": true
+    },
+    {
+      "name": "application.pay.providers.wechat.enabled",
+      "type": "java.lang.Boolean",
+      "defaultValue": true
+    },
+
+    {
+      "name": "application.pay.providers.wechat.app-id",
+      "type": "java.lang.String",
+      "sourceType": "com.labijie.application.payment.providers.wechat.WechatPaymentOptions"
+    },
+    {
+      "name": "application.pay.providers.wechat.sub-app-id",
+      "type": "java.lang.String",
+      "sourceType": "com.labijie.application.payment.providers.wechat.WechatPaymentOptions"
+    },
+    {
+      "name": "application.pay.providers.wechat.app-secret",
+      "type": "java.lang.String",
+      "sourceType": "com.labijie.application.payment.providers.wechat.WechatPaymentOptions"
+    },
+    {
+      "name": "application.pay.providers.wechat.app-account",
+      "type": "java.lang.String",
+      "sourceType": "com.labijie.application.payment.providers.wechat.WechatPaymentOptions"
+    },
+    {
+      "name": "application.pay.providers.wechat.merchant-key",
+      "sourceType": "com.labijie.application.payment.providers.wechat.WechatPaymentOptions",
+      "type": "java.lang.String"
+    },
+
+    {
+      "name": "application.pay.providers.wechat.exchage.create-trade-url",
+      "type": "java.lang.String",
+      "sourceType": "com.labijie.application.payment.PaymentExchangeUrls",
+      "defaultValue": "https://api.mch.weixin.qq.com/pay/unifiedorder"
+    },
+    {
+      "name": "application.pay.providers.wechat.exchage.query-trade-url",
+      "type": "java.lang.String",
+      "sourceType": "com.labijie.application.payment.PaymentExchangeUrls",
+      "defaultValue": "https://api.mch.weixin.qq.com/pay/orderquery"
+    },
+    {
+      "name": "application.pay.providers.wechat.exchage.refund-url",
+      "type": "java.lang.String",
+      "sourceType": "com.labijie.application.payment.PaymentExchangeUrls",
+      "defaultValue": "https://api.mch.weixin.qq.com/secapi/pay/refund"
+    },
+    {
+      "name": "application.pay.providers.wechat.exchage.query-refund-url",
+      "type": "java.lang.String",
+      "sourceType": "com.labijie.application.payment.PaymentExchangeUrls",
+      "defaultValue": "https://api.mch.weixin.qq.com/pay/refundquery"
+    },
+
+
+    {
+      "name": "application.pay.providers.wechat.exchage.transfer-url",
+      "type": "java.lang.String",
+      "sourceType": "com.labijie.application.payment.PaymentExchangeUrls",
+      "defaultValue": "https://api.mch.weixin.qq.com/mmpaymkttransfers/promotion/transfers"
+    },
+    {
+      "name": "application.pay.providers.wechat.exchage.query-transfer-url",
+      "type": "java.lang.String",
+      "sourceType": "com.labijie.application.payment.PaymentExchangeUrls",
+      "defaultValue": "https://api.mch.weixin.qq.com/mmpaymkttransfers/gettransferinfo"
+    },
+    {
+      "name": "application.pay.providers.wechat.http-client-certificate-file",
+      "type": "java.lang.String",
+      "sourceType": "com.labijie.application.payment.providers.wechat.WechatPaymentOptions"
+    },
+    {
+      "name": "application.pay.providers.wechat.http-client-certificate-password",
+      "type": "java.lang.String",
+      "sourceType": "com.labijie.application.payment.providers.wechat.WechatPaymentOptions"
+    },
+
+    {
+      "name": "application.pay.providers.alipay.app-id",
+      "type": "java.lang.String",
+      "sourceType": "com.labijie.application.payment.providers.alipay.AlipayPaymentOptions"
+    },
+    {
+      "name": "application.pay.providers.alipay.app-secret",
+      "type": "java.lang.String",
+      "sourceType": "com.labijie.application.payment.providers.alipay.AlipayPaymentOptions"
+    },
+    {
+      "name": "application.pay.providers.alipay.app-account",
+      "type": "java.lang.String",
+      "sourceType": "com.labijie.application.payment.providers.wechat.AlipayPaymentOptions"
+    },
+    {
+      "name": "application.pay.providers.alipay.alipay-pub-key",
+      "sourceType": "com.labijie.application.payment.providers.alipay.AlipayPaymentOptions",
+      "type": "java.lang.String"
+    },
+    {
+      "name": "application.pay.providers.alipay.exchage-url",
+      "type": "java.lang.String",
+      "sourceType": "com.labijie.application.payment.providers.alipay.AlipayPaymentOptions",
+      "defaultValue": "https://openapi.alipay.com/gateway.do"
+    }
+  ]
+}

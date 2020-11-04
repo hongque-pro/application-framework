@@ -1,0 +1,46 @@
+{
+  "group": [
+    {
+      "name": "application.pay.providers.wechat.car",
+      "type": "om.labijie.application.payment.car.wechat.WechatCarPaymentOptions"
+    }
+  ],
+  "properties": [
+    {
+      "name": "application.pay.providers.wechat.car.isv-create-trade-url",
+      "type": "java.lang.String",
+      "sourceType": "com.labijie.application.payment.providers.wechat.WechatPaymentOptions",
+      "defaultValue": "https://api.mch.weixin.qq.com/vehicle/partnerpay/payapply"
+    },
+    {
+      "name": "application.pay.providers.wechat.car.isv-query-trade-url",
+      "type": "java.lang.String",
+      "sourceType": "com.labijie.application.payment.providers.wechat.WechatPaymentOptions",
+      "defaultValue": "https://api.mch.weixin.qq.com/transit/partnerpay/queryorder"
+    },
+    {
+      "name": "application.pay.providers.wechat.car.create-trade-url",
+      "type": "java.lang.String",
+      "sourceType": "com.labijie.application.payment.providers.wechat.WechatPaymentOptions",
+      "defaultValue": "https://api.mch.weixin.qq.com/vehicle/pay/payapply"
+    },
+    {
+      "name": "application.pay.providers.wechat.car.query-trade-url",
+      "type": "java.lang.String",
+      "sourceType": "com.labijie.application.payment.providers.wechat.WechatPaymentOptions",
+      "defaultValue": "https://api.mch.weixin.qq.com/transit/queryorder"
+    },
+    {
+      "name": "application.pay.providers.wechat.car.refund-url",
+      "type": "java.lang.String",
+      "sourceType": "com.labijie.application.payment.providers.wechat.WechatPaymentOptions",
+      "defaultValue": "https://api.mch.weixin.qq.com/secapi/pay/refund"
+    },
+    {
+      "name": "application.pay.providers.wechat.car.query-refund-url",
+      "type": "java.lang.String",
+      "sourceType": "com.labijie.application.payment.providers.wechat.WechatPaymentOptions",
+      "defaultValue": "https://api.mch.weixin.qq.com/pay/refundquery"
+    }
+  ]
+}

@@ -1,0 +1,74 @@
+{
+  "group": [
+    {
+      "name": "huawei.sms.templates",
+      "type": "com.labijie.application.configuration.SmsTemplates"
+    },
+    {
+      "name": "huawei.sms.tpconfigs",
+      "type": "com.labijie.application.huawei.model.HuaweiMessageTemplates"
+    }
+  ],
+  "properties": [
+    {
+      "name": "huawei.sms.enabled",
+      "type": "java.lang.Boolean",
+      "defaultValue": true
+    },
+    {
+      "name": "huawei.obs.enabled",
+      "type": "java.lang.Boolean",
+      "defaultValue": true
+    },
+    {
+      "name": "huawei.sms.templates.captcha-general",
+      "sourceType": "com.labijie.application.configuration.SmsTemplates",
+      "type": "java.lang.String"
+    },
+    {
+      "name": "huawei.sms.templates.captcha-register",
+      "sourceType": "com.labijie.application.configuration.SmsTemplates",
+      "type": "java.lang.String"
+    },
+    {
+      "name": "huawei.sms.templates.captcha-change-phone",
+      "sourceType": "com.labijie.application.configuration.SmsTemplates",
+      "type": "java.lang.String"
+    },
+    {
+      "name": "huawei.sms.templates.captcha-forgot-password",
+      "sourceType": "com.labijie.application.configuration.SmsTemplates",
+      "type": "java.lang.String"
+    },
+    {
+      "name": "huawei.sms.templates.captcha-login",
+      "sourceType": "com.labijie.application.configuration.SmsTemplates",
+      "type": "java.lang.String"
+    },
+    {
+      "name": "huawei.sms.tpconfigs.default-template.id",
+      "sourceType": "com.labijie.application.huawei.model.HuaweiMessageTemplateConfig",
+      "type": "java.lang.String"
+    },
+    {
+      "name": "huawei.sms.tpconfigs.default-template.sender",
+      "sourceType": "com.labijie.application.huawei.model.HuaweiMessageTemplateConfig",
+      "type": "java.lang.String"
+    },
+    {
+      "name": "huawei.sms.tpconfigs.default-template.signature",
+      "sourceType": "com.labijie.application.huawei.model.HuaweiMessageTemplateConfig",
+      "type": "java.lang.String"
+    },
+    {
+      "name": "huawei.sms.tpconfigs.default-template.params",
+      "sourceType": "com.labijie.application.huawei.model.HuaweiMessageTemplateConfig",
+      "type": "java.util.List<java.lang.String>"
+    },
+    {
+      "name": "huawei.sms.tpconfigs.templates",
+      "sourceType": "com.labijie.application.huawei.model.HuaweiMessageTemplateConfig",
+      "type": "java.util.List<com.labijie.application.huawei.model.HuaweiMessageTemplateConfig>"
+    }
+  ]
+}

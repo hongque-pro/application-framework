@@ -1,0 +1,5 @@
+huawei:
+  smsSettings:
+    app_key: 94ahfv5ogWrmkg92bt6D1m2tk8xL
+    app_secret: 5P6s9szIHtXgMd2LtKqxdn68Jb76
+    api_server:  https://rtcsms.cn-north-1.myhuaweicloud.com:10743

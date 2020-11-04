@@ -1,0 +1,3 @@
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+com.labijie.application.auth.social.configuration.AuthSocialAutoConfiguration,\
+com.labijie.application.auth.social.configuration.AuthSocialControllerAutoConfiguration

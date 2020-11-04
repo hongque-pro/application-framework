@@ -1,0 +1,14 @@
+apply plugin: 'org.springframework.boot'
+
+dependencies {
+    compile project(":core-web")
+    compile project(":core-starter")
+    compile project(":auth-starter")
+    compile project(":payment-starter")
+    compile project(":payment-car-starter")
+    compile project(":order-starter")
+    compile project(":kaptcha-human-starter")
+    compile project(":open-api-starter")
+    compile "com.labijie:spring-cloud-stream-binder-memory:$stream_binder_memory_version"
+    compile "com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.9.8" //测试 XML 返回的问题
+}

@@ -1,0 +1,3 @@
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+  com.labijie.application.geo.configuration.GeoMybatisMapperAutoConfiguration,\
+  com.labijie.application.geo.configuration.GeoServiceAutoConfiguration

@@ -1,0 +1,145 @@
+{
+  "group": [
+    {
+      "name": "aliyun",
+      "type": "com.labijie.framework.aliyun.configuration.AliyunProperties"
+    },
+    {
+      "name": "aliyun.sts",
+      "type": "com.labijie.framework.aliyun.configuration.StsSettings"
+    },
+    {
+      "name": "aliyun.oss",
+      "type": "com.labijie.framework.aliyun.configuration.OssSettings"
+    },
+    {
+      "name": "aliyun.sms",
+      "type": "com.labijie.framework.aliyun.configuration.SmsSettings"
+    },
+    {
+      "name": "aliyun.afs",
+      "type": "com.labijie.framework.aliyun.configuration.AfsSettings"
+    },
+
+
+    {
+      "name": "aliyun.oss.private",
+      "type": "com.labijie.framework.aliyun.configuration.BucketProperties"
+    },
+    {
+      "name": "aliyun.oss.public",
+      "type": "com.labijie.framework.aliyun.configuration.BucketProperties"
+    }
+  ],
+  "properties": [
+    {
+      "name": "aliyun.access-key-id",
+      "type": "java.lang.String",
+      "description": "aliyun access key"
+    },
+    {
+      "name": "aliyun.access-key-secret",
+      "type": "java.lang.String",
+      "description": "aliyun access key secret"
+    },
+
+    {
+      "name": "aliyun.afs.enabled",
+      "type": "java.lang.Boolean",
+      "sourceType": "com.labijie.framework.aliyun.configuration.AfsSettings",
+      "defaultValue": true
+    },
+
+    {
+      "name": "aliyun.sts.endpoint",
+      "type": "java.lang.String",
+       "sourceType": "com.labijie.framework.aliyun.configuration.StsSettings",
+      "defaultValue": "sts.aliyuncs.com"
+    },
+    {
+      "name": "aliyun.sts.role",
+      "type": "java.lang.String",
+      "sourceType": "com.labijie.framework.aliyun.configuration.StsSettings"
+    },
+    {
+      "name": "aliyun.sts.tokenTimeout",
+      "type": "java.time.Duration",
+      "sourceType": "com.labijie.framework.aliyun.configuration.StsSettings",
+      "defaultValue": "900s"
+    },
+
+    {
+      "name": "aliyun.sms.sign-name",
+      "type": "java.lang.String",
+      "sourceType": "com.labijie.framework.aliyun.configuration.SmsSettings"
+    },
+    {
+      "name": "aliyun.sms.region",
+      "type": "java.lang.String",
+      "sourceType": "com.labijie.framework.aliyun.configuration.SmsSettings"
+    },
+
+
+    {
+      "name": "aliyun.oss.use-internal",
+      "type": "java.lang.Boolean",
+      "sourceType": "com.labijie.framework.aliyun.configuration.OssSettings",
+      "defaultValue": true
+    },
+
+
+    {
+      "name": "aliyun.oss.private.region",
+      "type": "java.lang.String",
+      "sourceType": "com.labijie.framework.aliyun.configuration.BucketProperties"
+    },
+    {
+      "name": "aliyun.oss.private.bucket",
+      "type": "java.lang.String",
+      "sourceType": "com.labijie.framework.aliyun.configuration.BucketProperties"
+    },
+    {
+      "name": "aliyun.oss.private.endpoint",
+      "type": "java.net.URI",
+      "sourceType": "com.labijie.framework.aliyun.configuration.BucketProperties"
+    },
+    {
+      "name": "aliyun.oss.private.internal-endpoint",
+      "type": "java.net.URI",
+      "sourceType": "com.labijie.framework.aliyun.configuration.BucketProperties"
+    },
+    {
+      "name": "aliyun.oss.private.custom-domain",
+      "type": "java.lang.String",
+      "sourceType": "com.labijie.framework.aliyun.configuration.BucketProperties",
+      "defaultValue": ""
+    },
+
+    {
+      "name": "aliyun.oss.public.region",
+      "type": "java.lang.String",
+      "sourceType": "com.labijie.framework.aliyun.configuration.BucketProperties"
+    },
+    {
+      "name": "aliyun.oss.public.bucket",
+      "type": "java.lang.String",
+      "sourceType": "com.labijie.framework.aliyun.configuration.BucketProperties"
+    },
+    {
+      "name": "aliyun.oss.public.endpoint",
+      "type": "java.net.URI",
+      "sourceType": "com.labijie.framework.aliyun.configuration.BucketProperties"
+    },
+    {
+      "name": "aliyun.oss.public.internal-endpoint",
+      "type": "java.net.URI",
+      "sourceType": "com.labijie.framework.aliyun.configuration.BucketProperties"
+    },
+    {
+      "name": "aliyun.oss.private.custom-domain",
+      "type": "java.lang.String",
+      "sourceType": "com.labijie.framework.aliyun.configuration.BucketProperties",
+      "defaultValue": ""
+    }
+  ]
+}

@@ -1,0 +1,9 @@
+{
+  "properties": [
+    {
+      "name": "application.order.callback-handler.enabled",
+      "type": "java.lang.Boolean",
+      "defaultValue": true
+    }
+  ]
+}

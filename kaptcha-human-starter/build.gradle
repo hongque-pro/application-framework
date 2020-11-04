@@ -1,0 +1,4 @@
+dependencies {
+    compile project(":core-web")
+    compile "com.github.penggle:kaptcha:$kaptcha_version"
+}

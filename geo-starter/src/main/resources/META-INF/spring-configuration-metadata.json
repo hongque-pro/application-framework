@@ -1,0 +1,15 @@
+{
+  "group": [
+    {
+      "name": "application.geo",
+      "type": "com.labijie.application.geo.configuration.GeoProperties"
+    }
+  ],
+  "properties": [
+    {
+      "name": "application.geo.coordinate-system",
+      "type": "com.labijie.application.geo.CoordinateSystem",
+      "defaultValue": "GCJ02"
+    }
+  ]
+}

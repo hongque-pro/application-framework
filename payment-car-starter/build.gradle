@@ -1,0 +1,5 @@
+
+dependencies{
+    compile project(":payment-starter")
+    testCompile project(":payment-testing")
+}

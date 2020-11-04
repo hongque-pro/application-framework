@@ -1,0 +1,34 @@
+{
+  "group": [
+    {
+      "name": "application.open-api",
+      "type": "com.labijie.application.open.configuration.OpenApiProperties"
+    },
+    {
+      "name": "application.open-api.js-api-cors",
+      "type": "com.labijie.application.open.configuration.CorsProperties"
+    }
+  ],
+  "properties": [
+    {
+      "name": "application.open-api.path-pattern",
+      "type": "java.lang.String",
+      "defaultValue": "/open-api/**"
+    },
+    {
+      "name": "application.open-api.js-api-cors.path-pattern",
+      "type": "java.lang.String",
+      "defaultValue": "/open-jsapi/**"
+    },
+    {
+      "name": "application.open-api.js-api-cors.allowed-origins-policy",
+      "type": "com.labijie.application.open.configuration.CorsPolicy",
+      "defaultValue": "ALL"
+    },
+    {
+      "name": "application.open-api.js-api-cors.max-age",
+      "type": "java.lang.Long",
+      "defaultValue": "1800"
+    }
+  ]
+}

@@ -1,0 +1,236 @@
+buildscript {
+    ext {
+        kotlin_version = '1.4.10'
+        slf4j_version = '1.7.30'
+        infra_caching_version='1.2.1'
+        infra_commons_version='2.0.1'
+        infra_oauth2_version = '1.0.2'
+        uber_h3_version='3.6.3'
+        netty_version='4.1.52.Final'
+//        jts_version='1.13' 地理信息标准格式处理库，暂时不需要
+
+        hibernate_validation_verion='6.0.17.Final'
+
+        spring_boot_version = '2.3.4.RELEASE'
+        spring_cloud_version='Hoxton.SR8'
+        spring_version = '5.2.9.RELEASE'
+        spring_dep_mgn_version='1.0.10.RELEASE'
+        spring_security_jwt_version='1.1.1.RELEASE'
+
+        kryo_version = '5.0.0'
+
+        junit_verions = '5.7.0'
+        mybatis_dynamic_sql_version='1.2.1'
+
+        stream_binder_memory_version='1.0.1'
+
+        //data base and mybatis
+        mysql_connector_version='8.0.22'
+        mybatis_gen_plug_version='1.2.17'
+        mybatis_version = '3.5.6'
+
+        swagger_version='2.9.2'
+
+        aliyun_sdk_version='4.4.5'
+        aliyun_sdk_sts_version='3.0.1'
+        aliyun_sdk_oss_version='3.6.0'
+        aliyun_sdk_afs_version='1.0.0'
+
+        typescript_gen_version='2.17.558'
+        antisamy_version='1.5.10'
+        bouncycastle_version='1.64'
+
+        okhttp_version='4.2.2'
+        fasterxml_version='2.9.8'
+        apache_poi_version='4.1.2'
+        kaptcha_version='2.3.2'
+        mockito_version = '1.10.19'
+
+        maven_repo= System.getenv("MAVEN_PROXY") ?: 'http://maven.aliyun.com/nexus/content/groups/public/'
+        nexus_staging_version = '0.22.0'
+    }
+    repositories {
+        mavenLocal()
+        if(maven_repo != null) {
+            maven { url maven_repo }
+        }
+        mavenCentral()
+        maven { url 'https://repo.spring.io/plugins-snapshot' }
+    }
+}
+
+plugins {
+    id "org.jetbrains.kotlin.plugin.spring" version "$kotlin_version" apply false
+    id "org.springframework.boot" version "$spring_boot_version" apply false
+    id "org.jetbrains.kotlin.jvm" version "$kotlin_version" apply false
+    id "io.spring.dependency-management" version "$spring_dep_mgn_version" apply false
+    id "io.codearte.nexus-staging" version "$nexus_staging_version"
+}
+apply plugin: 'io.codearte.nexus-staging'
+
+static Boolean  isNotNullOrBlank(Object s){
+    return !(s == null || s.toString().trim().length() == 0)
+}
+
+static canBeSign(Project project) {
+    return isNotNullOrBlank(project.findProperty("signing.password")) &&
+            isNotNullOrBlank(project.findProperty('signing.secretKeyRingFile')) &&
+            isNotNullOrBlank(project.findProperty('signing.keyId'))
+}
+
+static getPropertyOrCmdArgs(Project project, String propertyName, String cmdArgName) {
+    def propertyValue = project.hasProperty(propertyName) ? project.property(propertyName).toString() : null
+    def v = (System.properties.getProperty(cmdArgName) ?: propertyValue ) ?: System.getenv(propertyName)
+    return isNotNullOrBlank(v) ? v : null
+}
+
+allprojects {
+    group 'com.labijie.application'
+    version '2.0.0-b'
+
+    apply plugin: 'kotlin'
+    apply plugin: 'signing'
+    apply plugin: 'kotlin-spring'
+    apply plugin: 'java-library'
+    if(!project.name.startsWith("dummy")) {
+        apply plugin: 'maven-publish'
+    }
+
+    compileJava.options.encoding = "UTF-8"
+    javadoc.options.encoding = "UTF-8"
+
+    java {
+        withJavadocJar()
+        withSourcesJar()
+    }
+
+    javadoc {
+        failOnError = false
+    }
+
+    compileKotlin {
+        kotlinOptions {
+            freeCompilerArgs = ["-Xjsr305=strict"]
+            jvmTarget = "1.8"
+        }
+    }
+    compileTestKotlin {
+        kotlinOptions {
+            freeCompilerArgs = ["-Xjsr305=strict"]
+            jvmTarget = "1.8"
+        }
+    }
+
+    sourceCompatibility = 1.8
+
+    repositories {
+        mavenLocal()
+        if(maven_repo != null) {
+            maven { url maven_repo }
+        }
+        mavenCentral()
+    }
+
+    configurations.all {
+        exclude group: "junit", module: "junit"
+        exclude group: "org.junit.vintage", module: "junit-vintage-engine"
+    }
+
+
+    dependencies {
+        implementation platform("org.jetbrains.kotlin:kotlin-bom:${kotlin_version}")
+        testImplementation platform("org.junit:junit-bom:$junit_verions")
+        implementation platform("org.springframework.boot:spring-boot-dependencies:${spring_boot_version}")
+        implementation platform("org.springframework.cloud:spring-cloud-dependencies:${spring_cloud_version}")
+
+        implementation "org.jetbrains.kotlin:kotlin-stdlib"
+        implementation "org.jetbrains.kotlin:kotlin-reflect"
+
+
+        testImplementation "org.junit.jupiter:junit-jupiter"
+        testImplementation("org.jetbrains.kotlin:kotlin-test-junit5"){
+            exclude group:"org.junit"
+        }
+
+        testImplementation "org.mockito:mockito-all:$mockito_version"
+
+    }
+
+    test {
+        useJUnitPlatform()
+    }
+}
+
+subprojects {
+    def u = getPropertyOrCmdArgs(project, "PUB_USER", "u")
+    def p =getPropertyOrCmdArgs(project, "PUB_PWD", "p")
+    def s = getPropertyOrCmdArgs(project, "PUB_URL", "s")
+
+    if(!project.name.startsWith("dummy")) {
+        publishing {
+            publications {
+                mavenJava(MavenPublication) {
+                    artifactId = "framework-" + project.name
+                    from components.java
+                    pom {
+                        name = "framework-" + project.name
+                        description = 'infrastructure for oauth2 library'
+                        url = 'https://github.com/hongque-pro/infra-oauth2'
+//                    properties = [
+//                            myProp: "value",
+//                            "prop.with.dots": "anotherValue"
+//                    ]
+                        licenses {
+                            license {
+                                name = 'The Apache License, Version 2.0'
+                                url = 'https://www.apache.org/licenses/LICENSE-2.0.txt'
+                            }
+                        }
+                        developers {
+                            developer {
+                                id = 'labijie infra team'
+                                name = 'infra team'
+                                email = 'tech@labijie.com'
+                            }
+                        }
+                        scm {
+                            url = 'https://github.com/hongque-pro/infra-oauth2'
+                            connection = 'scm:git@github.com:hongque-pro/infra-oauth2.git'
+                            developerConnection = 'git@github.com:hongque-pro/infra-oauth2.git'
+                        }
+                    }
+                }
+            }
+
+            signing {
+                if (canBeSign(project)) {
+                    sign publishing.publications.mavenJava
+                } else {
+                    println "Signing information missing/incomplete for ${project.name}"
+                }
+            }
+
+            repositories {
+                if (isNotNullOrBlank(u) && isNotNullOrBlank(p)) {
+                    maven {
+                        name = "OSSRH"
+                        url = s ?: "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
+                        credentials {
+                            username = u
+                            password = p
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+nexusStaging {
+    def u = getPropertyOrCmdArgs(project, "PUB_USER", "u")
+    def p =getPropertyOrCmdArgs(project, "PUB_PWD", "p")
+    username = u
+    password = p
+    packageGroup = "com.labijie"
+}
+

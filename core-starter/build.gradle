@@ -1,0 +1,4 @@
+dependencies {
+    compile project(":core-web")
+    compile project(":auth-starter")
+}

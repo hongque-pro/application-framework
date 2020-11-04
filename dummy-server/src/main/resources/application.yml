@@ -1,0 +1,33 @@
+server:
+  port: 9898
+spring:
+  application:
+    name: dummy
+  cloud:
+    stream:
+      default-binder: memory
+      bindings:
+        sms-input:
+          destination: sms
+        sms-output:
+          destination: sms
+  datasource:
+    url: jdbc:mysql://localhost:3306/park?characterEncoding=utf-8&useSSL=false&serverTimezone=UTC
+    username: root
+    password: 123456
+infra:
+  oauth2:
+    token:
+      jwt:
+        simpleKey:  aaa
+  snowflake:
+    provider: static
+    static:
+      slot: 1
+application:
+  sms:
+    controller-enabled: true
+  human-checker:
+    kaptcha:
+      enabled: true
+

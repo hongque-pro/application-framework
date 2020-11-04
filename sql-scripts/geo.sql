@@ -1,0 +1,23 @@
+DROP TABLE IF EXISTS `geo_points`;
+CREATE TABLE `geo_points` (
+`id` BIGINT(20) NOT NULL,
+`point_name` varchar(32) NOT NULL COMMENT '点的名称',
+`map_lat_lng`  POINT SRID 0 NOT NULL COMMENT '地图坐标系经纬度' NOT NULL,
+`gps_lat_lng`  POINT SRID 0 NOT NULL COMMENT 'GPS 坐标系经纬度' NOT NULL,
+`h3_cell_re3`  bigint(20) NOT NULL,
+`h3_cell_re4`  bigint(20) NOT NULL,
+`h3_cell_re5`  bigint(20) NOT NULL,
+`h3_cell_re6`  bigint(20) NOT NULL,
+`h3_cell_re7`  bigint(20) NOT NULL,
+`h3_cell_re8`  bigint(20) NOT NULL,
+`h3_cell_re9`  bigint(20) NOT NULL,
+`h3_cell_re10` bigint(20)  NOT NULL,
+`point_type` int NOT NULL COMMENT '坐标点类型',
+PRIMARY KEY(`id`),
+KEY(`h3_cell_re3`),
+KEY(`h3_cell_re4`),
+KEY(`h3_cell_re5`),
+KEY(`h3_cell_re6`),
+KEY(`h3_cell_re7`),
+KEY(`h3_cell_re8`),
+KEY(`h3_cell_re9`)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

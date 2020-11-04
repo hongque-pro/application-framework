@@ -1,0 +1,82 @@
+{
+  "group": [
+    {
+      "name": "application.auth.social.providers.mini-wechat",
+      "type": "com.labijie.application.auth.social.providers.wechat.WeChatMiniOptions"
+    },
+    {
+      "name": "application.auth.social.providers.mini-alipay",
+      "type": "com.labijie.application.auth.social.providers.wechat.AlipayMiniOptions"
+    }
+  ],
+  "properties": [
+    {
+      "name": "application.auth.social.providers.mini-wechat.enabled",
+      "type": "java.lang.Boolean",
+      "defaultValue": true
+    },
+    {
+      "name": "application.auth.social.providers.mini-alipay.enabled",
+      "type": "java.lang.Boolean",
+      "defaultValue": true
+    },
+
+
+    {
+      "name": "application.auth.social.providers.mini-wechat.app-id",
+      "type": "java.lang.String",
+      "sourceType": "com.labijie.application.auth.social.providers.wechat.WechatMiniOptions"
+    },
+    {
+      "name": "application.auth.social.providers.mini-wechat.app-secret",
+      "type": "java.lang.String",
+      "sourceType": "com.labijie.application.auth.social.providers.wechat.WechatMiniOptions"
+    },
+    {
+      "name": "application.auth.social.providers.mini-wechat.exchage-url",
+      "type": "java.lang.String",
+      "sourceType": "com.labijie.application.auth.social.providers.wechat.WechatMiniOptions",
+      "defaultValue": "https://api.weixin.qq.com/sns/jscode2session"
+    },
+    {
+      "name": "application.auth.social.providers.mini-wechat.sandbox-phone-number",
+      "type": "java.lang.String"
+    },
+    {
+      "name": "application.auth.social.providers.mini-wechat.use-union-id",
+      "type": "java.lang.Boolean",
+      "default": false
+    },
+
+    {
+      "name": "application.auth.social.providers.mini-alipay.app-id",
+      "type": "java.lang.String",
+      "sourceType": "com.labijie.application.auth.social.providers.alipay.AlipayMiniOptions"
+    },
+    {
+      "name": "application.auth.social.providers.mini-alipay.app-secret",
+      "type": "java.lang.String",
+      "sourceType": "com.labijie.application.auth.social.providers.alipay.AlipayMiniOptions"
+    },
+    {
+      "name": "application.auth.social.providers.mini-alipay.exchage-url",
+      "type": "java.lang.String",
+      "sourceType": "com.labijie.application.auth.social.providers.alipay.AlipayMiniOptions",
+      "defaultValue": "https://openapi.alipay.com/gateway.do"
+    },
+    {
+      "name": "application.auth.social.providers.mini-alipay.alipayPubKey",
+      "type": "java.lang.String",
+      "sourceType": "com.labijie.application.auth.social.providers.alipay.AlipayMiniOptions"
+    },
+    {
+      "name": "application.auth.social.providers.mini-alipay.aesKey",
+      "type": "java.lang.String",
+      "sourceType": "com.labijie.application.auth.social.providers.alipay.AlipayMiniOptions"
+    },
+    {
+      "name": "application.auth.social.providers.mini-alipay.sandbox-phone-number",
+      "type": "java.lang.String"
+    }
+  ]
+}

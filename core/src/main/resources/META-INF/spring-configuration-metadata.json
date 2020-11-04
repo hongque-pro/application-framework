@@ -1,0 +1,103 @@
+{
+  "group": [
+    {
+      "name": "application.validation",
+      "type": "com.labijie.application.configuration.ValidationConfiguration"
+    },
+    {
+      "name": "application.okhttp",
+      "type": "com.labijie.application.configuration.OkHttpClientProperties"
+    }
+  ],
+  "properties": [
+    {
+      "name": "application.sms.send-rate-limit",
+      "type": "java.time.Duration",
+      "defaultValue": "1m"
+    },
+    {
+      "name": "application.sms.async.enabled",
+      "type": "java.lang.Boolean",
+      "defaultValue": true
+    },
+    {
+      "name": "application.sms.async.send-timeout-minutes",
+      "type": "java.lang.Long",
+      "sourceType": "com.labijie.application.configuration.SmsAsyncSettings"
+    },
+    {
+      "name": "application.okhttp.enabled",
+      "type": "java.lang.Boolean",
+      "defaultValue": true
+    },
+    {
+      "name": "application.validation.regex",
+      "type": "java.util.Map<java.lang.String, java.lang.String>",
+      "sourceType": "com.labijie.application.configuration.ValidationConfiguration"
+    },
+
+    {
+      "name": "application.okhttp.max-connections",
+      "type": "java.lang.Integer",
+      "sourceType": "com.labijie.application.configuration.OkHttpClientProperties",
+      "defaultValue": 200
+    },
+    {
+      "name": "application.okhttp.ssl-validation-disabled",
+      "type": "java.lang.Boolean",
+      "sourceType": "com.labijie.application.configuration.OkHttpClientProperties",
+      "defaultValue": true
+    },
+    {
+      "name": "application.okhttp.time-to-live",
+      "type": "java.time.Duration",
+      "sourceType": "com.labijie.application.configuration.OkHttpClientProperties",
+      "defaultValue": "5m"
+    },
+    {
+      "name": "application.okhttp.connect-timeout",
+      "type": "java.time.Duration",
+      "sourceType": "com.labijie.application.configuration.OkHttpClientProperties",
+      "defaultValue": "2s"
+    },
+    {
+      "name": "application.okhttp.read-timeout",
+      "type": "java.time.Duration",
+      "sourceType": "com.labijie.application.configuration.OkHttpClientProperties",
+      "defaultValue": "5s"
+    },
+    {
+      "name": "application.okhttp.write-timeout",
+      "type": "java.time.Duration",
+      "sourceType": "com.labijie.application.configuration.OkHttpClientProperties",
+      "defaultValue": "5s"
+    },
+    {
+      "name": "application.okhttp.follow-redirects",
+      "type": "java.lang.Boolean",
+      "sourceType": "com.labijie.application.configuration.OkHttpClientProperties",
+      "defaultValue": true
+    }
+  ],
+  "hints": [
+    {
+      "name": "application.validation.regex.keys",
+      "values": [
+        {
+          "value": "user-name"
+        },
+        {
+          "value": "phone-number"
+        },
+        {
+          "value": "code"
+        }
+      ],
+      "providers": [
+        {
+          "name": "any"
+        }
+      ]
+    }
+  ]
+}

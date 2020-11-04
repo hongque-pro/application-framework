@@ -1,0 +1,40 @@
+{
+  "group": [
+    {
+      "name": "aliyun.sms.templates",
+      "type": "com.labijie.insurance.aliyun.configuration.SmsTemplates"
+    }
+  ],
+  "properties": [
+    {
+      "name": "aliyun.sms.enabled",
+      "type": "java.lang.Boolean",
+      "defaultValue": true
+    },
+    {
+      "name": "aliyun.sms.templates.captcha-general",
+      "sourceType": "com.labijie.application.configuration.SmsTemplates",
+      "type": "java.lang.String"
+    },
+    {
+      "name": "aliyun.sms.templates.captcha-register",
+      "sourceType": "com.labijie.application.configuration.SmsTemplates",
+      "type": "java.lang.String"
+    },
+    {
+      "name": "aliyun.sms.templates.captcha-change-phone",
+      "sourceType": "com.labijie.application.configuration.SmsTemplates",
+      "type": "java.lang.String"
+    },
+    {
+      "name": "aliyun.sms.templates.captcha-forgot-password",
+      "sourceType": "com.labijie.application.configuration.SmsTemplates",
+      "type": "java.lang.String"
+    },
+    {
+      "name": "aliyun.sms.templates.captcha-login",
+      "sourceType": "com.labijie.application.configuration.SmsTemplates",
+      "type": "java.lang.String"
+    }
+  ]
+}

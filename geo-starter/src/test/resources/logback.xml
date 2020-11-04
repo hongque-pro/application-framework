@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration debug="true">
+
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>
+                %d{yyyy-MM-dd'T'HH:mm:ss.SSSXXX} [%level] [%thread] [%logger] - %m%n
+            </pattern>
+        </encoder>
+    </appender>
+
+    <logger name="com.labijie.application.geo.impl" level="DEBUG" />
+    <logger name="com.labijie.application.geo.data.custom.mapper" level="DEBUG" />
+    <root level="WARN">
+        <appender-ref ref="STDOUT"/>
+    </root>
+</configuration>

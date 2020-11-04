@@ -194,9 +194,9 @@ subprojects {
                             }
                         }
                         scm {
-                            url = 'https://github.com/hongque-pro/infra-oauth2'
-                            connection = 'scm:git@github.com:hongque-pro/infra-oauth2.git'
-                            developerConnection = 'git@github.com:hongque-pro/infra-oauth2.git'
+                            url = 'https://github.com/hongque-pro/application-framework'
+                            connection = 'scm:git@github.com:hongque-pro/application-framework.git'
+                            developerConnection = 'git@github.com:hongque-pro/application-framework.git'
                         }
                     }
                 }

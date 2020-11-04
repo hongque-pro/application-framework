@@ -22,7 +22,7 @@ buildscript {
         junit_verions = '5.7.0'
         mybatis_dynamic_sql_version='1.2.1'
 
-        stream_binder_memory_version='1.0.1'
+        stream_binder_memory_version='1.1.0'
 
         //data base and mybatis
         mysql_connector_version='8.0.22'

@@ -46,7 +46,7 @@ buildscript {
         kaptcha_version='2.3.2'
         mockito_version = '1.10.19'
 
-        maven_repo= System.getenv("MAVEN_PROXY") ?: 'http://maven.aliyun.com/nexus/content/groups/public/'
+        maven_repo= System.getenv("MAVEN_PROXY") // ?: 'http://maven.aliyun.com/nexus/content/groups/public/'
         nexus_staging_version = '0.22.0'
     }
     repositories {

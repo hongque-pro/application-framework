@@ -86,7 +86,7 @@ static getPropertyOrCmdArgs(Project project, String propertyName, String cmdArgN
 
 allprojects {
     group 'com.labijie.application'
-    version '2.0.0'
+    version '2.0.1'
 
     apply plugin: 'kotlin'
     apply plugin: 'signing'

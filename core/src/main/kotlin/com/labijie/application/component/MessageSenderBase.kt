@@ -156,8 +156,8 @@ abstract class MessageSenderBase constructor(
 
         val key = "sms:$captchaType:send:$phoneNumber"
         try {
-            val lastSend = if(this.frequencyLimited) 0  else  (cacheManager.get(key, Long::class.java) as? Long) ?: 0
-            if (this.frequencyLimited && (System.currentTimeMillis() - lastSend) < sendRateLite.toMillis()) {
+          val lastSend = if(this.frequencyLimited) (cacheManager.get(key, Long::class.java) as? Long) ?: 0 else 0
+          if (this.frequencyLimited && (System.currentTimeMillis() - lastSend) < sendRateLite.toMillis()) {
                 throw SmsTooFrequentlyException()
             }
         }catch (e:CacheException){

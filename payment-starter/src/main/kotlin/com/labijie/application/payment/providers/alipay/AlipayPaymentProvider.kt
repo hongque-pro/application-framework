@@ -147,7 +147,8 @@ class AlipayPaymentProvider(
             AlipayPaymentContext(trade.mode, this, paymentProperties, options)
 
         val mntAuthCode = if (trade.mode == TradeMode.ISV) trade.platformMerchantKey else null
-        val parameters = buildCommonsParams("alipay.trade.create", mntAuthCode, this.getPaymentCallbackUrl(trade.state))
+        val method = getPaymentMethod(trade.method)
+        val parameters = buildCommonsParams(method, mntAuthCode, this.getPaymentCallbackUrl(trade.state))
         val bizContent = buildCreationBizContent(context, sceneSupport, trade)
 
         applySceneForTradeParametersBizContent(context, sceneSupport, trade, bizContent)
@@ -254,4 +255,10 @@ class AlipayPaymentProvider(
         }
     }
 
+  private fun getPaymentMethod(method: PaymentMethod):String{
+    return when(method){
+      PaymentMethod.MiniProgram->"alipay.trade.create"
+      PaymentMethod.App->"alipay.trade.app.pay"
+    }
+  }
 }

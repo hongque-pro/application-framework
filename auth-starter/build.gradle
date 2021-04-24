@@ -1,4 +1,5 @@
 dependencies {
     compile project(":core-web")
 //    compile project(":commons-data")
+    compile "com.labijie.infra:oauth2-auth-server-starter:$infra_oauth2_version"
 }

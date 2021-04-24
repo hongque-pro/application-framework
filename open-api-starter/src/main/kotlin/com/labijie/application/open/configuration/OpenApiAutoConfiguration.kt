@@ -10,8 +10,6 @@ import com.labijie.application.open.service.IOpenAppService
 import com.labijie.application.open.service.IOpenPartnerService
 import com.labijie.application.open.service.impl.OpenAppService
 import com.labijie.application.open.service.impl.OpenPartnerService
-import com.labijie.application.web.IResourceAuthorizationConfigurer
-import com.labijie.application.web.ResourceAuthorizationRegistry
 import com.labijie.infra.IIdGenerator
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication

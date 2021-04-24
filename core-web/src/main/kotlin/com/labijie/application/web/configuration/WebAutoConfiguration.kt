@@ -1,7 +1,5 @@
 package com.labijie.application.web.configuration
 
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.google.common.base.Predicate
 import com.labijie.application.component.IHumanChecker
 import com.labijie.application.component.impl.NoneHumanChecker
 import com.labijie.application.web.controller.ErrorDescriptionController
@@ -21,7 +19,6 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Import
-import org.springframework.context.annotation.Profile
 import org.springframework.core.env.Environment
 import org.springframework.format.FormatterRegistry
 import org.springframework.http.MediaType
@@ -47,8 +44,8 @@ import javax.validation.Validator
  * @author Anders Xiao
  * @date 2019-09-05
  */
-@Configuration
-@Import(DefaultResourceServerConfiguration::class, ErrorDescriptionController::class)
+@Configuration(proxyBeanMethods = false)
+@Import(DefaultResourceSecurityConfiguration::class, ErrorDescriptionController::class)
 @AutoConfigureAfter(Environment::class)
 class WebAutoConfiguration : WebMvcConfigurer {
 

@@ -9,6 +9,7 @@ import com.labijie.infra.utils.logger
 import org.springframework.beans.BeansException
 import org.springframework.beans.factory.ObjectProvider
 import org.springframework.boot.SpringApplication
+import org.springframework.boot.WebApplicationType
 import org.springframework.boot.context.event.ApplicationReadyEvent
 import org.springframework.context.ApplicationContext
 import org.springframework.context.ApplicationContextAware
@@ -17,6 +18,7 @@ import org.springframework.context.event.EventListener
 import org.springframework.core.Ordered
 import org.springframework.core.env.Environment
 import org.springframework.util.ClassUtils
+import org.springframework.web.context.WebApplicationContext
 import java.lang.reflect.Method
 import java.lang.reflect.ParameterizedType
 import kotlin.concurrent.thread
@@ -29,8 +31,8 @@ import kotlin.system.exitProcess
  * @author Anders Xiao
  * @date 2019-09-11
  */
-class ApplicationInitializationRunner<T:ConfigurableApplicationContext>(
-    private val contextClass: KClass<T>) : ApplicationContextAware, Ordered {
+class ApplicationInitializationRunner<T : ConfigurableApplicationContext>(
+        private val contextClass: KClass<T>) : ApplicationContextAware, Ordered {
     override fun getOrder(): Int {
         return Int.MAX_VALUE
     }
@@ -53,9 +55,10 @@ class ApplicationInitializationRunner<T:ConfigurableApplicationContext>(
         errorRegistry = applicationContext.getBean(IErrorRegistry::class.java)
     }
 
+
+
     private val isWebEnvironment by lazy {
-        ClassUtils.isPresent(SpringApplication.DEFAULT_REACTIVE_WEB_CONTEXT_CLASS, null)
-                || ClassUtils.isPresent(SpringApplication.DEFAULT_SERVLET_WEB_CONTEXT_CLASS, null)
+        (applicationContext is WebApplicationContext)
     }
 
     private fun initJackson(){
@@ -134,7 +137,7 @@ class ApplicationInitializationRunner<T:ConfigurableApplicationContext>(
         val context = if(contextPath == "/") "" else contextPath
         val moduleList = modules.joinToString { it.simpleName.substringBefore("ModuleInitializer") }
         println(
-            """
+                """
         [${this.applicationName}] has been started !! 
         
         current profiles: $profiles

@@ -6,8 +6,6 @@ import com.google.code.kaptcha.util.Config
 import com.labijie.application.kaptcha.controller.KaptchaController
 import com.labijie.application.kaptcha.service.impl.KaptchaHumanChecker
 import com.labijie.application.kaptcha.service.impl.KaptchaService
-import com.labijie.application.web.IResourceAuthorizationConfigurer
-import com.labijie.application.web.ResourceAuthorizationRegistry
 import com.labijie.infra.spring.configuration.CommonsAutoConfiguration
 import org.springframework.boot.autoconfigure.AutoConfigureBefore
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean

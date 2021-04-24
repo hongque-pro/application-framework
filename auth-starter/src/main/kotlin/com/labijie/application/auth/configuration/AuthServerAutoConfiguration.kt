@@ -11,8 +11,6 @@ import com.labijie.application.auth.handler.OAuth2ErrorHandler
 import com.labijie.application.auth.service.IUserService
 import com.labijie.application.auth.service.impl.DefaultUserService
 import com.labijie.application.component.IMessageSender
-import com.labijie.application.web.IResourceAuthorizationConfigurer
-import com.labijie.application.web.ResourceAuthorizationRegistry
 import com.labijie.caching.ICacheManager
 import com.labijie.infra.IIdGenerator
 import com.labijie.infra.oauth2.IClientDetailsServiceFactory

@@ -1,7 +1,5 @@
 package com.labijie.application.web.configuration
 
-import com.labijie.application.web.IResourceAuthorizationConfigurer
-import com.labijie.application.web.ResourceAuthorizationRegistry
 import org.springframework.context.annotation.ComponentScan
 import org.springframework.context.annotation.Configuration
 

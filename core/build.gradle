@@ -3,8 +3,9 @@ dependencies {
     compile "com.labijie.infra:commons-snowflake-starter:$infra_commons_version"
 
 //    compile group: 'com.github.promeg', name: 'tinypinyin', version: tinypinyin_version
-    compile "com.labijie.infra:commons-mybatis-starter:$infra_commons_version"
-    compile "org.mybatis.dynamic-sql:mybatis-dynamic-sql:$mybatis_dynamic_sql_version"
+//    compile "com.labijie.infra:commons-mybatis-starter:$infra_commons_version"
+//    compile "org.mybatis.dynamic-sql:mybatis-dynamic-sql:$mybatis_dynamic_sql_version"
+    compile "com.labijie.infra:commons-mybatis-dynamic-starter:$infra_commons_version"
 
     compile "org.springframework.cloud:spring-cloud-stream"
 

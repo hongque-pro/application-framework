@@ -5,10 +5,7 @@ import com.labijie.application.payment.callback.IPaymentCallbackHandler
 import com.labijie.application.payment.callback.IRefundCallbackHandler
 import com.labijie.application.payment.callback.PaymentCallbackMvcInterceptor
 import com.labijie.application.payment.callback.RefundCallbackMvcInterceptor
-import com.labijie.application.web.IResourceAuthorizationConfigurer
-import com.labijie.application.web.ResourceAuthorizationRegistry
 import org.springframework.beans.factory.ObjectProvider
-import org.springframework.boot.WebApplicationType
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration

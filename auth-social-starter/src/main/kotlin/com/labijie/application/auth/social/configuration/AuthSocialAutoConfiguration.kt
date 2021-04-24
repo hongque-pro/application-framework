@@ -14,11 +14,8 @@ import com.labijie.application.auth.social.providers.wechat.WechatMiniOptions
 import com.labijie.application.auth.social.providers.wechat.WechatMiniProgramProvider
 import com.labijie.application.auth.social.service.DefaultSocialUserService
 import com.labijie.application.component.IMessageSender
-import com.labijie.application.web.IResourceAuthorizationConfigurer
-import com.labijie.application.web.ResourceAuthorizationRegistry
 import com.labijie.caching.ICacheManager
 import com.labijie.infra.IIdGenerator
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.autoconfigure.AutoConfigureAfter
 import org.springframework.boot.autoconfigure.AutoConfigureBefore
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean

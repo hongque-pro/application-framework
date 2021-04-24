@@ -2,52 +2,55 @@ buildscript {
     ext {
         kotlin_version = '1.4.10'
         slf4j_version = '1.7.30'
-        infra_caching_version='1.2.1'
-        infra_commons_version='2.0.1'
-        infra_oauth2_version = '1.0.2'
-        uber_h3_version='3.6.3'
-        netty_version='4.1.52.Final'
+        infra_caching_version='1.2.2'
+        infra_commons_version='2.1.0'
+        infra_oauth2_version = '1.1.0'
+        uber_h3_version='3.7.0'
+        netty_version='4.1.63.Final'
 //        jts_version='1.13' 地理信息标准格式处理库，暂时不需要
 
-        hibernate_validation_verion='6.0.17.Final'
+        hibernate_validation_verion='6.2.0.Final'
 
-        spring_boot_version = '2.3.4.RELEASE'
-        spring_cloud_version='Hoxton.SR8'
-        spring_version = '5.2.9.RELEASE'
-        spring_dep_mgn_version='1.0.10.RELEASE'
-        spring_security_jwt_version='1.1.1.RELEASE'
+        spring_boot_version = '2.4.5'
+        spring_cloud_version='2020.0.2'
+        spring_version = '5.3.6'
+        spring_dep_mgn_version='1.0.11.RELEASE'
 
-        kryo_version = '5.0.0'
+        kryo_version = '5.1.0'
 
         junit_verions = '5.7.0'
-        mybatis_dynamic_sql_version='1.2.1'
 
         stream_binder_memory_version='1.1.0'
 
         //data base and mybatis
+        mybatis_spring_boot_version='2.1.4'
         mysql_connector_version='8.0.22'
+        mybatis_generator_version='1.4.0'
         mybatis_gen_plug_version='1.2.17'
         mybatis_version = '3.5.6'
 
         swagger_version='2.9.2'
 
-        aliyun_sdk_version='4.4.5'
-        aliyun_sdk_sts_version='3.0.1'
-        aliyun_sdk_oss_version='3.6.0'
-        aliyun_sdk_afs_version='1.0.0'
+        aliyun_sdk_version='4.5.20'
+        aliyun_sdk_sts_version='3.0.2'
+        aliyun_sdk_oss_version='3.12.0'
+//        aliyun_sdk_afs_version='1.0.0'
+
+        huawei_esdk_obs_version='3.20.6.2'
 
         typescript_gen_version='2.17.558'
         antisamy_version='1.5.10'
-        bouncycastle_version='1.64'
+        bouncycastle_version='1.68'
 
-        okhttp_version='4.2.2'
-        fasterxml_version='2.9.8'
-        apache_poi_version='4.1.2'
+        okhttp_version='4.9.1'
+        fasterxml_version='2.12.3'
+        apache_poi_version='5.0.0'
         kaptcha_version='2.3.2'
         mockito_version = '1.10.19'
 
-        maven_repo= System.getenv("MAVEN_PROXY") // ?: 'http://maven.aliyun.com/nexus/content/groups/public/'
+        maven_repo= System.getenv("MAVEN_PROXY")
         nexus_staging_version = '0.22.0'
+
     }
     repositories {
         mavenLocal()
@@ -147,6 +150,13 @@ allprojects {
         implementation "org.jetbrains.kotlin:kotlin-reflect"
 
 
+        testCompile group: 'org.jetbrains.kotlin', name: 'kotlin-test-junit5', version: kotlin_version
+        // https://mvnrepository.com/artifact/org.mockito/mockito-all
+        testCompile group: 'org.mockito', name: 'mockito-all', version:mockito_version
+        testCompile "mysql:mysql-connector-java:$mysql_connector_version"
+        testCompile group: 'org.springframework.boot', name: 'spring-boot-starter-test', version:spring_boot_version
+        testCompile group: 'org.mybatis.spring.boot', name: 'mybatis-spring-boot-starter-test', version: mybatis_spring_boot_version
+
         testImplementation "org.junit.jupiter:junit-jupiter"
         testImplementation("org.jetbrains.kotlin:kotlin-test-junit5"){
             exclude group:"org.junit"
@@ -159,6 +169,18 @@ allprojects {
     test {
         useJUnitPlatform()
     }
+}
+
+static def getMybatisConfigFilePath(String rootPath){
+    return rootPath.endsWith(File.separator) ? rootPath.substring(0, rootPath.length() - 2) : rootPath +
+            File.separator + "mybatis-conf" +
+            File.separator + "config.xml"
+}
+
+static def getMybatisPropertiesFilePath(String rootPath){
+    return rootPath.endsWith(File.separator) ? rootPath.substring(0, rootPath.length() - 2) : rootPath +
+            File.separator + "mybatis-conf" +
+            File.separator + "settings.properties"
 }
 
 subprojects {
@@ -174,8 +196,8 @@ subprojects {
                     from components.java
                     pom {
                         name = "framework-" + project.name
-                        description = 'infrastructure for oauth2 library'
-                        url = 'https://github.com/hongque-pro/infra-oauth2'
+                        description = 'application framework package'
+                        url = 'https://github.com/hongque-pro/application-framework'
 //                    properties = [
 //                            myProp: "value",
 //                            "prop.with.dots": "anotherValue"
@@ -219,6 +241,56 @@ subprojects {
                             username = u
                             password = p
                         }
+                    }
+                }
+            }
+        }
+    }
+
+    def confFile = file(getMybatisConfigFilePath(projectDir.absolutePath))
+    if (confFile.exists() && confFile.isFile()) {
+
+
+
+        def propertiesFile = file(getMybatisPropertiesFilePath(projectDir.absolutePath))
+        def  propertiesPath = (propertiesFile.exists() && propertiesFile.isFile()) ?
+                propertiesFile.absolutePath :
+                getMybatisPropertiesFilePath(rootDir.absolutePath)
+        def configPath = confFile.absolutePath
+
+
+
+        configurations {
+            mybatisGenerator
+        }
+
+        dependencies {
+            mybatisGenerator "mysql:mysql-connector-java:$mysql_connector_version"
+            mybatisGenerator "org.mybatis.generator:mybatis-generator-core:$mybatis_generator_version"
+            mybatisGenerator "com.itfsw:mybatis-generator-plugin:$mybatis_gen_plug_version"
+        }
+
+        System.out.println()
+        System.out.println("[$project.name] Find mybatis config:")
+        System.out.println("properties: " + propertiesPath)
+        System.out.println("configuration:" + configPath)
+        System.out.println()
+
+        task mybatisGenerate {
+            doLast {
+
+                ant.properties['targetProject'] = projectDir.path
+                ant.properties['propertiesFile'] = propertiesPath
+
+                ant.taskdef(
+                        name: 'mbgenerator',
+                        classname: 'org.mybatis.generator.ant.GeneratorAntTask',
+                        classpath: configurations.mybatisGenerator.asPath
+                )
+                ant.mbgenerator(overwrite: true, configfile: configPath, verbose: true) {
+                    propertyset {
+                        propertyref(name: 'targetProject')
+                        propertyref(name: 'propertiesFile')
                     }
                 }
             }

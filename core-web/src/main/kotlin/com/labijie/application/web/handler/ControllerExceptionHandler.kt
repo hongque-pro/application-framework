@@ -8,10 +8,7 @@ import org.slf4j.LoggerFactory
 import org.springframework.core.Ordered
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
-import org.springframework.security.core.AuthenticationException
-import org.springframework.security.oauth2.common.exceptions.OAuth2Exception
 import org.springframework.validation.FieldError
-import org.springframework.web.HttpMediaTypeNotAcceptableException
 import org.springframework.web.bind.MethodArgumentNotValidException
 import org.springframework.web.bind.MissingServletRequestParameterException
 import org.springframework.web.bind.annotation.ExceptionHandler
@@ -64,14 +61,14 @@ class ControllerExceptionHandler : Ordered {
         return ResponseEntity(ErrorResponse(e.error, e.message), e.status)
     }
 
-    @ExceptionHandler(AuthenticationException::class)
-    @ResponseStatus(HttpStatus.UNAUTHORIZED)
-    fun handle(request: HttpServletRequest, e: AuthenticationException): ErrorResponse {
-        if(logger.isDebugEnabled){
-            logger.warn("Authentication error handled.", e)
-        }
-        return ErrorResponse(OAuth2Exception.INVALID_GRANT, e.message)
-    }
+//    @ExceptionHandler(AuthenticationException::class)
+//    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+//    fun handle(request: HttpServletRequest, e: AuthenticationException): ErrorResponse {
+//        if(logger.isDebugEnabled){
+//            logger.warn("Authentication error handled.", e)
+//        }
+//        return ErrorResponse(OAuth2Exception.INVALID_GRANT, e.message)
+//    }
 
 
 //    @ExceptionHandler(HttpMediaTypeNotAcceptableException::class)

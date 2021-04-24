@@ -6,6 +6,5 @@ package com.labijie.application.web
  * @date 2019-09-11
  */
 data class RestResponse<T>(
-    var data: T? = null
-) {
-}
+        var data: T? = null
+)

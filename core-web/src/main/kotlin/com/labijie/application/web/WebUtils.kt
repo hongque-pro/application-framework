@@ -73,7 +73,7 @@ private fun getBodyFromServletRequestParameters(
         val nameIterator = form.keys.iterator()
         while (nameIterator.hasNext()) {
             val name = nameIterator.next()
-            val values = Arrays.asList(*form[name])
+            val values = listOf(*(form[name] ?: arrayOf()))
             val valueIterator = values.iterator()
             while (valueIterator.hasNext()) {
                 val value = valueIterator.next()
@@ -99,9 +99,9 @@ private fun getBodyFromServletRequestParameters(
 @Throws(IOException::class)
 fun HttpServletRequest.getBody(): InputStream {
     if (this.isFormPost) {
-        return getBodyFromServletRequestParameters(this);
+        return getBodyFromServletRequestParameters(this)
     } else {
-        return this.getInputStream();
+        return this.inputStream
     }
 }
 
@@ -145,7 +145,7 @@ fun roleAuthority(role: String): SimpleGrantedAuthority {
 }
 
 fun TwoFactorPrincipal.hasRole(role: String): Boolean {
-    if (role.startsWith(ROLE_PREFIX)){
+    if (role.startsWith(ROLE_PREFIX)) {
         throw IllegalArgumentException(
                 "role name should not start with '$ROLE_PREFIX' since it is automatically inserted. Got '$role'"
         )
@@ -177,7 +177,7 @@ object WebUtils {
         }
 }
 
-fun ExpressionUrlAuthorizationConfigurer<HttpSecurity>.ExpressionInterceptUrlRegistry.antMatchers(vararg antPatterns:String, ignoreCase:Boolean = false, method: HttpMethod? = null): ExpressionUrlAuthorizationConfigurer<HttpSecurity>.AuthorizedUrl {
+fun ExpressionUrlAuthorizationConfigurer<HttpSecurity>.ExpressionInterceptUrlRegistry.antMatchers(vararg antPatterns: String, ignoreCase: Boolean = false, method: HttpMethod? = null): ExpressionUrlAuthorizationConfigurer<HttpSecurity>.AuthorizedUrl {
     val matchers = antPatterns.toList().map {
         AntPathRequestMatcher(it, method?.name, !ignoreCase)
     }.toTypedArray()

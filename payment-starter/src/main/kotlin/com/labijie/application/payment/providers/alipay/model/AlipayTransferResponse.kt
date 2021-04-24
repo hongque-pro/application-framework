@@ -1,7 +1,7 @@
 package com.labijie.application.payment.providers.alipay.model
 
+import com.fasterxml.jackson.annotation.JsonProperty
 import com.labijie.application.thridparty.alipay.AlipayResponseBase
-import org.codehaus.jackson.annotate.JsonProperty
 
 class AlipayTransferResponse : AlipayResponseBase() {
     @JsonProperty("out_biz_no")

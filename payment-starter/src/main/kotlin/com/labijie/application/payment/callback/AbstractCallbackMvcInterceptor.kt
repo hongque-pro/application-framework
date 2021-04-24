@@ -52,7 +52,29 @@ abstract class AbstractCallbackMvcInterceptor<TCallbackContext : AbstractCallbac
         val paymentProvider: IPaymentProvider,
         val version: String,
         val state: String?
-    )
+    ) {
+        override fun equals(other: Any?): Boolean {
+            if (this === other) return true
+            if (javaClass != other?.javaClass) return false
+
+            other as InternalContext
+
+            if (!requestBody.contentEquals(other.requestBody)) return false
+            if (paymentProvider != other.paymentProvider) return false
+            if (version != other.version) return false
+            if (state != other.state) return false
+
+            return true
+        }
+
+        override fun hashCode(): Int {
+            var result = requestBody.contentHashCode()
+            result = 31 * result + paymentProvider.hashCode()
+            result = 31 * result + version.hashCode()
+            result = 31 * result + (state?.hashCode() ?: 0)
+            return result
+        }
+    }
 
     private val pattern: Pattern by lazy {
         val providerNames = paymentProviders.values.joinToString("|") {

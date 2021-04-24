@@ -1,13 +1,20 @@
 package com.labijie.application.web
 
+import com.labijie.infra.oauth2.Constants
+import com.labijie.infra.oauth2.TwoFactorPrincipal
 import com.labijie.infra.utils.ifNullOrBlank
 import org.springframework.core.annotation.AnnotationUtils
 import org.springframework.http.HttpMethod
 import org.springframework.http.MediaType
+import org.springframework.security.config.annotation.web.builders.HttpSecurity
+import org.springframework.security.config.annotation.web.configurers.ExpressionUrlAuthorizationConfigurer
+import org.springframework.security.core.authority.SimpleGrantedAuthority
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher
 import org.springframework.web.context.request.RequestContextHolder
 import org.springframework.web.context.request.ServletRequestAttributes
 import org.springframework.web.method.HandlerMethod
 import java.io.*
+import java.lang.IllegalArgumentException
 import java.net.URLEncoder
 import java.nio.charset.Charset
 import java.util.*
@@ -40,12 +47,10 @@ private fun String.getFirstValue(): String {
 
 fun HttpServletRequest.getRealIp(): String {
     return this.getHeaderValue("X-Forwarded-For")
-        ?: this.getHeaderValue("X-Real-IP")
-        ?: this.getHeaderValue("WL-Proxy-Client-IP")
-        ?: this.remoteAddr.ifNullOrBlank { "0.0.0.0" }
+            ?: this.getHeaderValue("X-Real-IP")
+            ?: this.getHeaderValue("WL-Proxy-Client-IP")
+            ?: this.remoteAddr.ifNullOrBlank { "0.0.0.0" }
 }
-
-
 
 
 fun <T : Any?> T.asRestResponse() = RestResponse(this)
@@ -59,8 +64,8 @@ private val HttpServletRequest.isFormPost: Boolean
 
 
 private fun getBodyFromServletRequestParameters(
-    request: HttpServletRequest,
-    charset: Charset = Charsets.UTF_8
+        request: HttpServletRequest,
+        charset: Charset = Charsets.UTF_8
 ): InputStream {
     val bos = ByteArrayOutputStream(1024)
     OutputStreamWriter(bos, charset).use { writer ->
@@ -119,12 +124,12 @@ fun HttpServletRequest.toPrettyString(body: ByteArray): String {
     return builder.toString()
 }
 
-val HttpServletRequest.isFromAlipay:Boolean
+val HttpServletRequest.isFromAlipay: Boolean
     get() {
         return this.getHeader("user-agent").orEmpty().contains("AlipayClient", ignoreCase = true)
     }
 
-val HttpServletRequest.isFromWechat:Boolean
+val HttpServletRequest.isFromWechat: Boolean
     get() {
         return this.getHeader("user-agent").orEmpty().contains("MicroMessenger", ignoreCase = true)
     }
@@ -133,11 +138,48 @@ fun HandlerMethod.hasAnnotationOnMethodOrClass(annotation: KClass<out Annotation
     return this.hasMethodAnnotation(annotation.java) || AnnotationUtils.isAnnotationDeclaredLocally(annotation.java, this.method.declaringClass)
 }
 
+private const val ROLE_PREFIX = "ROLE_"
+
+fun roleAuthority(role: String): SimpleGrantedAuthority {
+    return SimpleGrantedAuthority("$ROLE_PREFIX${role}")
+}
+
+fun TwoFactorPrincipal.hasRole(role: String): Boolean {
+    if (role.startsWith(ROLE_PREFIX)){
+        throw IllegalArgumentException(
+                "role name should not start with '$ROLE_PREFIX' since it is automatically inserted. Got '$role'"
+        )
+    }
+
+    if (role.isBlank()) {
+        return false
+    }
+    return this.authorities.any {
+        it.authority.contains("$ROLE_PREFIX$role")
+    }
+}
+
+fun TwoFactorPrincipal.hasAnyRole(vararg roles: String): Boolean {
+    if (roles.isEmpty()) {
+        return false
+    }
+    return this.authorities.any {
+        roles.contains("$ROLE_PREFIX${it.authority}")
+    }
+}
+
 object WebUtils {
     val currentRequest: String
         get() {
             val requestAttributes = (RequestContextHolder.getRequestAttributes() as? ServletRequestAttributes)
-                ?: throw RuntimeException("Get ServletRequestAttributes fault.")
+                    ?: throw RuntimeException("Get ServletRequestAttributes fault.")
             return requestAttributes.request.getRealIp()
         }
+}
+
+fun ExpressionUrlAuthorizationConfigurer<HttpSecurity>.ExpressionInterceptUrlRegistry.antMatchers(vararg antPatterns:String, ignoreCase:Boolean = false, method: HttpMethod? = null): ExpressionUrlAuthorizationConfigurer<HttpSecurity>.AuthorizedUrl {
+    val matchers = antPatterns.toList().map {
+        AntPathRequestMatcher(it, method?.name, !ignoreCase)
+    }.toTypedArray()
+    return this.requestMatchers(*matchers)
 }

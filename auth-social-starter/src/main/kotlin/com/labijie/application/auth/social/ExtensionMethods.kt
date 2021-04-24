@@ -7,7 +7,7 @@ import com.labijie.application.auth.social.providers.alipay.AlipayMiniOptions
 import com.labijie.application.auth.social.providers.wechat.WechatMiniOptions
 import com.labijie.application.auth.social.service.ISocialUserService
 import com.labijie.infra.oauth2.TwoFactorPrincipal
-import com.labijie.infra.oauth2.hasAttachedFiledValue
+import com.labijie.infra.oauth2.resource.hasTokenAttributeValue
 import org.springframework.security.config.annotation.web.configurers.ExpressionUrlAuthorizationConfigurer
 
 
@@ -37,9 +37,9 @@ val TwoFactorPrincipal.isAlipayMiniUser: Boolean
 
 
 fun ExpressionUrlAuthorizationConfigurer<*>.AuthorizedUrl.wechatMiniOnly(): ExpressionUrlAuthorizationConfigurer<*>.ExpressionInterceptUrlRegistry {
-    return this.hasAttachedFiledValue(OAuth2SocialConstants.LoginProviderFieldName, WechatMiniOptions.ProviderName)
+    return this.hasTokenAttributeValue(OAuth2SocialConstants.LoginProviderFieldName, WechatMiniOptions.ProviderName)
 }
 
 fun ExpressionUrlAuthorizationConfigurer<*>.AuthorizedUrl.alipayMiniOnly(): ExpressionUrlAuthorizationConfigurer<*>.ExpressionInterceptUrlRegistry {
-    return this.hasAttachedFiledValue(OAuth2SocialConstants.LoginProviderFieldName, AlipayMiniOptions.ProviderName)
+    return this.hasTokenAttributeValue(OAuth2SocialConstants.LoginProviderFieldName, AlipayMiniOptions.ProviderName)
 }

@@ -5,10 +5,14 @@ import com.labijie.application.payment.callback.IPaymentCallbackHandler
 import com.labijie.application.payment.callback.IRefundCallbackHandler
 import com.labijie.application.payment.callback.PaymentCallbackMvcInterceptor
 import com.labijie.application.payment.callback.RefundCallbackMvcInterceptor
+import com.labijie.application.web.antMatchers
+import com.labijie.infra.oauth2.resource.IResourceAuthorizationConfigurer
 import org.springframework.beans.factory.ObjectProvider
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.security.config.annotation.web.builders.HttpSecurity
+import org.springframework.security.config.annotation.web.configurers.ExpressionUrlAuthorizationConfigurer
 import org.springframework.util.AntPathMatcher
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer
@@ -50,9 +54,9 @@ class PaymentCallbackAutoConfiguration {
         private val refundCallbackMvcInterceptor: RefundCallbackMvcInterceptor,
         private val paymentCallbackInterceptor: PaymentCallbackMvcInterceptor) : WebMvcConfigurer, IResourceAuthorizationConfigurer {
 
-        override fun configure(registry: ResourceAuthorizationRegistry) {
-            registry.antMatchers(arrayOf(PaymentProperties.PATH_PATTERN), ignoreCase = true).permitAll()
-            registry.antMatchers(arrayOf(PaymentProperties.PATH_REFUND_PATTERN), ignoreCase = true).permitAll()
+        override fun configure(registry: ExpressionUrlAuthorizationConfigurer<HttpSecurity>.ExpressionInterceptUrlRegistry) {
+            registry.antMatchers(PaymentProperties.PATH_PATTERN, ignoreCase = true).permitAll()
+            registry.antMatchers(PaymentProperties.PATH_REFUND_PATTERN, ignoreCase = true).permitAll()
         }
 
         override fun addInterceptors(registry: InterceptorRegistry) {

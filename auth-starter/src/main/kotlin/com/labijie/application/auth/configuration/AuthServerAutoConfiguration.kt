@@ -17,11 +17,14 @@ import com.labijie.infra.oauth2.IClientDetailsServiceFactory
 import com.labijie.infra.oauth2.IIdentityService
 import com.labijie.infra.oauth2.configuration.OAuth2CustomizationAutoConfiguration
 import com.labijie.infra.oauth2.error.IOAuth2ExceptionHandler
+import com.labijie.infra.oauth2.resource.IResourceAuthorizationConfigurer
 import org.springframework.boot.autoconfigure.AutoConfigureBefore
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.security.config.annotation.web.builders.HttpSecurity
+import org.springframework.security.config.annotation.web.configurers.ExpressionUrlAuthorizationConfigurer
 import org.springframework.transaction.support.TransactionTemplate
 
 /**
@@ -34,14 +37,16 @@ import org.springframework.transaction.support.TransactionTemplate
 @AutoConfigureBefore(OAuth2CustomizationAutoConfiguration::class)
 @EnableConfigurationProperties(AuthServerProperties::class)
 class AuthServerAutoConfiguration : IResourceAuthorizationConfigurer {
-    override fun configure(registry: ResourceAuthorizationRegistry) {
+
+    override fun configure(registry: ExpressionUrlAuthorizationConfigurer<HttpSecurity>.ExpressionInterceptUrlRegistry) {
         registry.antMatchers(
-            "/account/register",
-            "/account/verify",
-            "/account/set-password"
+                "/account/register",
+                "/account/verify",
+                "/account/set-password"
         ).permitAll()
         .antMatchers("/user/current").authenticated()
     }
+
 
     @Bean
     fun authErrorsRegistration(): AuthErrorsRegistration {
@@ -51,24 +56,24 @@ class AuthServerAutoConfiguration : IResourceAuthorizationConfigurer {
     @Bean
     @ConditionalOnMissingBean(IUserService::class)
     fun defaultUserService(
-        authServerProperties: AuthServerProperties,
-        idGenerator: IIdGenerator,
-        messageSender: IMessageSender,
-        cacheManager: ICacheManager,
-        userMapper: UserMapper,
-        userRoleMapper: UserRoleMapper,
-        roleMapper: RoleMapper,
-        transactionTemplate: TransactionTemplate
+            authServerProperties: AuthServerProperties,
+            idGenerator: IIdGenerator,
+            messageSender: IMessageSender,
+            cacheManager: ICacheManager,
+            userMapper: UserMapper,
+            userRoleMapper: UserRoleMapper,
+            roleMapper: RoleMapper,
+            transactionTemplate: TransactionTemplate
     ): DefaultUserService {
         return DefaultUserService(
-            authServerProperties,
-            idGenerator,
-            messageSender,
-            cacheManager,
-            userMapper,
-            userRoleMapper,
-            roleMapper,
-            transactionTemplate)
+                authServerProperties,
+                idGenerator,
+                messageSender,
+                cacheManager,
+                userMapper,
+                userRoleMapper,
+                roleMapper,
+                transactionTemplate)
     }
 
     @Bean
@@ -90,7 +95,6 @@ class AuthServerAutoConfiguration : IResourceAuthorizationConfigurer {
     }
 
 
-
     @Bean
     @ConditionalOnMissingBean(IOAuth2ExceptionHandler::class)
     fun oauth2ErrorHandler(): OAuth2ErrorHandler {
@@ -99,13 +103,13 @@ class AuthServerAutoConfiguration : IResourceAuthorizationConfigurer {
 
     @Configuration
     @ConditionalOnMissingBean(IClientDetailsServiceFactory::class)
-    protected class ClientDetailServiceAutoConfiguration{
+    protected class ClientDetailServiceAutoConfiguration {
 
         @Bean
         fun mybatisClientDetailsService(
-            authServerProperties: AuthServerProperties,
-            cacheManager: ICacheManager,
-            clientDetailsMapper: OAuth2ClientDetailsMapper): MybatisClientDetailsService {
+                authServerProperties: AuthServerProperties,
+                cacheManager: ICacheManager,
+                clientDetailsMapper: OAuth2ClientDetailsMapper): MybatisClientDetailsService {
             return MybatisClientDetailsService(authServerProperties, cacheManager, clientDetailsMapper)
         }
 
@@ -114,4 +118,6 @@ class AuthServerAutoConfiguration : IResourceAuthorizationConfigurer {
             return MybatisClientDetailsServiceFactory(mybatisClientDetailsService)
         }
     }
+
+
 }

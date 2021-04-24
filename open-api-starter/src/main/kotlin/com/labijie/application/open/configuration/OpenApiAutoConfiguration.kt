@@ -11,12 +11,15 @@ import com.labijie.application.open.service.IOpenPartnerService
 import com.labijie.application.open.service.impl.OpenAppService
 import com.labijie.application.open.service.impl.OpenPartnerService
 import com.labijie.infra.IIdGenerator
+import com.labijie.infra.oauth2.resource.IResourceAuthorizationConfigurer
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.boot.web.servlet.FilterRegistrationBean
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.security.config.annotation.web.builders.HttpSecurity
+import org.springframework.security.config.annotation.web.configurers.ExpressionUrlAuthorizationConfigurer
 import org.springframework.transaction.support.TransactionTemplate
 import org.springframework.util.AntPathMatcher
 import org.springframework.web.filter.CorsFilter
@@ -81,7 +84,7 @@ class OpenApiAutoConfiguration {
             return bean
         }
 
-        override fun configure(registry: ResourceAuthorizationRegistry) {
+        override fun configure(registry: ExpressionUrlAuthorizationConfigurer<HttpSecurity>.ExpressionInterceptUrlRegistry) {
             registry.antMatchers(apiProperties.pathPattern, apiProperties.jsApiCors.pathPattern).permitAll()
         }
 

@@ -8,7 +8,7 @@ import com.labijie.application.web.handler.ErrorResponse
 import com.labijie.infra.json.JacksonHelper
 import org.springframework.http.HttpStatus
 import org.springframework.web.method.HandlerMethod
-import org.springframework.web.servlet.handler.HandlerInterceptorAdapter
+import org.springframework.web.servlet.HandlerInterceptor
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 
@@ -17,7 +17,7 @@ import javax.servlet.http.HttpServletResponse
  * @author Anders Xiao
  * @date 2019-11-24
  */
-class HumanVerifyInterceptorAdapter(private val checker: IHumanChecker) : HandlerInterceptorAdapter() {
+class HumanVerifyInterceptor(private val checker: IHumanChecker) : HandlerInterceptor {
     companion object {
         const val TOKEN_HTTP_HEADER_NAME = "h-token"
     }

@@ -16,6 +16,7 @@ import com.labijie.application.auth.social.service.DefaultSocialUserService
 import com.labijie.application.component.IMessageSender
 import com.labijie.caching.ICacheManager
 import com.labijie.infra.IIdGenerator
+import com.labijie.infra.oauth2.resource.IResourceAuthorizationConfigurer
 import org.springframework.boot.autoconfigure.AutoConfigureAfter
 import org.springframework.boot.autoconfigure.AutoConfigureBefore
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
@@ -23,6 +24,8 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.security.config.annotation.web.builders.HttpSecurity
+import org.springframework.security.config.annotation.web.configurers.ExpressionUrlAuthorizationConfigurer
 import org.springframework.transaction.support.TransactionTemplate
 import org.springframework.web.client.RestTemplate
 
@@ -42,12 +45,12 @@ open class AuthSocialAutoConfiguration : IResourceAuthorizationConfigurer {
         const val PROVIDERS_CONFIG_PREFIX = "application.auth.social.providers"
     }
 
-    override fun configure(registry: ResourceAuthorizationRegistry) {
+    override fun configure(registry: ExpressionUrlAuthorizationConfigurer<HttpSecurity>.ExpressionInterceptUrlRegistry) {
         registry
-            .antMatchers(
-                "/oauth/social/register",
-                "/oauth/social/login"
-            ).permitAll()
+                .antMatchers(
+                        "/oauth/social/register",
+                        "/oauth/social/login"
+                ).permitAll()
     }
 
     @Bean
@@ -116,6 +119,4 @@ open class AuthSocialAutoConfiguration : IResourceAuthorizationConfigurer {
             transactionTemplate
         )
     }
-
-
 }

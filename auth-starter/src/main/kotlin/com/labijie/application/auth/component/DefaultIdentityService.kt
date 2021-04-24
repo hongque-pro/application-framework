@@ -3,8 +3,10 @@ package com.labijie.application.auth.component
 import com.labijie.application.ErrorCodedException
 import com.labijie.application.auth.AuthErrors.ACCOUNT_LOCKED
 import com.labijie.application.auth.service.IUserService
+import com.labijie.application.web.roleAuthority
 import com.labijie.infra.oauth2.*
 import org.springframework.context.ApplicationEventPublisher
+import org.springframework.security.core.authority.SimpleGrantedAuthority
 import org.springframework.security.core.userdetails.UsernameNotFoundException
 import com.labijie.application.auth.data.UserRecord as User
 
@@ -50,7 +52,7 @@ open class DefaultIdentityService constructor(
             accountNonExpired = true,
             accountNonLocked = !userLocked,
             twoFactorEnabled = false,
-            authorities = arrayListOf(*roles.map { GrantedAuthorityObject(it.name.orEmpty()) }.toTypedArray())
+            authorities = arrayListOf(*roles.map { roleAuthority("ROLE_${it.name.orEmpty()}") }.toTypedArray())
         )
     }
 

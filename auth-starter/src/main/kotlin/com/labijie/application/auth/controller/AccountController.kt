@@ -1,12 +1,11 @@
 package com.labijie.application.auth.controller
 
-import com.labijie.application.crypto.DesUtils
-import com.labijie.application.auth.data.UserRecord as User
-import com.labijie.application.exception.UserNotFoundException
 import com.labijie.application.auth.isNullEmail
 import com.labijie.application.auth.model.*
 import com.labijie.application.auth.service.IUserService
 import com.labijie.application.component.IMessageSender
+import com.labijie.application.crypto.DesUtils
+import com.labijie.application.exception.UserNotFoundException
 import com.labijie.application.maskEmail
 import com.labijie.application.maskPhone
 import com.labijie.application.model.BindingStatus
@@ -14,7 +13,7 @@ import com.labijie.application.model.CaptchaValidationRequest
 import com.labijie.application.model.SimpleValue
 import com.labijie.application.model.UpdateResult
 import com.labijie.application.verifyCaptcha
-import com.labijie.infra.oauth2.GrantedAuthorityObject
+import com.labijie.application.web.roleAuthority
 import com.labijie.infra.oauth2.OAuth2Utils
 import com.labijie.infra.oauth2.TwoFactorPrincipal
 import com.labijie.infra.oauth2.TwoFactorSignInHelper
@@ -27,6 +26,7 @@ import org.springframework.validation.annotation.Validated
 import org.springframework.web.bind.annotation.*
 import java.time.Duration
 import javax.validation.Valid
+import com.labijie.application.auth.data.UserRecord as User
 
 /**
  * Created with IntelliJ IDEA.
@@ -53,7 +53,7 @@ class AccountController @Autowired constructor(
         val userAndRoles = userService.registerUser(info)
 
         val roles = userAndRoles.roles.map {
-            GrantedAuthorityObject(it.name.orEmpty())
+            roleAuthority(it.name.orEmpty())
         }
 
         return signInHelper.signIn(

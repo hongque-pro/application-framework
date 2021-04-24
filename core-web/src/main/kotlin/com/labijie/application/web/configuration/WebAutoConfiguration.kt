@@ -6,8 +6,8 @@ import com.labijie.application.web.controller.ErrorDescriptionController
 import com.labijie.application.web.WrappedResponseBodyAdvice
 import com.labijie.application.web.converter.EnhanceStringToEnumConverterFactory
 import com.labijie.application.web.handler.ControllerExceptionHandler
-import com.labijie.application.web.interceptor.HttpCacheInterceptorAdapter
-import com.labijie.application.web.interceptor.HumanVerifyInterceptorAdapter
+import com.labijie.application.web.interceptor.HttpCacheInterceptor
+import com.labijie.application.web.interceptor.HumanVerifyInterceptor
 import com.labijie.application.web.interceptor.PrincipalArgumentResolver
 import com.labijie.infra.json.JacksonHelper
 import com.labijie.infra.spring.configuration.getApplicationName
@@ -72,11 +72,11 @@ class WebAutoConfiguration : WebMvcConfigurer {
 
     override fun addInterceptors(registry: InterceptorRegistry) {
         registry.addInterceptor(
-            HumanVerifyInterceptorAdapter(
+            HumanVerifyInterceptor(
                 humanChecker ?: NoneHumanChecker()
             )
         )
-        registry.addInterceptor(HttpCacheInterceptorAdapter)
+        registry.addInterceptor(HttpCacheInterceptor)
     }
 
     @Configuration

@@ -1,7 +1,10 @@
 package com.labijie.application.web.configuration
 
+import com.labijie.infra.oauth2.resource.IResourceAuthorizationConfigurer
 import org.springframework.context.annotation.ComponentScan
 import org.springframework.context.annotation.Configuration
+import org.springframework.security.config.annotation.web.builders.HttpSecurity
+import org.springframework.security.config.annotation.web.configurers.ExpressionUrlAuthorizationConfigurer
 
 /**
  *
@@ -13,7 +16,7 @@ import org.springframework.context.annotation.Configuration
 @ComponentScan(value = ["com.labijie.application.web.controller", "com.labijie.application.web.service"])
 class CoreStarterAutoConfiguration : IResourceAuthorizationConfigurer {
 
-    override fun configure(registry: ResourceAuthorizationRegistry) {
+    override fun configure(registry: ExpressionUrlAuthorizationConfigurer<HttpSecurity>.ExpressionInterceptUrlRegistry) {
         registry.antMatchers("/sms/**").permitAll()
     }
 }

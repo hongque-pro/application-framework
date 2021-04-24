@@ -8,6 +8,7 @@ import org.springframework.web.servlet.handler.HandlerInterceptorAdapter
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 import org.springframework.web.method.HandlerMethod
+import org.springframework.web.servlet.HandlerInterceptor
 
 
 /**
@@ -15,7 +16,7 @@ import org.springframework.web.method.HandlerMethod
  * @author Anders Xiao
  * @date 2019-09-21
  */
-object HttpCacheInterceptorAdapter : HandlerInterceptorAdapter() {
+object HttpCacheInterceptor : HandlerInterceptor {
     override fun postHandle(
         request: HttpServletRequest,
         response: HttpServletResponse,

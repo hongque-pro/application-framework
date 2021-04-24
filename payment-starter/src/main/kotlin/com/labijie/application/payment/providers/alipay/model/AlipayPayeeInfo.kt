@@ -1,6 +1,6 @@
 package com.labijie.application.payment.providers.alipay.model
 
-import org.codehaus.jackson.annotate.JsonProperty
+import com.fasterxml.jackson.annotation.JsonProperty
 
 data class AlipayPayeeInfo(
     var identity: String,

@@ -424,16 +424,3 @@ internal class CacheRemoveTransactionSynchronization(
         }
     }
 }
-
-fun deduceWebTypeFromClasspath(): WebApplicationType? {
-    if (ClassUtils.isPresent(WebApplicationType.WEBFLUX_INDICATOR_CLASS, null) && !ClassUtils.isPresent(WebApplicationType.WEBMVC_INDICATOR_CLASS, null)
-            && !ClassUtils.isPresent(WebApplicationType.JERSEY_INDICATOR_CLASS, null)) {
-        return WebApplicationType.REACTIVE
-    }
-    for (className in WebApplicationType.SERVLET_INDICATOR_CLASSES) {
-        if (!ClassUtils.isPresent(className!!, null)) {
-            return WebApplicationType.NONE
-        }
-    }
-    return WebApplicationType.SERVLET
-}

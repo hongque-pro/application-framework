@@ -6,12 +6,15 @@ import com.google.code.kaptcha.util.Config
 import com.labijie.application.kaptcha.controller.KaptchaController
 import com.labijie.application.kaptcha.service.impl.KaptchaHumanChecker
 import com.labijie.application.kaptcha.service.impl.KaptchaService
+import com.labijie.infra.oauth2.resource.IResourceAuthorizationConfigurer
 import com.labijie.infra.spring.configuration.CommonsAutoConfiguration
 import org.springframework.boot.autoconfigure.AutoConfigureBefore
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.ComponentScan
 import org.springframework.context.annotation.Configuration
+import org.springframework.security.config.annotation.web.builders.HttpSecurity
+import org.springframework.security.config.annotation.web.configurers.ExpressionUrlAuthorizationConfigurer
 import java.util.*
 
 /**
@@ -24,8 +27,7 @@ import java.util.*
 @AutoConfigureBefore(CommonsAutoConfiguration::class)
 @ComponentScan(basePackageClasses = [KaptchaService::class, KaptchaHumanChecker::class, KaptchaController::class])
 class KaptchaAutoConfiguration : IResourceAuthorizationConfigurer {
-
-    override fun configure(registry: ResourceAuthorizationRegistry) {
+    override fun configure(registry: ExpressionUrlAuthorizationConfigurer<HttpSecurity>.ExpressionInterceptUrlRegistry) {
         registry.antMatchers("/kaptcha/**").permitAll()
     }
 
@@ -73,4 +75,5 @@ class KaptchaAutoConfiguration : IResourceAuthorizationConfigurer {
         captchaProducer.config = config
         return captchaProducer
     }
+
 }

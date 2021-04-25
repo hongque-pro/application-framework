@@ -5,6 +5,7 @@ import com.labijie.application.model.CaptchaType
 import com.labijie.application.model.SendSmsCaptchaParam
 import com.labijie.infra.utils.ShortId
 import com.labijie.infra.utils.logger
+import io.swagger.annotations.Api
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping
@@ -21,7 +22,7 @@ import org.springframework.web.bind.annotation.RestController
 open class TestingController {
 
     init {
-        logger.info("${TestingController::class.simpleName} loaded")
+        logger.warn("${TestingController::class.simpleName} loaded")
     }
     @Autowired
     private lateinit var messageSender: IMessageSender

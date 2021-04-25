@@ -4,6 +4,7 @@ import com.labijie.application.payment.annotation.EnablePaymentCallbackHandling
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity
+import springfox.documentation.oas.annotations.EnableOpenApi
 import java.util.*
 
 /**

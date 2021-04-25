@@ -14,9 +14,7 @@ import org.springframework.security.config.annotation.web.configurers.Expression
  * @date 2019-09-06
  */
 @Configuration(proxyBeanMethods = false)
-class DefaultResourceSecurityConfiguration(
-    private val environment: Environment
-) : IResourceAuthorizationConfigurer, Ordered {
+class DefaultResourceSecurityConfiguration : IResourceAuthorizationConfigurer, Ordered {
     override fun getOrder(): Int  = -1
 
 
@@ -26,20 +24,11 @@ class DefaultResourceSecurityConfiguration(
                 "/aliyun/cnf",
                 "/aliyun/afs/verify")
 
-        if(!environment.isProduction){
-            val swaggerPaths = listOf(
-                    "/v2/api-docs",
-                    "/configuration/ui",
-                    "/swagger-resources/**",
-                    "/configuration/security",
-                    "/swagger-ui.html",
-                    "/webjars/**",
-                    "/swagger-resources/configuration/ui")
+        paths.add("/swagger-ui/**")
 
-            paths.addAll(swaggerPaths)
+        paths.add("/application-errors")
 
-            paths.add("/application-errors")
-        }
+        registry.antMatchers(*paths.toTypedArray()).permitAll()
     }
 
 

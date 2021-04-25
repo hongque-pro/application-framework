@@ -31,7 +31,7 @@ buildscript {
         //for unit test
         h2_verion = '1.4.200'
 
-        swagger_version='2.9.2'
+        swagger_version='3.0.0'
 
         aliyun_sdk_version='4.5.20'
         aliyun_sdk_sts_version='3.0.2'

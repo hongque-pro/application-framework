@@ -1,10 +1,10 @@
 package com.labijie.application.web.controller
 
 import com.labijie.application.web.annotation.ResponseWrapped
-import com.labijie.application.web.data.domain.RegionArea
-import com.labijie.application.web.data.domain.RegionCity
-import com.labijie.application.web.data.domain.RegionProvince
-import com.labijie.application.web.service.ICommonService
+import com.labijie.application.data.domain.RegionArea
+import com.labijie.application.data.domain.RegionCity
+import com.labijie.application.data.domain.RegionProvince
+import com.labijie.application.service.ICommonService
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam

@@ -15,7 +15,7 @@ import org.springframework.security.config.annotation.web.configurers.Expression
  */
 @Configuration(proxyBeanMethods = false)
 class DefaultResourceSecurityConfiguration : IResourceAuthorizationConfigurer, Ordered {
-    override fun getOrder(): Int  = -1
+    override fun getOrder(): Int = -1
 
 
     override fun configure(registry: ExpressionUrlAuthorizationConfigurer<HttpSecurity>.ExpressionInterceptUrlRegistry) {
@@ -24,7 +24,18 @@ class DefaultResourceSecurityConfiguration : IResourceAuthorizationConfigurer, O
                 "/aliyun/cnf",
                 "/aliyun/afs/verify")
 
-        paths.add("/swagger-ui/**")
+        val swaggerPaths = listOf(
+                "/v2/api-docs/**",
+                "/v3/api-docs/**",
+//                "/configuration/ui",
+                "/swagger-resources/**",
+//                "/configuration/security",
+                "/swagger-ui/**",
+//                "/webjars/**",
+//                "/swagger-resources/configuration/ui"
+        )
+
+        paths.addAll(swaggerPaths)
 
         paths.add("/application-errors")
 

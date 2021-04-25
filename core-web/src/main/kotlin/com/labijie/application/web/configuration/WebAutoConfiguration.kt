@@ -91,7 +91,7 @@ class WebAutoConfiguration : WebMvcConfigurer {
     class SwaggerAutoConfiguration {
 
         @Bean
-        fun swaggerDocket(environment: Environment): Docket {
+        fun allDocket(environment: Environment): Docket {
 
             val consumers = setOf("application/json")
 
@@ -104,10 +104,57 @@ class WebAutoConfiguration : WebMvcConfigurer {
 
             return Docket(DocumentationType.OAS_30)
                     .enable(!environment.isProduction)
+                    .groupName("All")
                     .consumes(consumers)
                     .apiInfo(info)
                     .select()
                     .apis(RequestHandlerSelectors.any())
+                    .paths(PathSelectors.any())
+                    .build()
+        }
+
+        @Bean
+        fun oauthDocket(environment: Environment): Docket {
+
+            val consumers = setOf("application/json")
+
+            val applicationName = environment.getApplicationName(false)
+
+            val info = ApiInfoBuilder()
+                    .title("Security OAuth2")
+                    .version("1.0")
+                    .build()
+
+            return Docket(DocumentationType.OAS_30)
+                    .enable(!environment.isProduction)
+                    .groupName("OAuth2")
+                    .consumes(consumers)
+                    .apiInfo(info)
+                    .select()
+                    .apis(RequestHandlerSelectors.any())
+                    .paths(PathSelectors.ant("/oauth/**"))
+                    .build()
+        }
+
+        @Bean
+        fun afDocket(environment: Environment): Docket {
+
+            val consumers = setOf("application/json")
+
+            val applicationName = environment.getApplicationName(false)
+
+            val info = ApiInfoBuilder()
+                    .title("Application Framework")
+                    .version("1.0")
+                    .build()
+
+            return Docket(DocumentationType.OAS_30)
+                    .enable(!environment.isProduction)
+                    .groupName("Framework")
+                    .consumes(consumers)
+                    .apiInfo(info)
+                    .select()
+                    .apis(RequestHandlerSelectors.basePackage("com.labijie.application"))
                     .paths(PathSelectors.any())
                     .build()
         }

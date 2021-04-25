@@ -257,15 +257,11 @@ subprojects {
     def confFile = file(getMybatisConfigFilePath(projectDir.absolutePath))
     if (confFile.exists() && confFile.isFile()) {
 
-
-
         def propertiesFile = file(getMybatisPropertiesFilePath(projectDir.absolutePath))
         def  propertiesPath = (propertiesFile.exists() && propertiesFile.isFile()) ?
                 propertiesFile.absolutePath :
                 getMybatisPropertiesFilePath(rootDir.absolutePath)
         def configPath = confFile.absolutePath
-
-
 
         configurations {
             mybatisGenerator

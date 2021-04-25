@@ -1,7 +1,5 @@
 package com.labijie.application.payment.testing
 
-import com.labijie.application.okhttp.IOkHttpClientCustomizer
-import com.labijie.application.okhttp.OkHttpLoggingInterceptor
 import com.labijie.application.payment.*
 import com.labijie.application.payment.configuration.PaymentProperties
 import com.labijie.application.web.client.MultiRestTemplates
@@ -14,19 +12,13 @@ import com.labijie.infra.json.JacksonHelper
 import com.labijie.infra.spring.configuration.NetworkConfig
 import okhttp3.OkHttpClient
 import org.junit.jupiter.api.Assertions
-import org.mockito.Mockito
-import org.springframework.beans.factory.ObjectProvider
 import org.springframework.boot.web.client.RestTemplateBuilder
 import org.springframework.boot.web.client.RestTemplateCustomizer
 import org.springframework.cloud.commons.httpclient.DefaultOkHttpClientFactory
-import org.springframework.http.client.OkHttp3ClientHttpRequestFactory
 import org.springframework.http.converter.HttpMessageConverter
 import org.springframework.http.converter.StringHttpMessageConverter
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter
-import org.springframework.web.client.RestTemplate
-import java.lang.IllegalArgumentException
 import java.math.BigDecimal
-import kotlin.test.Test
 
 abstract class AbstractPaymentProviderTester<T : IPaymentProvider> {
 

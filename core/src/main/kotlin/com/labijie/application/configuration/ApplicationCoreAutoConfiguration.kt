@@ -58,7 +58,7 @@ import javax.annotation.PreDestroy
  * @date 2019-09-09
  */
 @Suppress("SpringJavaInjectionPointsAutowiringInspection")
-@Configuration
+@Configuration(proxyBeanMethods = false)
 @EnableConfigurationProperties(ValidationConfiguration::class)
 @AutoConfigureBefore(RestTemplateAutoConfiguration::class)
 @Order(Int.MAX_VALUE)

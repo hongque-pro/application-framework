@@ -23,7 +23,7 @@ import java.util.*
  * @date 20-8-21
  * @since JDK1.8
  */
-@Configuration
+@Configuration(proxyBeanMethods = false)
 @AutoConfigureBefore(CommonsAutoConfiguration::class)
 @ComponentScan(basePackageClasses = [KaptchaService::class, KaptchaHumanChecker::class, KaptchaController::class])
 class KaptchaAutoConfiguration : IResourceAuthorizationConfigurer {

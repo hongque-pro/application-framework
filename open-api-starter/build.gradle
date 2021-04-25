@@ -1,3 +1,9 @@
+processResources {
+    from(rootProject.getRootDir().toString() + "/sql-scripts") {
+        include "open.sql"
+    }
+}
+
 dependencies {
     compile project(":auth-starter")
 }

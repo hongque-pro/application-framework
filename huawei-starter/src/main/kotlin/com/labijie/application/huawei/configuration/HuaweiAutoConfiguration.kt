@@ -18,7 +18,7 @@ import org.springframework.core.env.Environment
 import org.springframework.web.client.RestTemplate
 
 @Suppress("SpringJavaInjectionPointsAutowiringInspection")
-@Configuration
+@Configuration(proxyBeanMethods = false)
 class HuaweiAutoConfiguration {
 
     @Bean
@@ -28,23 +28,13 @@ class HuaweiAutoConfiguration {
 
     @Bean
     @Primary
-    fun huaweiUtils(restTemplate: RestTemplate): HuaweiUtils = HuaweiUtils(huaweiProperties(), restTemplate)
-
-    @Bean
-    @Primary
-    @ConditionalOnProperty(name = ["huawei.sms.enabled"], havingValue = "true", matchIfMissing = true)
-    fun huaweiMessageSender(environment: Environment,
-                            cacheManager: ICacheManager,
-                            rfc6238TokenService: Rfc6238TokenService,
-                            restTemplate: RestTemplate
-    ): HuaweiMessageSender = HuaweiMessageSender(environment, cacheManager, rfc6238TokenService, huaweiUtils(restTemplate), huaweiMessageTemplates())
-
+    fun huaweiUtils(restTemplate: RestTemplate, huaweiProperties: HuaweiProperties): HuaweiUtils = HuaweiUtils(huaweiProperties, restTemplate)
 
     @Bean
     @Primary
     @ConditionalOnProperty(name = ["huawei.obs.enabled"], havingValue = "true", matchIfMissing = true)
-    fun huaweiObsStorage(restTemplate: RestTemplate
-    ): HuaweiObsStorage = HuaweiObsStorage(huaweiUtils(restTemplate))
+    fun huaweiObsStorage(restTemplate: RestTemplate, huaweiProperties: HuaweiProperties
+    ): HuaweiObsStorage = HuaweiObsStorage(huaweiUtils(restTemplate, huaweiProperties))
 
 
     @Bean
@@ -53,6 +43,17 @@ class HuaweiAutoConfiguration {
     fun huaweiMessageTemplates(): HuaweiMessageTemplates {
         return HuaweiMessageTemplates()
     }
+
+    @Bean
+    @Primary
+    @ConditionalOnProperty(name = ["huawei.sms.enabled"], havingValue = "true", matchIfMissing = true)
+    fun huaweiMessageSender(environment: Environment,
+                            huaweiUtils: HuaweiUtils,
+                            cacheManager: ICacheManager,
+                            rfc6238TokenService: Rfc6238TokenService,
+                            restTemplate: RestTemplate,
+                            huaweiMessageTemplates: HuaweiMessageTemplates
+    ): HuaweiMessageSender = HuaweiMessageSender(environment, cacheManager, rfc6238TokenService, huaweiUtils, huaweiMessageTemplates)
 
     @Bean
     @ConditionalOnMissingBean

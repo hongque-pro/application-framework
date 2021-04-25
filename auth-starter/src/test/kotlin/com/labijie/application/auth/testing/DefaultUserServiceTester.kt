@@ -1,6 +1,5 @@
 package com.labijie.application.auth.testing
 
-import com.labijie.application.SpringContext
 import com.labijie.application.auth.AuthDynamicTableSupport
 import com.labijie.application.auth.AuthUtils
 import com.labijie.application.auth.configuration.AuthServerProperties
@@ -21,6 +20,7 @@ import org.mybatis.spring.boot.test.autoconfigure.MybatisTest
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase
 import org.springframework.test.context.ContextConfiguration
+import org.springframework.test.context.jdbc.Sql
 import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.transaction.support.TransactionTemplate
 import kotlin.test.Test
@@ -36,7 +36,12 @@ import kotlin.test.Test
 @MybatisTest
 @ContextConfiguration(classes = [UnitTestConfiguration::class])
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
+@Sql("classpath:auth.sql")
 class DefaultUserServiceTester {
+
+    companion object {
+        const val IdentityTablePrefix = "identity_"
+    }
 
     @Autowired
     private lateinit var userMapper:UserMapper
@@ -64,13 +69,13 @@ class DefaultUserServiceTester {
         SnowflakeIdGenerator(config, fact)
     }
 
-    private fun createServiceInstance(tablePrefix:String): DefaultUserService {
+    private fun createServiceInstance(): DefaultUserService {
 
         val authProperties = AuthServerProperties().apply {
-            this.jdbcTablePrefix = tablePrefix
+            this.jdbcTablePrefix = IdentityTablePrefix
         }
 
-        AuthDynamicTableSupport.prefix = tablePrefix
+        AuthDynamicTableSupport.prefix = IdentityTablePrefix
 
         return DefaultUserService(
             authProperties,
@@ -85,13 +90,13 @@ class DefaultUserServiceTester {
 
     @Test
     fun getUserTester(){
-        val svc = createServiceInstance("admin_")
+        val svc = createServiceInstance()
         svc.getUser("test")
     }
 
     @Test
     fun createRole(){
-        val svc = createServiceInstance("admin_")
+        val svc = createServiceInstance()
         val u = AuthUtils.createUser(this.snowflakeIdGenerator.newId(), "t1", "18888888888", "dfdsfsdf", 1)
         svc.createUser(u, "r1", "r2")
     }

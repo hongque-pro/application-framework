@@ -5,5 +5,5 @@ dependencies {
     compile group: 'com.aliyun.oss', name: 'aliyun-sdk-oss', version: aliyun_sdk_oss_version
 
     compile "com.labijie.infra:commons-core-starter:$infra_commons_version"
-    compileOnly "org.springframework.boot:spring-boot-starter-web:$spring_boot_version"
+    compileOnly "org.springframework.boot:spring-boot-starter-web"
 }

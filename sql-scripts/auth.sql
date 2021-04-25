@@ -7,8 +7,8 @@ CREATE TABLE `identity_role_claims` (
   `claim_value` varchar(256) NOT NULL,
   `role_id` bigint(20) NOT NULL,
   PRIMARY KEY (`id`),
-  KEY(`role_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  INDEX(`role_id`)
+);
 
 DROP TABLE IF EXISTS `identity_roles`;
 CREATE TABLE `identity_roles` (
@@ -17,7 +17,7 @@ CREATE TABLE `identity_roles` (
   `name` varchar(32) DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `role_name_index` (`name`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+);
 
 
 DROP TABLE IF EXISTS `identity_user_claims`;
@@ -27,8 +27,8 @@ CREATE TABLE `identity_user_claims` (
   `claim_value` varchar(256) NOT NULL,
   `user_id` bigint(20) NOT NULL,
   PRIMARY KEY (`id`),
-  KEY(`user_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  INDEX(`user_id`)
+);
 
 
 DROP TABLE IF EXISTS `identity_user_logins`;
@@ -38,8 +38,8 @@ CREATE TABLE `identity_user_logins` (
   `provider_display_name` varchar(32),
   `user_id` bigint(20) NOT NULL,
   PRIMARY KEY (`login_provider`,`provider_key`),
-  KEY(`user_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  INDEX(`user_id`)
+);
 
 
 DROP TABLE IF EXISTS `identity_openids`;
@@ -49,10 +49,10 @@ CREATE TABLE `identity_openids` (
   `open_id` varchar(128) NOT NULL,
   `user_id` bigint(20) NOT NULL,
   PRIMARY KEY (`app_id`,`user_id`, `login_provider`),
-  KEY(`user_id`),
-  KEY(`app_id`),
-  KEY(`login_provider`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  INDEX(`user_id`),
+  INDEX(`app_id`),
+  INDEX(`login_provider`)
+);
 
 
 DROP TABLE IF EXISTS `identity_user_roles`;
@@ -60,8 +60,8 @@ CREATE TABLE `identity_user_roles` (
   `user_id` bigint(20) NOT NULL,
   `role_id` bigint(20) NOT NULL,
   PRIMARY KEY (`user_id`,`role_id`),
-  KEY (`user_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  INDEX (`user_id`)
+);
 
 
 DROP TABLE IF EXISTS `identity_user_tokens`;
@@ -71,7 +71,7 @@ CREATE TABLE `identity_user_tokens` (
   `name` varchar(16) NOT NULL,
   `token` varchar(64) NOT NULL,
   PRIMARY KEY (`user_id`,`login_provider`,`token`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+);
 
 DROP TABLE IF EXISTS `identity_users`;
 CREATE TABLE `identity_users` (
@@ -103,11 +103,11 @@ CREATE TABLE `identity_users` (
   `last_client_version` varchar(32) NOT NULL DEFAULT '',
   `member_id` bigint(20) NOT NULL DEFAULT 0,
   PRIMARY KEY (`id`),
-  KEY(`user_type`),
+  INDEX(`user_type`),
   UNIQUE KEY `user_name_index` (`user_name`),
   UNIQUE KEY `email_index` (`email`),
   UNIQUE KEY `phone_number_index` (`phone_number`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+);
 
 DROP TABLE IF EXISTS `identity_oauth_client_details`;
 CREATE TABLE `identity_oauth_client_details` (
@@ -122,7 +122,7 @@ CREATE TABLE `identity_oauth_client_details` (
   `refresh_token_validity` int(11) NOT NULL,
   `additional_information` varchar(4096) NOT NULL DEFAULT '',
   `autoapprove` varchar(256) NOT NULL DEFAULT '',
-  `enabled` bit(1) NOT NULL DEFAULT b'1',
+  `enabled` bit(1) NOT NULL DEFAULT 1,
   PRIMARY KEY (`client_id`),
-  KEY `identity_oauth_client_details_enabled_index` (`enabled`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  INDEX `identity_oauth_client_details_enabled_index` (`enabled`)
+);

@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase
 import org.springframework.context.annotation.Import
 import org.springframework.test.context.ContextConfiguration
+import org.springframework.test.context.jdbc.Sql
 import org.springframework.test.context.junit.jupiter.SpringExtension
 import java.time.Duration
 import kotlin.test.BeforeTest
@@ -22,6 +23,7 @@ import kotlin.test.Test
 @MybatisTest
 @ContextConfiguration(classes = [UnitTestConfiguration::class])
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
+@Sql("classpath:open.sql")
 class OpenServiceTester {
 
     @Autowired

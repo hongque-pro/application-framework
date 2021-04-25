@@ -1,6 +1,6 @@
 dependencies {
     compile "com.labijie.infra:commons-core-starter:$infra_commons_version"
     compile "com.huaweicloud:esdk-obs-java:$huawei_esdk_obs_version"
-    compileOnly "org.springframework.boot:spring-boot-starter-web:$spring_boot_version"
+    compileOnly "org.springframework.boot:spring-boot-starter-web"
     compile project(":core")
 }

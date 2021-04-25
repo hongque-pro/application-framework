@@ -11,17 +11,17 @@ CREATE TABLE `open_partners` (
   `email` varchar(64) NOT NULL DEFAULT '',
   `app_count` smallint NOT NULL DEFAULT 0,
   PRIMARY KEY (`id`),
-  KEY(`status`),
+  INDEX(`status`),
   UNIQUE KEY(`name`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+);
 
 DROP TABLE IF EXISTS `open_partner_user`;
 CREATE TABLE `open_partner_user` (
   `partner_id` bigint(20) NOT NULL,
   `user_id` bigint(64) NOT NULL,
   PRIMARY KEY (`partner_id`, `user_id`),
-  KEY(`user_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  INDEX(`user_id`)
+);
 
 DROP TABLE IF EXISTS `open_apps`;
 CREATE TABLE `open_apps` (
@@ -40,8 +40,8 @@ CREATE TABLE `open_apps` (
   `time_config_updated` bigint(20) NOT NULL,
   `concurrency_stamp` varchar(32) NOT NULL,
   PRIMARY KEY (`app_id`),
-  KEY(`js_api_key`),
-  KEY(`status`),
-  KEY(`partner_id`),
+  INDEX(`js_api_key`),
+  INDEX(`status`),
+  INDEX(`partner_id`),
   UNIQUE KEY (`display_name`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+);

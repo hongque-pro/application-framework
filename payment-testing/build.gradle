@@ -2,8 +2,6 @@
 
 dependencies {
     compile group: 'org.jetbrains.kotlin', name: 'kotlin-test-junit5', version: kotlin_version
-    // https://mvnrepository.com/artifact/org.mockito/mockito-all
-    compile group: 'org.mockito', name: 'mockito-all', version:mockito_version
     compile project(":core-web")
     compile project(":payment-starter")
 }

@@ -14,10 +14,10 @@ CREATE TABLE `geo_points` (
 `h3_cell_re10` bigint(20)  NOT NULL,
 `point_type` int NOT NULL COMMENT '坐标点类型',
 PRIMARY KEY(`id`),
-KEY(`h3_cell_re3`),
-KEY(`h3_cell_re4`),
-KEY(`h3_cell_re5`),
-KEY(`h3_cell_re6`),
-KEY(`h3_cell_re7`),
-KEY(`h3_cell_re8`),
-KEY(`h3_cell_re9`)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+INDEX(`h3_cell_re3`),
+INDEX(`h3_cell_re4`),
+INDEX(`h3_cell_re5`),
+INDEX(`h3_cell_re6`),
+INDEX(`h3_cell_re7`),
+INDEX(`h3_cell_re8`),
+INDEX(`h3_cell_re9`));

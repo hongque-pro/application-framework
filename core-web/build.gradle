@@ -1,6 +1,6 @@
 dependencies {
     compile project(":core")
-    compile "org.springframework.boot:spring-boot-starter-web:$spring_boot_version"
+    compile "org.springframework.boot:spring-boot-starter-web"
 
     compile "com.labijie.infra:oauth2-resource-server-starter:$infra_oauth2_version"
     compile "io.springfox:springfox-swagger2:$swagger_version"

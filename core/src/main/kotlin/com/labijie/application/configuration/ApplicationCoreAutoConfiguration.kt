@@ -115,18 +115,18 @@ class ApplicationCoreAutoConfiguration {
     @ConfigurationProperties("application.sms")
     fun smsBaseSettings(): SmsBaseSettings = SmsBaseSettings()
 
-    @Configuration
+    @Configuration(proxyBeanMethods = false)
     @ConditionalOnProperty(value = ["application.sms.async.enabled"], matchIfMissing = true)
     @EnableBinding(value = [SmsSource::class])
     protected class MessageSourceConfiguration
 
-    @Configuration
+    @Configuration(proxyBeanMethods = false)
     @ConditionalOnProperty(value = ["application.sms.async.enabled"], matchIfMissing = false)
     @ConditionalOnMissingBean(SmsSink::class)
     @ComponentScan(basePackageClasses = [MessageHandler::class])
     protected class MessageSinkConfiguration
 
-    @Configuration
+    @Configuration(proxyBeanMethods = false)
     @ConditionalOnProperty(value = ["application.okhttp.enabled"], matchIfMissing = true)
     @EnableConfigurationProperties(OkHttpClientProperties::class)
     @ConditionalOnMissingBean(OkHttpClient::class)
@@ -176,7 +176,7 @@ class ApplicationCoreAutoConfiguration {
             okHttpClient?.connectionPool?.evictAll()
         }
 
-        @Configuration
+        @Configuration(proxyBeanMethods = false)
         protected class RestTemplateConfiguration {
 
             @Bean

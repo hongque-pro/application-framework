@@ -12,7 +12,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer
  * @author Anders Xiao
  * @date 2019-12-10
  */
-@Configuration
+@Configuration(proxyBeanMethods = false)
 class AppResourceConfiguration : WebMvcConfigurer, IResourceAuthorizationConfigurer {
     override fun configureContentNegotiation(configurer: ContentNegotiationConfigurer) {
         super.configureContentNegotiation(configurer)

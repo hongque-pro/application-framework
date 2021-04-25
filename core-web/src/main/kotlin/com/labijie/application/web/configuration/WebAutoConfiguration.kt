@@ -79,7 +79,7 @@ class WebAutoConfiguration : WebMvcConfigurer {
         registry.addInterceptor(HttpCacheInterceptor)
     }
 
-    @Configuration
+    @Configuration(proxyBeanMethods = false)
     @EnableSwagger2
     class SwaggerAutoConfiguration {
 
@@ -108,7 +108,7 @@ class WebAutoConfiguration : WebMvcConfigurer {
         }
     }
 
-    @Configuration
+    @Configuration(proxyBeanMethods = false)
     class HibernateValidationAutoConfiguration {
 
         @Bean

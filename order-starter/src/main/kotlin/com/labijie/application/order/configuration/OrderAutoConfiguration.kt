@@ -18,7 +18,7 @@ import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.transaction.support.TransactionTemplate
 
-@Configuration
+@Configuration(proxyBeanMethods = false)
 @Suppress("SpringJavaInjectionPointsAutowiringInspection")
 @MapperScan(basePackageClasses = [OrderPaymentTradeMapper::class])
 @AutoConfigureAfter(PaymentAutoConfiguration::class)

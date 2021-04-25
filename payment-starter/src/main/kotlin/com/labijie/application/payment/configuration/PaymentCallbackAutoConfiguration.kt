@@ -18,7 +18,7 @@ import org.springframework.web.servlet.config.annotation.InterceptorRegistry
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer
 import java.util.stream.Collectors
 
-@Configuration
+@Configuration(proxyBeanMethods = false)
 @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
 @Suppress("SpringJavaInjectionPointsAutowiringInspection")
 class PaymentCallbackAutoConfiguration {
@@ -48,7 +48,7 @@ class PaymentCallbackAutoConfiguration {
         return PaymentCallbackMvcInterceptor(paymentProperties, providers, handlers)
     }
 
-    @Configuration
+    @Configuration(proxyBeanMethods = false)
     @ConditionalOnWebApplication(type=ConditionalOnWebApplication.Type.SERVLET)
     protected class WeMvcInterceptorConfiguration(
         private val refundCallbackMvcInterceptor: RefundCallbackMvcInterceptor,

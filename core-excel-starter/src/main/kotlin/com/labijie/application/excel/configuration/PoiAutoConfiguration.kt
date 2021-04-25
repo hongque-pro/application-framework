@@ -12,7 +12,7 @@ import org.springframework.context.annotation.Configuration
  * @date 19-9-26
  * @since JDK1.8
  */
-@Configuration
+@Configuration(proxyBeanMethods = false)
 @AutoConfigureBefore(ApplicationCoreAutoConfiguration::class)
 @ComponentScan("com.labijie.application.excel.component")
 class PoiAutoConfiguration

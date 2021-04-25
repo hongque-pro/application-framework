@@ -33,7 +33,7 @@ import org.springframework.transaction.support.TransactionTemplate
  * @date 2019-09-05
  */
 @Suppress("SpringJavaInjectionPointsAutowiringInspection")
-@Configuration
+@Configuration(proxyBeanMethods = false)
 @AutoConfigureBefore(OAuth2CustomizationAutoConfiguration::class)
 @EnableConfigurationProperties(AuthServerProperties::class)
 class AuthServerAutoConfiguration : IResourceAuthorizationConfigurer {
@@ -101,7 +101,7 @@ class AuthServerAutoConfiguration : IResourceAuthorizationConfigurer {
         return OAuth2ErrorHandler()
     }
 
-    @Configuration
+    @Configuration(proxyBeanMethods = false)
     @ConditionalOnMissingBean(IClientDetailsServiceFactory::class)
     protected class ClientDetailServiceAutoConfiguration {
 

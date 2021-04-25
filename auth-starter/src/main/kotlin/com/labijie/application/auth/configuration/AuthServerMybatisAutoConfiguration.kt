@@ -12,7 +12,7 @@ import org.springframework.context.annotation.Configuration
  * @author Anders Xiao
  * @date 2019-12-12
  */
-@Configuration
+@Configuration(proxyBeanMethods = false)
 @AutoConfigureAfter(MybatisAutoConfiguration::class)
 @AutoConfigureBefore(AuthServerAutoConfiguration::class)
 @MapperScan(basePackageClasses = [UserMapper::class])

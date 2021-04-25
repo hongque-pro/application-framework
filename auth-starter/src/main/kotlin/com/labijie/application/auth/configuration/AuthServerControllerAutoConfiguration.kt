@@ -13,7 +13,7 @@ import org.springframework.context.annotation.Import
  * @author Anders Xiao
  * @date 2019-12-12
  */
-@Configuration
+@Configuration(proxyBeanMethods = false)
 @AutoConfigureAfter(OAuth2ServerAutoConfiguration::class)
 class AuthServerControllerAutoConfiguration{
 

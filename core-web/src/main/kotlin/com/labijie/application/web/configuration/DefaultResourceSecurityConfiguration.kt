@@ -13,7 +13,7 @@ import org.springframework.security.config.annotation.web.configurers.Expression
  * @author Anders Xiao
  * @date 2019-09-06
  */
-@Configuration
+@Configuration(proxyBeanMethods = false)
 class DefaultResourceSecurityConfiguration(
     private val environment: Environment
 ) : IResourceAuthorizationConfigurer, Ordered {

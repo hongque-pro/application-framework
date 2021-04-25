@@ -35,7 +35,7 @@ import org.springframework.web.client.RestTemplate
  * @date 2019-12-10
  */
 
-@Configuration
+@Configuration(proxyBeanMethods = false)
 @EnableConfigurationProperties(AuthSocialProperties::class)
 @AutoConfigureBefore(AuthServerAutoConfiguration::class)
 @AutoConfigureAfter(AuthServerMybatisAutoConfiguration::class)
@@ -58,7 +58,7 @@ open class AuthSocialAutoConfiguration : IResourceAuthorizationConfigurer {
         return AuthSocialErrorsRegistration()
     }
 
-    @Configuration
+    @Configuration(proxyBeanMethods = false)
     @ConditionalOnProperty(value= ["$PROVIDERS_CONFIG_PREFIX.mini-wechat.enabled"], matchIfMissing = true)
     @EnableConfigurationProperties(WechatMiniOptions::class)
     protected class WeChatMiniProgramConfiguration {
@@ -72,7 +72,7 @@ open class AuthSocialAutoConfiguration : IResourceAuthorizationConfigurer {
         }
     }
 
-    @Configuration
+    @Configuration(proxyBeanMethods = false)
     @ConditionalOnProperty(value= ["$PROVIDERS_CONFIG_PREFIX.mini-alipay.enabled"], matchIfMissing = true)
     @EnableConfigurationProperties(AlipayMiniOptions::class)
     protected class AlipayMiniProgramConfiguration {

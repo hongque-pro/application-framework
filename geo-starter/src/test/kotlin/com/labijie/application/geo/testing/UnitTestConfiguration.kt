@@ -5,6 +5,6 @@ import com.labijie.application.geo.configuration.GeoServiceAutoConfiguration
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Import
 
-@Configuration
+@Configuration(proxyBeanMethods = false)
 @Import(GeoMybatisMapperAutoConfiguration::class, GeoServiceAutoConfiguration::class)
 class UnitTestConfiguration

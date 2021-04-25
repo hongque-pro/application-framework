@@ -28,7 +28,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer
 import javax.servlet.Filter
 
 
-@Configuration
+@Configuration(proxyBeanMethods = false)
 @EnableConfigurationProperties(OpenApiProperties::class)
 class OpenApiAutoConfiguration {
 
@@ -62,7 +62,7 @@ class OpenApiAutoConfiguration {
         return ApiSignatureMvcInterceptor(appService)
     }
 
-    @Configuration
+    @Configuration(proxyBeanMethods = false)
     @ConditionalOnWebApplication(type= ConditionalOnWebApplication.Type.SERVLET)
     protected class WeMvcInterceptorConfiguration(
         private val apiSignatureMvcInterceptor: ApiSignatureMvcInterceptor,

@@ -12,7 +12,7 @@ import org.springframework.core.annotation.Order
  * @author Anders Xiao
  * @date 2019-12-11
  */
-@Configuration
+@Configuration(proxyBeanMethods = false)
 @AutoConfigureAfter(AuthServerAutoConfiguration::class)
 @Import(AccountSocialController::class)
 @Order(Int.MAX_VALUE)

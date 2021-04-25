@@ -15,7 +15,7 @@ TwoFactorPrincipal.loginProvider 获取当前社交网络登录提供程序 （�
 例子：
 
 ```kotlin
-@Configuration
+@Configuration(proxyBeanMethods = false)
 class MyModuleAutoConfiguration : IResourceAuthorizationConfigurer {
     override fun configure(registry: ResourceAuthorizationRegistry) {
         registry

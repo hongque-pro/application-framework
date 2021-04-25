@@ -17,7 +17,7 @@ import org.springframework.core.env.Environment
 import org.springframework.web.client.RestTemplate
 
 @Suppress("SpringJavaInjectionPointsAutowiringInspection")
-@Configuration
+@Configuration(proxyBeanMethods = false)
 class TestAutoConfiguration {
 
     @Bean

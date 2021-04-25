@@ -24,7 +24,7 @@ import org.springframework.context.annotation.Configuration
 import org.springframework.web.client.RestTemplate
 
 @Suppress("SpringJavaInjectionPointsAutowiringInspection")
-@Configuration
+@Configuration(proxyBeanMethods = false)
 class CarPaymentAutoConfiguration {
 
     @Bean
@@ -33,7 +33,7 @@ class CarPaymentAutoConfiguration {
     }
 
     @ConditionalOnBean(AlipayPaymentOptions::class)
-    @Configuration
+    @Configuration(proxyBeanMethods = false)
     protected class AlipayConfiguration {
 
         @Bean
@@ -51,7 +51,7 @@ class CarPaymentAutoConfiguration {
     }
 
     @ConditionalOnBean(WechatPaymentOptions::class)
-    @Configuration
+    @Configuration(proxyBeanMethods = false)
     @EnableConfigurationProperties(WechatCarPaymentOptions::class)
     protected class WechatConfiguration {
         @Bean

@@ -13,7 +13,7 @@ import org.springframework.core.env.Environment
  * @author Anders Xiao
  * @date 2019-09-20
  */
-@Configuration
+@Configuration(proxyBeanMethods = false)
 @EnableConfigurationProperties(AliyunProperties::class)
 class AliyunAutoConfiguration{
 

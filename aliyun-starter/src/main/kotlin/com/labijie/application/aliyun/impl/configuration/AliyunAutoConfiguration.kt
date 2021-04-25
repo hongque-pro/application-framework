@@ -18,7 +18,7 @@ import org.springframework.context.annotation.Configuration
  * @author Anders Xiao
  * @date 2019-09-22
  */
-@Configuration
+@Configuration(proxyBeanMethods = false)
 @EnableAliyunServices
 @AutoConfigureBefore(CommonsAutoConfiguration::class)
 @ComponentScan(basePackageClasses = [AfsHumanChecker::class])

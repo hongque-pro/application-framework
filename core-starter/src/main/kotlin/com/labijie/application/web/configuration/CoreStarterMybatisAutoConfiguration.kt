@@ -11,7 +11,7 @@ import org.springframework.context.annotation.Configuration
  * @date 19-12-17
  * @since JDK1.8
  */
-@Configuration
+@Configuration(proxyBeanMethods = false)
 @AutoConfigureBefore(CoreStarterAutoConfiguration::class)
 @MapperScan(basePackageClasses = [RegionProvinceMapper::class])
 class CoreStarterMybatisAutoConfiguration

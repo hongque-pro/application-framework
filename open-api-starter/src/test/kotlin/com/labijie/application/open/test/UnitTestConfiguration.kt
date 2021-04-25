@@ -13,7 +13,7 @@ import org.springframework.context.annotation.Import
 import org.springframework.security.core.authority.AuthorityUtils
 import org.springframework.security.oauth2.common.util.OAuth2Utils
 
-@Configuration
+@Configuration(proxyBeanMethods = false)
 @Import(OpenApiMybatisAutoConfiguration::class, OpenApiAutoConfiguration::class)
 class UnitTestConfiguration {
 

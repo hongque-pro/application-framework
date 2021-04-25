@@ -19,7 +19,7 @@ import org.springframework.context.annotation.Configuration
 import org.springframework.web.client.RestTemplate
 import java.util.stream.Collectors
 
-@Configuration
+@Configuration(proxyBeanMethods = false)
 @Suppress("SpringJavaInjectionPointsAutowiringInspection")
 @EnableConfigurationProperties(PaymentProperties::class)
 class PaymentAutoConfiguration {
@@ -32,7 +32,7 @@ class PaymentAutoConfiguration {
         return PaymentErrorsRegistration()
     }
 
-    @Configuration
+    @Configuration(proxyBeanMethods = false)
     @ConditionalOnProperty(value= ["$PROVIDERS_CONFIG_PREFIX.alipay.enabled"], matchIfMissing = true)
     @EnableConfigurationProperties(AlipayPaymentOptions::class)
     protected class AlipayConfiguration {
@@ -56,7 +56,7 @@ class PaymentAutoConfiguration {
         }
     }
 
-    @Configuration
+    @Configuration(proxyBeanMethods = false)
     @ConditionalOnProperty(value= ["$PROVIDERS_CONFIG_PREFIX.wechat.enabled"], matchIfMissing = true)
     @EnableConfigurationProperties(WechatPaymentOptions::class)
     protected class WechatConfiguration {

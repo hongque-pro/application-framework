@@ -6,6 +6,6 @@ import org.springframework.boot.autoconfigure.AutoConfigureAfter
 import org.springframework.context.annotation.Configuration
 
 @AutoConfigureAfter(MybatisAutoConfiguration::class)
-@Configuration
+@Configuration(proxyBeanMethods = false)
 @MapperScan(basePackages = ["com.labijie.application.geo.data.custom.mapper"])
 class GeoMybatisMapperAutoConfiguration

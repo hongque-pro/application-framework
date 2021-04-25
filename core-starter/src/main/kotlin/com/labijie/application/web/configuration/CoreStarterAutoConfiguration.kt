@@ -12,7 +12,7 @@ import org.springframework.security.config.annotation.web.configurers.Expression
  * @date 19-12-10
  * @since JDK1.8
  */
-@Configuration
+@Configuration(proxyBeanMethods = false)
 @ComponentScan(value = ["com.labijie.application.web.controller", "com.labijie.application.web.service"])
 class CoreStarterAutoConfiguration : IResourceAuthorizationConfigurer {
 

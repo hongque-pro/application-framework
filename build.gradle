@@ -112,6 +112,7 @@ allprojects {
 
     javadoc {
         failOnError = false
+        options.encoding = 'utf-8'
     }
 
     compileKotlin {

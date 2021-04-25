@@ -20,17 +20,20 @@ class DefaultResourceSecurityConfiguration : IResourceAuthorizationConfigurer, O
 
     override fun configure(registry: ExpressionUrlAuthorizationConfigurer<HttpSecurity>.ExpressionInterceptUrlRegistry) {
 
-        val paths = mutableListOf("/actuator/**",
-                "/aliyun/cnf",
-                "/aliyun/afs/verify")
+        val paths = mutableListOf(
+            "/actuator/**",
+            "/aliyun/cnf",
+            "/aliyun/afs/verify"
+        )
 
         val swaggerPaths = listOf(
-                "/v2/api-docs/**",
-                "/v3/api-docs/**",
+            "/swagger",
+            "/v2/api-docs/**",
+            "/v3/api-docs/**",
 //                "/configuration/ui",
-                "/swagger-resources/**",
+            "/swagger-resources/**",
 //                "/configuration/security",
-                "/swagger-ui/**",
+            "/swagger-ui/**",
 //                "/webjars/**",
 //                "/swagger-resources/configuration/ui"
         )

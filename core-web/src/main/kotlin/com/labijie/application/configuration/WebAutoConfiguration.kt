@@ -31,6 +31,7 @@ import org.springframework.validation.beanvalidation.MethodValidationPostProcess
 import org.springframework.web.method.support.HandlerMethodArgumentResolver
 import org.springframework.web.servlet.config.annotation.ContentNegotiationConfigurer
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry
+import org.springframework.web.servlet.config.annotation.ViewControllerRegistry
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer
 import springfox.documentation.builders.ApiInfoBuilder
 import springfox.documentation.builders.PathSelectors
@@ -59,6 +60,9 @@ class WebAutoConfiguration : WebMvcConfigurer {
     @Autowired(required = false)
     private var humanChecker: IHumanChecker? = null
 
+    @Autowired
+    private lateinit var environment:Environment
+
     override fun addFormatters(registry: FormatterRegistry) {
         registry.addConverterFactory(EnhanceStringToEnumConverterFactory())
     }
@@ -84,6 +88,13 @@ class WebAutoConfiguration : WebMvcConfigurer {
                 )
         )
         registry.addInterceptor(HttpCacheInterceptor)
+    }
+
+    override fun addViewControllers(registry: ViewControllerRegistry) {
+        super.addViewControllers(registry)
+        if(environment.isProduction) {
+            registry.addRedirectViewController("/swagger", "/swagger-ui/index.html")
+        }
     }
 
     @Configuration(proxyBeanMethods = false)

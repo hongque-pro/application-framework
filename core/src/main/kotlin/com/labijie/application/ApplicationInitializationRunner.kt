@@ -143,7 +143,7 @@ class ApplicationInitializationRunner<T : ConfigurableApplicationContext>(
         current profiles: $profiles
         module loaded:  ${moduleList.ifNullOrBlank("none module")}
         --------------------------------------------------------------------
-        ${if (isWebEnvironment) "http://localhost:${environment.getProperty("server.port").ifNullOrBlank("80")}$context/swagger-ui/index.html" else "Command line application"}
+        ${if (isWebEnvironment) "http://localhost:${environment.getProperty("server.port").ifNullOrBlank("80")}$context/swagger" else "Command line application"}
         --------------------------------------------------------------------
         """
         )

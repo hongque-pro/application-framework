@@ -38,4 +38,4 @@ jobs:
     - name: Publish to Maven Central
       run: gradle publish
     - name: Nexus Staging
-      run: gradle closeAndReleaseRepository
+      run: gradle publishToSonatype closeAndReleaseSonatypeStagingRepository

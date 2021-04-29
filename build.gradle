@@ -5,6 +5,8 @@ buildscript {
         infra_caching_version='1.2.2'
         infra_commons_version='2.1.0'
         infra_oauth2_version = '1.1.0'
+        infra_stream_version='1.0.0'
+
         uber_h3_version='3.7.0'
         netty_version='4.1.63.Final'
 //        jts_version='1.13' 地理信息标准格式处理库，暂时不需要
@@ -19,8 +21,6 @@ buildscript {
         kryo_version = '5.1.0'
 
         junit_verions = '5.7.0'
-
-        stream_binder_memory_version='1.1.0'
 
         //data base and mybatis
         mybatis_spring_boot_version='2.1.4'
@@ -52,7 +52,7 @@ buildscript {
         mockito_core_version='2.24.0'
 
         maven_repo= System.getenv("MAVEN_PROXY")
-        nexus_staging_version = '0.22.0'
+        publishing_plugin_version = '1.1.0'
 
     }
     repositories {
@@ -70,9 +70,9 @@ plugins {
     id "org.springframework.boot" version "$spring_boot_version" apply false
     id "org.jetbrains.kotlin.jvm" version "$kotlin_version" apply false
     id "io.spring.dependency-management" version "$spring_dep_mgn_version" apply false
-    id "io.codearte.nexus-staging" version "$nexus_staging_version"
+    id "io.github.gradle-nexus.publish-plugin" version "$publishing_plugin_version" apply false
 }
-apply plugin: 'io.codearte.nexus-staging'
+apply plugin: 'io.github.gradle-nexus.publish-plugin'
 
 static Boolean  isNotNullOrBlank(Object s){
     return !(s == null || s.toString().trim().length() == 0)
@@ -305,11 +305,15 @@ subprojects {
     }
 }
 
-nexusStaging {
-    def u = getPropertyOrCmdArgs(project, "PUB_USER", "u")
-    def p =getPropertyOrCmdArgs(project, "PUB_PWD", "p")
-    username = u
-    password = p
-    packageGroup = "com.labijie"
+nexusPublishing {
+    repositories {
+        sonatype {
+            def u = getPropertyOrCmdArgs(project, "PUB_USER", "u")
+            def p =getPropertyOrCmdArgs(project, "PUB_PWD", "p")
+            username = u
+            password = p
+        }
+    }
 }
+
 

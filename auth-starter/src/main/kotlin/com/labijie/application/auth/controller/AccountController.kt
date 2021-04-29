@@ -1,11 +1,12 @@
 package com.labijie.application.auth.controller
 
-import com.labijie.application.auth.isNullEmail
 import com.labijie.application.auth.model.*
-import com.labijie.application.auth.service.IUserService
 import com.labijie.application.component.IMessageSender
 import com.labijie.application.crypto.DesUtils
 import com.labijie.application.exception.UserNotFoundException
+import com.labijie.application.identity.isNullEmail
+import com.labijie.application.identity.model.RegisterInfo
+import com.labijie.application.identity.service.IUserService
 import com.labijie.application.maskEmail
 import com.labijie.application.maskPhone
 import com.labijie.application.model.BindingStatus
@@ -26,7 +27,7 @@ import org.springframework.validation.annotation.Validated
 import org.springframework.web.bind.annotation.*
 import java.time.Duration
 import javax.validation.Valid
-import com.labijie.application.auth.data.UserRecord as User
+import com.labijie.application.identity.data.UserRecord as User
 
 /**
  * Created with IntelliJ IDEA.
@@ -38,9 +39,9 @@ import com.labijie.application.auth.data.UserRecord as User
 @RequestMapping("/account")
 @Validated
 class AccountController @Autowired constructor(
-    private val userService: IUserService,
-    private val messageSender: IMessageSender,
-    private val signInHelper: TwoFactorSignInHelper
+        private val userService: IUserService,
+        private val messageSender: IMessageSender,
+        private val signInHelper: TwoFactorSignInHelper
 ) {
 
     init {

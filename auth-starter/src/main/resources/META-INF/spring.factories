@@ -1,4 +1,3 @@
 org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
   com.labijie.application.auth.configuration.AuthServerAutoConfiguration,\
-  com.labijie.application.auth.configuration.AuthServerMybatisAutoConfiguration,\
   com.labijie.application.auth.configuration.AuthServerControllerAutoConfiguration

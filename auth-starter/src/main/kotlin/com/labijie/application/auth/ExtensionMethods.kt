@@ -1,6 +1,5 @@
 package com.labijie.application.auth
 
-import com.labijie.application.auth.data.mapper.OAuth2ClientDetailsMapper
 import com.labijie.infra.oauth2.Constants
 import org.springframework.security.oauth2.config.annotation.builders.ClientDetailsServiceBuilder
 import java.time.Duration
@@ -27,7 +26,6 @@ fun ClientDetailsServiceBuilder<*>.addClient(
         .refreshTokenValiditySeconds(Duration.ofDays(2).seconds.toInt())
         .autoApprove(true)
         .autoApprove("read", "write")
-        .scopes("read", "write")
         .resourceIds()
         .secret(secret)
 }

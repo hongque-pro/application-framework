@@ -4,9 +4,9 @@ import com.labijie.application.auth.social.OAuth2SocialConstants
 import com.labijie.application.auth.social.exception.BadSocialCredentialsException
 import com.labijie.application.auth.social.exception.SocialUserLockedException
 import com.labijie.application.auth.social.model.SocialLoginInfo
-import com.labijie.application.auth.social.model.SocialRegisterInfo
-import com.labijie.application.auth.social.model.SocialUserAndRoles
-import com.labijie.application.auth.social.service.ISocialUserService
+import com.labijie.application.identity.model.SocialRegisterInfo
+import com.labijie.application.identity.model.SocialUserAndRoles
+import com.labijie.application.identity.service.ISocialUserService
 import com.labijie.infra.oauth2.TwoFactorSignInHelper
 import com.labijie.infra.oauth2.filter.ClientRequired
 import org.springframework.security.oauth2.common.OAuth2AccessToken
@@ -27,8 +27,8 @@ import javax.validation.Valid
 @RestController
 @RequestMapping("/oauth/social")
 class AccountSocialController(
-    private val userService: ISocialUserService,
-    private val signInHelper: TwoFactorSignInHelper
+        private val userService: ISocialUserService,
+        private val signInHelper: TwoFactorSignInHelper
 ) {
 
     @PostMapping("/register")
@@ -47,8 +47,8 @@ class AccountSocialController(
     }
 
     private fun signInUser(
-        userRoles: SocialUserAndRoles,
-        clientDetails: ClientDetails
+            userRoles: SocialUserAndRoles,
+            clientDetails: ClientDetails
     ): OAuth2AccessToken {
         val u = userRoles.user
         val roles = userRoles.roles.map {

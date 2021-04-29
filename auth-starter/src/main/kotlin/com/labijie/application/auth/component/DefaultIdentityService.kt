@@ -1,14 +1,13 @@
 package com.labijie.application.auth.component
 
 import com.labijie.application.ErrorCodedException
-import com.labijie.application.auth.AuthErrors.ACCOUNT_LOCKED
-import com.labijie.application.auth.service.IUserService
+import com.labijie.application.auth.AuthErrors
+import com.labijie.application.identity.service.IUserService
 import com.labijie.application.web.roleAuthority
 import com.labijie.infra.oauth2.*
 import org.springframework.context.ApplicationEventPublisher
-import org.springframework.security.core.authority.SimpleGrantedAuthority
 import org.springframework.security.core.userdetails.UsernameNotFoundException
-import com.labijie.application.auth.data.UserRecord as User
+import com.labijie.application.identity.data.UserRecord as User
 
 /**
  * Created with IntelliJ IDEA.
@@ -16,8 +15,8 @@ import com.labijie.application.auth.data.UserRecord as User
  * @date 2019-09-05
  */
 open class DefaultIdentityService constructor(
-    private val userService: IUserService,
-    eventPublisher: ApplicationEventPublisher? = null
+        private val userService: IUserService,
+        eventPublisher: ApplicationEventPublisher? = null
 ) : IIdentityService {
     private lateinit var applicationEventPublisher: ApplicationEventPublisher
 
@@ -30,8 +29,8 @@ open class DefaultIdentityService constructor(
     override fun authenticationChecks(authenticationCheckingContext: AuthenticationCheckingContext): SignInResult {
 
         return SignInResult(
-            type = SignInResultType.Success,
-            user = authenticationCheckingContext.userDetails
+                type = SignInResultType.Success,
+                user = authenticationCheckingContext.userDetails
         )
     }
 
@@ -39,27 +38,30 @@ open class DefaultIdentityService constructor(
         val user = getUser(userName)
         val userLocked = (user.lockoutEnabled ?: false && (user.lockoutEnd ?: 0) > System.currentTimeMillis())
 
-        if (userLocked) throw ErrorCodedException(error = ACCOUNT_LOCKED, message = "account is locked!")
+        if (userLocked) throw ErrorCodedException(error = AuthErrors.ACCOUNT_LOCKED, message = "account is locked!")
 
-        val roles = userService.getUserRoles(user.id ?: 0)
+        val roles = ArrayList(
+                userService.getUserRoles(user.id ?: 0).map {
+                    roleAuthority("ROLE_${it.name.orEmpty()}")
+                })
 
         return SimpleTwoFactorUserDetails(
-            user.id.toString(),
-            user.userName.orEmpty(),
-            credentialsNonExpired = true,
-            enabled = true,
-            password = user.passwordHash.orEmpty(),
-            accountNonExpired = true,
-            accountNonLocked = !userLocked,
-            twoFactorEnabled = false,
-            authorities = arrayListOf(*roles.map { roleAuthority("ROLE_${it.name.orEmpty()}") }.toTypedArray())
+                user.id.toString(),
+                user.userName.orEmpty(),
+                credentialsNonExpired = true,
+                enabled = true,
+                password = user.passwordHash.orEmpty(),
+                accountNonExpired = true,
+                accountNonLocked = !userLocked,
+                twoFactorEnabled = false,
+                authorities = roles
         )
     }
 
 
     private fun getUser(userName: String): User {
         return userService.getUser(userName)
-            ?: throw UsernameNotFoundException("user with name '$userName' was not found.")
+                ?: throw UsernameNotFoundException("user with name '$userName' was not found.")
     }
 
 }

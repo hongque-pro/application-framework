@@ -2,30 +2,23 @@ package com.labijie.application.auth.configuration
 
 import com.labijie.application.auth.AuthErrorsRegistration
 import com.labijie.application.auth.component.*
-import com.labijie.application.auth.data.mapper.OAuth2ClientDetailsMapper
-import com.labijie.application.auth.data.mapper.RoleMapper
-import com.labijie.application.auth.data.mapper.UserMapper
-import com.labijie.application.auth.data.mapper.UserRoleMapper
 import com.labijie.application.auth.event.UserSignInEventListener
 import com.labijie.application.auth.handler.OAuth2ErrorHandler
-import com.labijie.application.auth.service.IUserService
-import com.labijie.application.auth.service.impl.DefaultUserService
-import com.labijie.application.component.IMessageSender
-import com.labijie.caching.ICacheManager
-import com.labijie.infra.IIdGenerator
+import com.labijie.application.identity.configuration.IdentityAutoConfiguration
+import com.labijie.application.identity.service.IOAuth2ClientService
+import com.labijie.application.identity.service.IUserService
 import com.labijie.infra.oauth2.IClientDetailsServiceFactory
 import com.labijie.infra.oauth2.IIdentityService
 import com.labijie.infra.oauth2.configuration.OAuth2CustomizationAutoConfiguration
 import com.labijie.infra.oauth2.error.IOAuth2ExceptionHandler
 import com.labijie.infra.oauth2.resource.IResourceAuthorizationConfigurer
+import org.springframework.boot.autoconfigure.AutoConfigureAfter
 import org.springframework.boot.autoconfigure.AutoConfigureBefore
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
-import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configurers.ExpressionUrlAuthorizationConfigurer
-import org.springframework.transaction.support.TransactionTemplate
 
 /**
  * Created with IntelliJ IDEA.
@@ -35,7 +28,7 @@ import org.springframework.transaction.support.TransactionTemplate
 @Suppress("SpringJavaInjectionPointsAutowiringInspection")
 @Configuration(proxyBeanMethods = false)
 @AutoConfigureBefore(OAuth2CustomizationAutoConfiguration::class)
-@EnableConfigurationProperties(AuthServerProperties::class)
+@AutoConfigureAfter(IdentityAutoConfiguration::class)
 class AuthServerAutoConfiguration : IResourceAuthorizationConfigurer {
 
     override fun configure(registry: ExpressionUrlAuthorizationConfigurer<HttpSecurity>.ExpressionInterceptUrlRegistry) {
@@ -44,36 +37,13 @@ class AuthServerAutoConfiguration : IResourceAuthorizationConfigurer {
                 "/account/verify",
                 "/account/set-password"
         ).permitAll()
-        .antMatchers("/user/current").authenticated()
+                .antMatchers("/user/current").authenticated()
     }
 
 
     @Bean
     fun authErrorsRegistration(): AuthErrorsRegistration {
         return AuthErrorsRegistration()
-    }
-
-    @Bean
-    @ConditionalOnMissingBean(IUserService::class)
-    fun defaultUserService(
-            authServerProperties: AuthServerProperties,
-            idGenerator: IIdGenerator,
-            messageSender: IMessageSender,
-            cacheManager: ICacheManager,
-            userMapper: UserMapper,
-            userRoleMapper: UserRoleMapper,
-            roleMapper: RoleMapper,
-            transactionTemplate: TransactionTemplate
-    ): DefaultUserService {
-        return DefaultUserService(
-                authServerProperties,
-                idGenerator,
-                messageSender,
-                cacheManager,
-                userMapper,
-                userRoleMapper,
-                roleMapper,
-                transactionTemplate)
     }
 
     @Bean
@@ -106,16 +76,14 @@ class AuthServerAutoConfiguration : IResourceAuthorizationConfigurer {
     protected class ClientDetailServiceAutoConfiguration {
 
         @Bean
-        fun mybatisClientDetailsService(
-                authServerProperties: AuthServerProperties,
-                cacheManager: ICacheManager,
-                clientDetailsMapper: OAuth2ClientDetailsMapper): MybatisClientDetailsService {
-            return MybatisClientDetailsService(authServerProperties, cacheManager, clientDetailsMapper)
+        fun defaultClientDetailsService(
+                oauth2ClientService: IOAuth2ClientService): AuthClientDetailsService {
+            return AuthClientDetailsService(oauth2ClientService)
         }
 
         @Bean
-        fun mybatisClientDetailsServiceFactory(mybatisClientDetailsService: MybatisClientDetailsService): MybatisClientDetailsServiceFactory {
-            return MybatisClientDetailsServiceFactory(mybatisClientDetailsService)
+        fun mybatisClientDetailsServiceFactory(mybatisClientDetailsService: AuthClientDetailsService): AuthClientDetailsServiceFactory {
+            return AuthClientDetailsServiceFactory(mybatisClientDetailsService)
         }
     }
 

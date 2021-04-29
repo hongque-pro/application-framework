@@ -1,0 +1,36 @@
+{
+  "group": [
+    {
+      "name": "application.auth",
+      "type": "com.labijie.application.identity.configuration.AuthServerProperties"
+    }
+  ],
+  "properties": [
+    {
+      "name": "application.identity.jdbc-table-prefix",
+      "type": "java.lang.String",
+      "defaultValue": "identity_"
+    },
+    {
+      "name": "application.identity.cache-region",
+      "type": "java.lang.String"
+    },
+    {
+      "name": "application.identity.cache-client-timeout",
+      "type": "java.time.Duration",
+      "defaultValue": "5m"
+    },
+
+    {
+      "name": "application.identity.cache-role-timeout",
+      "type": "java.time.Duration",
+      "defaultValue": "10m"
+    },
+
+    {
+      "name": "application.identity.cache-user-timeout",
+      "type": "java.time.Duration",
+      "defaultValue": "10m"
+    }
+  ]
+}

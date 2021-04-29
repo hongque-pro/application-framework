@@ -1,8 +1,8 @@
 package com.labijie.application.open.service.impl
 
 import com.labijie.application.ForwardList
-import com.labijie.application.auth.service.IUserService
 import com.labijie.application.exception.UserNotFoundException
+import com.labijie.application.identity.service.IUserService
 import com.labijie.application.open.data.OpenPartnerRecord
 import com.labijie.application.open.data.OpenPartnerUserRecord
 import com.labijie.application.open.data.mapper.*

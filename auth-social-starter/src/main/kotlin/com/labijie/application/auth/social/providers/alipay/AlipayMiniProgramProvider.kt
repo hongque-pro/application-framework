@@ -1,9 +1,8 @@
 package com.labijie.application.auth.social.providers.alipay
 
 import com.labijie.application.auth.social.abstraction.AbstractMiniProgramProvider
-import com.labijie.application.auth.social.exception.SocialExchangeException
 import com.labijie.application.auth.social.exception.SocialDataDecryptionException
-import com.labijie.application.auth.social.model.PlatformAccessToken
+import com.labijie.application.auth.social.exception.SocialExchangeException
 import com.labijie.application.auth.social.providers.alipay.model.MobileResponse
 import com.labijie.application.auth.social.providers.alipay.model.OAuthTokenResponse
 import com.labijie.application.crypto.AesException
@@ -11,15 +10,16 @@ import com.labijie.application.crypto.AesUtils
 import com.labijie.application.crypto.RsaException
 import com.labijie.application.crypto.RsaUtils
 import com.labijie.application.exception.BadSignatureException
+import com.labijie.application.identity.model.PlatformAccessToken
 import com.labijie.infra.json.JacksonHelper
 import com.labijie.infra.utils.ifNullOrBlank
 import com.labijie.infra.utils.logger
 import org.springframework.http.*
 import org.springframework.web.client.RestTemplate
 import org.springframework.web.util.UriComponentsBuilder
+import java.net.URLEncoder
 import java.nio.charset.Charset
 import java.time.Duration
-import java.net.URLEncoder
 
 /**
  * Created with IntelliJ IDEA.

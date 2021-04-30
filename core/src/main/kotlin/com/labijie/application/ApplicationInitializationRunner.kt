@@ -11,14 +11,18 @@ import org.springframework.beans.factory.ObjectProvider
 import org.springframework.boot.SpringApplication
 import org.springframework.boot.WebApplicationType
 import org.springframework.boot.context.event.ApplicationReadyEvent
+import org.springframework.boot.web.context.WebServerInitializedEvent
+import org.springframework.boot.web.server.WebServer
 import org.springframework.context.ApplicationContext
 import org.springframework.context.ApplicationContextAware
+import org.springframework.context.ApplicationListener
 import org.springframework.context.ConfigurableApplicationContext
 import org.springframework.context.event.EventListener
 import org.springframework.core.Ordered
 import org.springframework.core.env.Environment
 import org.springframework.util.ClassUtils
 import org.springframework.web.context.WebApplicationContext
+import java.lang.StringBuilder
 import java.lang.reflect.Method
 import java.lang.reflect.ParameterizedType
 import kotlin.concurrent.thread
@@ -32,7 +36,8 @@ import kotlin.system.exitProcess
  * @date 2019-09-11
  */
 class ApplicationInitializationRunner<T : ConfigurableApplicationContext>(
-        private val contextClass: KClass<T>) : ApplicationContextAware, Ordered {
+    private val contextClass: KClass<T>
+) : ApplicationContextAware, ApplicationListener<WebServerInitializedEvent>, Ordered {
     override fun getOrder(): Int {
         return Int.MAX_VALUE
     }
@@ -56,13 +61,8 @@ class ApplicationInitializationRunner<T : ConfigurableApplicationContext>(
     }
 
 
-
-    private val isWebEnvironment by lazy {
-        (applicationContext is WebApplicationContext)
-    }
-
-    private fun initJackson(){
-        val eumnModule  = com.fasterxml.jackson.databind.module.SimpleModule("eumn-module")
+    private fun initJackson() {
+        val eumnModule = com.fasterxml.jackson.databind.module.SimpleModule("eumn-module")
         eumnModule.addDeserializer(Enum::class.java, DescribeEnumDeserializer())
         eumnModule.addSerializer(Enum::class.java, DescribeEnumSerializer)
 
@@ -73,7 +73,7 @@ class ApplicationInitializationRunner<T : ConfigurableApplicationContext>(
 
     @EventListener(ApplicationReadyEvent::class)
     fun run(event: ApplicationReadyEvent) {
-        if(!contextClass.isInstance(event.applicationContext)){
+        if (!contextClass.isInstance(event.applicationContext)) {
             return
         }
         this.initJackson()
@@ -126,26 +126,54 @@ class ApplicationInitializationRunner<T : ConfigurableApplicationContext>(
 
     private fun tryGetMethod(moduleClass: Class<out IModuleInitializer>): Method? {
         return try {
-            moduleClass.declaredMethods.firstOrNull {it.name == "initialize"}
+            moduleClass.declaredMethods.firstOrNull { it.name == "initialize" }
         } catch (e: NoSuchMethodException) {
             null
         }
     }
 
+    private var webServer: WebServer? = null
+
+
+    private val isWebEnvironment by lazy {
+        (applicationContext is WebApplicationContext)
+    }
+
+    override fun onApplicationEvent(event: WebServerInitializedEvent) {
+        webServer = event.webServer
+    }
+
     private fun reportApplicationStatus(modules: List<Class<*>>) {
-        val contextPath = if(isWebEnvironment) "/${environment.getProperty("server.context-path").orEmpty().trimStart('/').trimEnd('/')}" else ""
-        val context = if(contextPath == "/") "" else contextPath
+
         val moduleList = modules.joinToString { it.simpleName.substringBefore("ModuleInitializer") }
         println(
-                """
-        [${this.applicationName}] has been started !! 
+            """
+[${this.applicationName}] has been started !! 
         
-        current profiles: $profiles
-        module loaded:  ${moduleList.ifNullOrBlank("none module")}
-        --------------------------------------------------------------------
-        ${if (isWebEnvironment) "http://localhost:${environment.getProperty("server.port").ifNullOrBlank("80")}$context/swagger" else "Command line application"}
-        --------------------------------------------------------------------
-        """
+current profiles: $profiles
+module loaded:  ${moduleList.ifNullOrBlank("none module")}
+--------------------------------------------------------------------
+${if (isWebEnvironment) this.buildWebServerInfo() else "Command line application"}
+--------------------------------------------------------------------
+""".trimIndent()
         )
+
+    }
+
+    private fun buildWebServerInfo(): String {
+        val contextPath = if (isWebEnvironment) "/${
+            environment.getProperty("server.context-path").orEmpty().trimStart('/').trimEnd('/')
+        }" else ""
+        val context = if (contextPath == "/") "" else contextPath
+
+        return StringBuilder()
+            .apply {
+                if (webServer != null) {
+                    appendLine("web server: ${webServer!!::class.simpleName}")
+                }
+            }
+            .appendLine("swagger:")
+            .appendLine("http://localhost:${webServer?.port ?: 8080}$context/swagger")
+            .toString()
     }
 }

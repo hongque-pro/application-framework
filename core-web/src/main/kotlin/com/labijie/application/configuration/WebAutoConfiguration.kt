@@ -17,6 +17,7 @@ import org.hibernate.validator.HibernateValidatorConfiguration
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.autoconfigure.AutoConfigureAfter
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
+import org.springframework.boot.info.GitProperties
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Import
@@ -63,6 +64,7 @@ class WebAutoConfiguration : WebMvcConfigurer {
     @Autowired
     private lateinit var environment:Environment
 
+
     override fun addFormatters(registry: FormatterRegistry) {
         registry.addConverterFactory(EnhanceStringToEnumConverterFactory())
     }
@@ -78,7 +80,7 @@ class WebAutoConfiguration : WebMvcConfigurer {
 
     override fun configureContentNegotiation(configurer: ContentNegotiationConfigurer) {
         super.configureContentNegotiation(configurer)
-        configurer.defaultContentType(MediaType.APPLICATION_JSON_UTF8)
+        configurer.defaultContentType(MediaType.APPLICATION_JSON)
     }
 
     override fun addInterceptors(registry: InterceptorRegistry) {
@@ -92,7 +94,7 @@ class WebAutoConfiguration : WebMvcConfigurer {
 
     override fun addViewControllers(registry: ViewControllerRegistry) {
         super.addViewControllers(registry)
-        if(environment.isProduction) {
+        if(!environment.isProduction) {
             registry.addRedirectViewController("/swagger", "/swagger-ui/index.html")
         }
     }
@@ -100,6 +102,9 @@ class WebAutoConfiguration : WebMvcConfigurer {
     @Configuration(proxyBeanMethods = false)
     @EnableOpenApi
     class SwaggerAutoConfiguration {
+
+        @Autowired(required = false)
+        private var gitProperties: GitProperties? = null
 
         @Bean
         fun allDocket(environment: Environment): Docket {
@@ -156,7 +161,7 @@ class WebAutoConfiguration : WebMvcConfigurer {
 
             val info = ApiInfoBuilder()
                     .title("Application Framework")
-                    .version("1.0")
+                    .version(gitProperties?.get("build.version") ?: "0.0")
                     .build()
 
             return Docket(DocumentationType.OAS_30)

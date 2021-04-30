@@ -1,12 +1,6 @@
-
-processResources {
-    from(rootProject.getRootDir().toString() + "/sql-scripts") {
-        include "auth.sql"
-    }
-}
-    dependencies {
-    compile project(":core-web")
-    compile project(":identity-starter")
+dependencies {
+    api project(":core-web")
+    api project(":identity-starter")
 //    compile project(":commons-data")
-    compile "com.labijie.infra:oauth2-auth-server-starter:$infra_oauth2_version"
+    api "com.labijie.infra:oauth2-auth-server-starter:$infra_oauth2_version"
 }

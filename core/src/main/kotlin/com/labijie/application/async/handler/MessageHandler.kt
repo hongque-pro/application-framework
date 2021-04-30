@@ -2,8 +2,6 @@ package com.labijie.application.async.handler
 
 import com.labijie.application.component.IMessageSender
 import com.labijie.application.model.SendSmsTemplateParam
-import org.springframework.cloud.stream.annotation.EnableBinding
-import org.springframework.cloud.stream.annotation.StreamListener
 import org.springframework.context.annotation.Bean
 import java.util.function.Consumer
 

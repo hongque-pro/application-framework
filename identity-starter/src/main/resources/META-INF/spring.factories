@@ -1,2 +1,2 @@
 org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
-  com.labijie.application.auth.configuration.IdentityAutoConfiguration
+  com.labijie.application.identity.configuration.IdentityAutoConfiguration

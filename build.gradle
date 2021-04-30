@@ -53,6 +53,7 @@ buildscript {
 
         maven_repo= System.getenv("MAVEN_PROXY")
         publishing_plugin_version = '1.1.0'
+        git_properties_plugin_version = '2.3.1'
 
     }
     repositories {
@@ -71,6 +72,7 @@ plugins {
     id "org.jetbrains.kotlin.jvm" version "$kotlin_version" apply false
     id "io.spring.dependency-management" version "$spring_dep_mgn_version" apply false
     id "io.github.gradle-nexus.publish-plugin" version "$publishing_plugin_version" apply false
+    id "com.gorylenko.gradle-git-properties" version "$git_properties_plugin_version" apply false
 }
 apply plugin: 'io.github.gradle-nexus.publish-plugin'
 
@@ -98,6 +100,7 @@ allprojects {
     apply plugin: 'signing'
     apply plugin: 'kotlin-spring'
     apply plugin: 'java-library'
+    apply plugin: 'com.gorylenko.gradle-git-properties'
     if(!project.name.startsWith("dummy")) {
         apply plugin: 'maven-publish'
     }

@@ -17,6 +17,7 @@ import org.hibernate.validator.HibernateValidatorConfiguration
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.autoconfigure.AutoConfigureAfter
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
+import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication
 import org.springframework.boot.info.GitProperties
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -55,6 +56,7 @@ import javax.validation.Validator
 @Configuration(proxyBeanMethods = false)
 @Import(DefaultResourceSecurityConfiguration::class, ErrorDescriptionController::class)
 @AutoConfigureAfter(Environment::class)
+@ConditionalOnWebApplication
 @Order(1000)
 class WebAutoConfiguration : WebMvcConfigurer {
 

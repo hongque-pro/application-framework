@@ -9,6 +9,6 @@ dependencies {
     compile project(":order-starter")
     compile project(":kaptcha-human-starter")
     compile project(":open-api-starter")
-    compile "com.labijie.infra:spring-cloud-stream-binder-core:$infra_stream_version"
+    //compile "com.labijie.infra:spring-cloud-stream-binder-core:$infra_stream_version"
     compile "com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.9.8" //测试 XML 返回的问题
 }

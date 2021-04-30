@@ -7,6 +7,7 @@ import com.labijie.application.auth.handler.OAuth2ErrorHandler
 import com.labijie.application.identity.configuration.IdentityAutoConfiguration
 import com.labijie.application.identity.service.IOAuth2ClientService
 import com.labijie.application.identity.service.IUserService
+import com.labijie.infra.oauth2.Constants
 import com.labijie.infra.oauth2.IClientDetailsServiceFactory
 import com.labijie.infra.oauth2.IIdentityService
 import com.labijie.infra.oauth2.configuration.OAuth2CustomizationAutoConfiguration
@@ -32,12 +33,16 @@ import org.springframework.security.config.annotation.web.configurers.Expression
 class AuthServerAutoConfiguration : IResourceAuthorizationConfigurer {
 
     override fun configure(registry: ExpressionUrlAuthorizationConfigurer<HttpSecurity>.ExpressionInterceptUrlRegistry) {
+        //TODO: fix infra-oauth2-auth-server-starter bug
+
         registry.antMatchers(
-                "/account/register",
-                "/account/verify",
-                "/account/set-password"
+            "/account/register",
+            "/account/verify",
+            "/account/set-password",
+            Constants.DEFAULT_JWK_SET_ENDPOINT_PATH,
+            Constants.DEFAULT_JWS_INTROSPECT_ENDPOINT_PATH
         ).permitAll()
-                .antMatchers("/user/current").authenticated()
+            .antMatchers("/user/current").authenticated()
     }
 
 
@@ -60,7 +65,10 @@ class AuthServerAutoConfiguration : IResourceAuthorizationConfigurer {
 
     @Bean
     @ConditionalOnMissingBean(UserSignInEventListener::class)
-    fun userSignInEventListener(signInPlatformDetection: ISignInPlatformDetection, userService: IUserService): UserSignInEventListener {
+    fun userSignInEventListener(
+        signInPlatformDetection: ISignInPlatformDetection,
+        userService: IUserService
+    ): UserSignInEventListener {
         return UserSignInEventListener(signInPlatformDetection, userService)
     }
 
@@ -76,7 +84,8 @@ class AuthServerAutoConfiguration : IResourceAuthorizationConfigurer {
     protected class ClientDetailServiceAutoConfiguration {
 
         private fun authClientDetailsService(
-                oauth2ClientService: IOAuth2ClientService): AuthClientDetailsService {
+            oauth2ClientService: IOAuth2ClientService
+        ): AuthClientDetailsService {
             return AuthClientDetailsService(oauth2ClientService)
         }
 

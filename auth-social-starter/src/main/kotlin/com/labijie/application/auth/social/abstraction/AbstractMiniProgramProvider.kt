@@ -1,8 +1,8 @@
 package com.labijie.application.auth.social.abstraction
 
-import com.labijie.application.auth.social.IMiniProgramProvider
 import com.labijie.application.auth.social.SocialAuthOptions
-import com.labijie.application.auth.social.model.PlatformAccessToken
+import com.labijie.application.identity.model.PlatformAccessToken
+import com.labijie.application.identity.social.ILoginProviderPhoneNumberSupport
 
 /**
  * Created with IntelliJ IDEA.
@@ -10,7 +10,7 @@ import com.labijie.application.auth.social.model.PlatformAccessToken
  * @date 2019-12-10
  */
 abstract class AbstractMiniProgramProvider<TOptions: SocialAuthOptions>(options: TOptions) :
-    AbstractLoginProvider<TOptions>(options), IMiniProgramProvider {
+    AbstractLoginProvider<TOptions>(options), ILoginProviderPhoneNumberSupport {
 
     override val isMultiOpenId: Boolean
         get() = options.multiOpenId

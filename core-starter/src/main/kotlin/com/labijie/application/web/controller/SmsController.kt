@@ -1,7 +1,7 @@
 package com.labijie.application.web.controller
 
-import com.labijie.application.auth.service.IUserService
 import com.labijie.application.component.IMessageSender
+import com.labijie.application.identity.service.IUserService
 import com.labijie.application.model.CaptchaType
 import com.labijie.application.model.CaptchaValidationRequest
 import com.labijie.application.model.SendSmsCaptchaParam

@@ -1,6 +1,6 @@
 package com.labijie.application.open.configuration
 
-import com.labijie.application.auth.service.IUserService
+import com.labijie.application.identity.service.IUserService
 import com.labijie.application.open.component.ApiSignatureMvcInterceptor
 import com.labijie.application.open.component.OpenApiFilter
 import com.labijie.application.open.data.mapper.OpenAppMapper

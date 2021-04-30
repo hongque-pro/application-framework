@@ -16,4 +16,5 @@ include 'geo-starter'
 include 'kaptcha-human-starter'
 include 'open-api-starter'
 include 'huawei-starter'
+include 'identity-starter'
 

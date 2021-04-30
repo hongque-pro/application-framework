@@ -1,7 +1,7 @@
 package com.labijie.application.auth.social.abstraction
 
-import com.labijie.application.auth.social.ILoginProvider
 import com.labijie.application.auth.social.SocialAuthOptions
+import com.labijie.application.identity.social.ILoginProvider
 
 /**
  * Created with IntelliJ IDEA.

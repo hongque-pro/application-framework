@@ -1,8 +1,8 @@
 package com.labijie.application.auth.event
 
 import com.labijie.application.auth.component.ISignInPlatformDetection
-import com.labijie.application.auth.data.UserRecord as User
-import com.labijie.application.auth.service.IUserService
+import com.labijie.application.identity.service.IUserService
+import com.labijie.application.identity.data.UserRecord as User
 import com.labijie.application.web.getRealIp
 import com.labijie.infra.oauth2.events.UserSignedInEvent
 import com.labijie.infra.utils.logger

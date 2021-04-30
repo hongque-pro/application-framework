@@ -3,11 +3,11 @@ package com.labijie.application.auth.social.providers.wechat
 import com.labijie.application.auth.social.abstraction.AbstractMiniProgramProvider
 import com.labijie.application.auth.social.exception.SocialExchangeException
 import com.labijie.application.auth.social.exception.SocialDataDecryptionException
-import com.labijie.application.auth.social.model.PlatformAccessToken
 import com.labijie.application.auth.social.providers.wechat.model.Code2SessionResponse
 import com.labijie.application.auth.social.providers.wechat.model.MobileResponse
 import com.labijie.application.exception.BadSignatureException
 import com.labijie.application.formUrlEncode
+import com.labijie.application.identity.model.PlatformAccessToken
 import com.labijie.infra.json.JacksonHelper
 import com.labijie.infra.utils.ifNullOrBlank
 import com.labijie.infra.utils.logger

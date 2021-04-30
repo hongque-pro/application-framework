@@ -1,10 +1,10 @@
 package com.labijie.application.dummy.component
 
-import com.labijie.application.auth.data.RoleRecord
-import com.labijie.application.auth.data.UserRecord
-import com.labijie.application.auth.model.RegisterInfo
-import com.labijie.application.auth.model.UserAndRoles
-import com.labijie.application.auth.service.IUserService
+import com.labijie.application.identity.data.RoleRecord
+import com.labijie.application.identity.data.UserRecord
+import com.labijie.application.identity.model.RegisterInfo
+import com.labijie.application.identity.model.UserAndRoles
+import com.labijie.application.identity.service.IUserService
 import com.labijie.application.model.OrderBy
 import com.labijie.infra.utils.ShortId
 import org.springframework.context.ApplicationContext

@@ -5,7 +5,7 @@ import com.labijie.application.auth.social.exception.NoneOpenIdException
 import com.labijie.application.auth.social.exception.NoneSocialUserException
 import com.labijie.application.auth.social.providers.alipay.AlipayMiniOptions
 import com.labijie.application.auth.social.providers.wechat.WechatMiniOptions
-import com.labijie.application.auth.social.service.ISocialUserService
+import com.labijie.application.identity.service.ISocialUserService
 import com.labijie.infra.oauth2.TwoFactorPrincipal
 import com.labijie.infra.oauth2.resource.hasTokenAttributeValue
 import org.springframework.security.config.annotation.web.configurers.ExpressionUrlAuthorizationConfigurer

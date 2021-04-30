@@ -118,6 +118,8 @@ allprojects {
         options.encoding = 'utf-8'
     }
 
+    tasks.withType(Javadoc).all { enabled = false }
+
     compileKotlin {
         kotlinOptions {
             freeCompilerArgs = ["-Xjsr305=strict"]

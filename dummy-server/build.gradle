@@ -1,14 +1,14 @@
 apply plugin: 'org.springframework.boot'
 
 dependencies {
-    compile project(":core-web")
-    compile project(":core-starter")
-    compile project(":auth-starter")
-    compile project(":payment-starter")
-    compile project(":payment-car-starter")
-    compile project(":order-starter")
-    compile project(":kaptcha-human-starter")
-    compile project(":open-api-starter")
-    compile "com.labijie.infra:spring-cloud-stream-binder-core:$infra_stream_version"
-    compile "com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.9.8" //测试 XML 返回的问题
+    implementation project(":core-web")
+    implementation project(":core-starter")
+    implementation project(":auth-starter")
+    implementation project(":payment-starter")
+    implementation project(":payment-car-starter")
+    implementation project(":order-starter")
+    implementation project(":kaptcha-human-starter")
+    implementation project(":open-api-starter")
+    implementation "com.labijie.infra:spring-cloud-stream-binder-core:$infra_stream_version"
+    implementation "com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.9.8" //测试 XML 返回的问题
 }

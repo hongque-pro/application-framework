@@ -75,15 +75,14 @@ class AuthServerAutoConfiguration : IResourceAuthorizationConfigurer {
     @ConditionalOnMissingBean(IClientDetailsServiceFactory::class)
     protected class ClientDetailServiceAutoConfiguration {
 
-        @Bean
-        fun defaultClientDetailsService(
+        private fun authClientDetailsService(
                 oauth2ClientService: IOAuth2ClientService): AuthClientDetailsService {
             return AuthClientDetailsService(oauth2ClientService)
         }
 
         @Bean
-        fun mybatisClientDetailsServiceFactory(mybatisClientDetailsService: AuthClientDetailsService): AuthClientDetailsServiceFactory {
-            return AuthClientDetailsServiceFactory(mybatisClientDetailsService)
+        fun mybatisClientDetailsServiceFactory(oAuth2ClientService: IOAuth2ClientService): AuthClientDetailsServiceFactory {
+            return AuthClientDetailsServiceFactory(authClientDetailsService(oAuth2ClientService))
         }
     }
 

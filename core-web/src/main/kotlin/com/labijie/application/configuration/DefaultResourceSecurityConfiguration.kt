@@ -15,9 +15,11 @@ import org.springframework.security.config.annotation.web.configurers.Expression
 @ConditionalOnWebApplication
 @Configuration(proxyBeanMethods = false)
 class DefaultResourceSecurityConfiguration : IResourceAuthorizationConfigurer, Ordered {
-    override fun getOrder(): Int = -1
+    override fun getOrder(): Int = Int.MIN_VALUE
 
     override fun configure(registry: ExpressionUrlAuthorizationConfigurer<HttpSecurity>.ExpressionInterceptUrlRegistry) {
+        //TODO: wait resource server starter fix this bug
+        registry.and().csrf().disable()
 
         val paths = mutableListOf(
             "/actuator/**",

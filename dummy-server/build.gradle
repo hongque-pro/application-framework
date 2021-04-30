@@ -1,8 +1,6 @@
 apply plugin: 'org.springframework.boot'
 
 dependencies {
-    implementation project(":core-web")
-    implementation project(":core-starter")
     implementation project(":auth-starter")
     implementation project(":payment-starter")
     implementation project(":payment-car-starter")

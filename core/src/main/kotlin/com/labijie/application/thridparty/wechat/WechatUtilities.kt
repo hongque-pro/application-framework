@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.core.JsonProcessingException
 import com.fasterxml.jackson.core.type.TypeReference
 import com.fasterxml.jackson.databind.MapperFeature
+import com.fasterxml.jackson.databind.PropertyNamingStrategies
 import com.fasterxml.jackson.databind.PropertyNamingStrategy
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.dataformat.xml.XmlMapper
@@ -40,7 +41,7 @@ object WechatUtilities {
             //忽略空属性
             this.setSerializationInclusion(JsonInclude.Include.NON_NULL)
             //ML标签名:使用骆驼命名的属性名
-            this.propertyNamingStrategy = PropertyNamingStrategy.LOWER_CAMEL_CASE
+            this.propertyNamingStrategy = PropertyNamingStrategies.LOWER_CAMEL_CASE
             //设置转换模式
             this.enable(MapperFeature.USE_ANNOTATIONS)
             this.enable(SerializationFeature.INDENT_OUTPUT)

@@ -33,14 +33,10 @@ import org.springframework.security.config.annotation.web.configurers.Expression
 class AuthServerAutoConfiguration : IResourceAuthorizationConfigurer {
 
     override fun configure(registry: ExpressionUrlAuthorizationConfigurer<HttpSecurity>.ExpressionInterceptUrlRegistry) {
-        //TODO: fix infra-oauth2-auth-server-starter bug
-
         registry.antMatchers(
             "/account/register",
             "/account/verify",
             "/account/set-password",
-            Constants.DEFAULT_JWK_SET_ENDPOINT_PATH,
-            Constants.DEFAULT_JWS_INTROSPECT_ENDPOINT_PATH
         ).permitAll()
             .antMatchers("/user/current").authenticated()
     }

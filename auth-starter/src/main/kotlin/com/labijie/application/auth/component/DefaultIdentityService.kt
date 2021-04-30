@@ -42,7 +42,7 @@ open class DefaultIdentityService constructor(
 
         val roles = ArrayList(
                 userService.getUserRoles(user.id ?: 0).map {
-                    roleAuthority("ROLE_${it.name.orEmpty()}")
+                    roleAuthority(it.name.orEmpty())
                 })
 
         return SimpleTwoFactorUserDetails(

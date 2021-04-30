@@ -109,6 +109,23 @@
           "name": "any"
         }
       ]
+    },
+    {
+      "name": "spring.cloud.stream.bindings.keys",
+      "values": [
+        {
+          "value": "handleSms-out-0"
+        },
+        {
+          "value": "handleSms-in-0"
+        }
+      ],
+      "providers": [
+        {
+          "name": "any"
+        }
+      ]
     }
+
   ]
 }

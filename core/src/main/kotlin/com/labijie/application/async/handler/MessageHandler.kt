@@ -1,21 +1,29 @@
 package com.labijie.application.async.handler
 
-import com.labijie.application.async.SmsSink
 import com.labijie.application.component.IMessageSender
 import com.labijie.application.model.SendSmsTemplateParam
 import org.springframework.cloud.stream.annotation.EnableBinding
 import org.springframework.cloud.stream.annotation.StreamListener
+import org.springframework.context.annotation.Bean
+import java.util.function.Consumer
 
 /**
  * Created with IntelliJ IDEA.
  * @author Anders Xiao
  * @date 2019-12-06
  */
-@EnableBinding(value =[SmsSink::class])
 class MessageHandler(
     private val messageSender: IMessageSender) {
-    @StreamListener(SmsSink.INPUT)
-    fun handleSms(param: SendSmsTemplateParam) {
-        messageSender.sendSmsTemplate(param, async = false, checkTimeout = true)
+
+    companion object {
+        const val STREAM_SMS_OUT = "handleSms-out-0"
+        const val STREAM_SMS_IN = "handleSms-in-0"
+    }
+
+    @Bean
+    fun handleSms() : Consumer<SendSmsTemplateParam> {
+        return Consumer {
+            messageSender.sendSmsTemplate(it, async = false, checkTimeout = true)
+        }
     }
 }

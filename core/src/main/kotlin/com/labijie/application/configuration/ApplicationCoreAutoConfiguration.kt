@@ -3,8 +3,6 @@ package com.labijie.application.configuration
 import com.labijie.application.ApplicationInitializationRunner
 import com.labijie.application.ErrorRegistry
 import com.labijie.application.IErrorRegistry
-import com.labijie.application.async.SmsSink
-import com.labijie.application.async.SmsSource
 import com.labijie.application.async.handler.MessageHandler
 import com.labijie.application.component.IHumanChecker
 import com.labijie.application.component.IMessageSender
@@ -22,10 +20,7 @@ import okhttp3.ConnectionPool
 import okhttp3.OkHttpClient
 import org.springframework.beans.factory.ObjectProvider
 import org.springframework.boot.autoconfigure.AutoConfigureBefore
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
-import org.springframework.boot.autoconfigure.condition.ConditionalOnNotWebApplication
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
-import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication
+import org.springframework.boot.autoconfigure.condition.*
 import org.springframework.boot.autoconfigure.web.client.RestTemplateAutoConfiguration
 import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.boot.context.properties.EnableConfigurationProperties
@@ -35,10 +30,8 @@ import org.springframework.boot.web.reactive.context.AnnotationConfigReactiveWeb
 import org.springframework.boot.web.servlet.context.AnnotationConfigServletWebServerApplicationContext
 import org.springframework.cloud.commons.httpclient.OkHttpClientConnectionPoolFactory
 import org.springframework.cloud.commons.httpclient.OkHttpClientFactory
-import org.springframework.cloud.stream.annotation.EnableBinding
 import org.springframework.context.ConfigurableApplicationContext
 import org.springframework.context.annotation.Bean
-import org.springframework.context.annotation.ComponentScan
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Lazy
 import org.springframework.core.annotation.Order
@@ -115,16 +108,16 @@ class ApplicationCoreAutoConfiguration {
     @ConfigurationProperties("application.sms")
     fun smsBaseSettings(): SmsBaseSettings = SmsBaseSettings()
 
-    @Configuration(proxyBeanMethods = false)
-    @ConditionalOnProperty(value = ["application.sms.async.enabled"], matchIfMissing = true)
-    @EnableBinding(value = [SmsSource::class])
-    protected class MessageSourceConfiguration
 
     @Configuration(proxyBeanMethods = false)
-    @ConditionalOnProperty(value = ["application.sms.async.enabled"], matchIfMissing = false)
-    @ConditionalOnMissingBean(SmsSink::class)
-    @ComponentScan(basePackageClasses = [MessageHandler::class])
-    protected class MessageSinkConfiguration
+    @ConditionalOnBean(IMessageSender::class)
+    @ConditionalOnProperty(value = ["application.sms.async.sink-enabled"], matchIfMissing = true)
+    protected class MessageSinkConfiguration {
+        @Bean
+        fun messageHandler(messageSender: IMessageSender): MessageHandler {
+            return MessageHandler(messageSender)
+        }
+    }
 
     @Configuration(proxyBeanMethods = false)
     @ConditionalOnProperty(value = ["application.okhttp.enabled"], matchIfMissing = true)

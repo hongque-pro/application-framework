@@ -1,6 +1,6 @@
 package com.labijie.application.component
 
-import com.labijie.application.async.SmsSource
+import com.labijie.application.async.handler.MessageHandler
 import com.labijie.application.configuration.SmsBaseSettings
 import com.labijie.application.configuration.SmsTemplates
 import com.labijie.application.exception.InvalidCaptchaException
@@ -17,6 +17,7 @@ import com.labijie.infra.spring.configuration.isDevelopment
 import com.labijie.infra.utils.logger
 import org.springframework.beans.factory.NoSuchBeanDefinitionException
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.cloud.stream.function.StreamBridge
 import org.springframework.context.ApplicationContext
 import org.springframework.context.ApplicationContextAware
 import org.springframework.core.env.Environment
@@ -34,7 +35,7 @@ abstract class MessageSenderBase constructor(
     protected val rfc6238TokenService: Rfc6238TokenService
 ) : IMessageSender, ApplicationContextAware {
 
-    private var smsSource: SmsSource? = null
+    private var smsSource: StreamBridge? = null
     private var smsSourceLoaded = false
     private var applicationContext:ApplicationContext? = null
 
@@ -46,12 +47,12 @@ abstract class MessageSenderBase constructor(
         this.applicationContext?.getBean(SmsBaseSettings::class.java) ?: throw RuntimeException()
     }
 
-    protected  val asyncSource: SmsSource?
+    protected  val asyncSource: StreamBridge?
     get() {
         val context = applicationContext
         if(!smsSourceLoaded && context != null) {
             smsSource = try {
-                context.getBean(SmsSource::class.java)
+                context.getBean(StreamBridge::class.java)
             } catch (e: NoSuchBeanDefinitionException) {
                 null
             }
@@ -62,8 +63,6 @@ abstract class MessageSenderBase constructor(
         return smsSource
     }
 
-    @Value("\${application.sms.send-rate-limit:1m}")
-    protected val sendRateLite: Duration = Duration.ofMinutes(1)
 
     protected val isDevelopment = environment?.isDevelopment ?: false
     protected open val frequencyLimited:Boolean = true
@@ -119,8 +118,8 @@ abstract class MessageSenderBase constructor(
 
     override fun sendSmsTemplate(param: SendSmsTemplateParam, async: Boolean, checkTimeout: Boolean) {
         if (checkTimeout && (System.currentTimeMillis() - param.sendTime) >=
-            Duration.ofMinutes(this.smsBaseSettings.async.sendTimeoutMinutes).toMillis()) {
-            logger.warn("timeout sms: ${JacksonHelper.serializeAsString(param)}")
+            this.smsBaseSettings.async.messageExpiration.toMillis()) {
+            logger.warn("sms message expired: ${JacksonHelper.serializeAsString(param)}")
             return
         }
         limitFrequency(param.template, param.phoneNumber) {
@@ -130,7 +129,7 @@ abstract class MessageSenderBase constructor(
 
     private fun sendSmsCore(param: SendSmsTemplateParam, async: Boolean) {
         if (async && asyncSource != null) {
-            asyncSource!!.output().send(GenericMessage(param))
+            asyncSource?.send(MessageHandler.STREAM_SMS_OUT, GenericMessage(param))
         } else {
             this.sendSmsGeneralTemplate(param.phoneNumber, param.template, param.templateParam)
         }
@@ -157,7 +156,7 @@ abstract class MessageSenderBase constructor(
         val key = "sms:$captchaType:send:$phoneNumber"
         try {
           val lastSend = if(this.frequencyLimited) (cacheManager.get(key, Long::class.java) as? Long) ?: 0 else 0
-          if (this.frequencyLimited && (System.currentTimeMillis() - lastSend) < sendRateLite.toMillis()) {
+          if (this.frequencyLimited && (System.currentTimeMillis() - lastSend) < smsBaseSettings.sendRateLimit.toMillis()) {
                 throw SmsTooFrequentlyException()
             }
         }catch (e:CacheException){
@@ -165,7 +164,7 @@ abstract class MessageSenderBase constructor(
         }
         val r = sendAction.invoke()
         try {
-            cacheManager.set(key, System.currentTimeMillis(), this.sendRateLite.toMillis())
+            cacheManager.set(key, System.currentTimeMillis(), smsBaseSettings.sendRateLimit.toMillis())
         } catch (e:CacheException){
             logger.error("Set sms send frequency to cache fault. key: $key", e)
         }

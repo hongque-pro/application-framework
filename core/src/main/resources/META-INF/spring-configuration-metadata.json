@@ -7,23 +7,34 @@
     {
       "name": "application.okhttp",
       "type": "com.labijie.application.configuration.OkHttpClientProperties"
+    },
+    {
+      "name": "application.sms",
+      "type": "com.labijie.application.configuration.SmsBaseSettings"
+    },
+    {
+      "name": "application.sms.async",
+      "type": "com.labijie.application.configuration.SmsAsyncSettings"
     }
   ],
   "properties": [
     {
       "name": "application.sms.send-rate-limit",
+      "sourceType": "com.labijie.application.configuration.SmsBaseSettings",
       "type": "java.time.Duration",
-      "defaultValue": "1m"
+      "defaultValue": "10s"
     },
     {
-      "name": "application.sms.async.enabled",
+      "name": "application.sms.async.sink-enabled",
+      "sourceType": "com.labijie.application.configuration.SmsAsyncSettings",
       "type": "java.lang.Boolean",
       "defaultValue": true
     },
     {
-      "name": "application.sms.async.send-timeout-minutes",
-      "type": "java.lang.Long",
-      "sourceType": "com.labijie.application.configuration.SmsAsyncSettings"
+      "name": "application.sms.async.message-expiration",
+      "type": "java.time.Duration",
+      "sourceType": "com.labijie.application.configuration.SmsAsyncSettings",
+      "defaultValue": "1m"
     },
     {
       "name": "application.okhttp.enabled",

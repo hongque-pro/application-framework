@@ -19,7 +19,7 @@ fun SnowflakeSlotMapper.count(completer: CountCompleter) =
 fun SnowflakeSlotMapper.delete(completer: DeleteCompleter) =
     deleteFrom(this::delete, SnowflakeSlot, completer)
 
-fun SnowflakeSlotMapper.deleteByPrimaryKey(slotNumber_: Short) =
+fun SnowflakeSlotMapper.deleteByPrimaryKey(slotNumber_: String) =
     delete {
         where(slotNumber, isEqualTo(slotNumber_))
     }
@@ -62,7 +62,7 @@ fun SnowflakeSlotMapper.select(completer: SelectCompleter) =
 fun SnowflakeSlotMapper.selectDistinct(completer: SelectCompleter) =
     selectDistinct(this::selectMany, columnList, SnowflakeSlot, completer)
 
-fun SnowflakeSlotMapper.selectByPrimaryKey(slotNumber_: Short) =
+fun SnowflakeSlotMapper.selectByPrimaryKey(slotNumber_: String) =
     selectOne {
         where(slotNumber, isEqualTo(slotNumber_))
     }

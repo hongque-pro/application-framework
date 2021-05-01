@@ -8,6 +8,8 @@ import com.labijie.application.data.mapper.SnowflakeSlotDynamicSqlSupport.Snowfl
 import com.labijie.application.orDefault
 import com.labijie.infra.SecondIntervalTimeoutTimer
 import com.labijie.infra.commons.snowflake.ISlotProvider
+import com.labijie.infra.commons.snowflake.SnowflakeException
+import com.labijie.infra.commons.snowflake.configuration.SnowflakeConfig
 import com.labijie.infra.scheduling.IntervalTask
 import com.labijie.infra.spring.configuration.NetworkConfig
 import io.netty.util.Timeout
@@ -31,6 +33,7 @@ import java.util.concurrent.atomic.AtomicLong
 
 class JdbcSlotProvider constructor(
         maxSlot: Int,
+        snowflakeConfig: SnowflakeConfig,
         networkConfig: NetworkConfig,
         private val transactionTemplate: TransactionTemplate,
         private val jdbcSlotProviderProperties: JdbcSlotProviderProperties,
@@ -38,12 +41,14 @@ class JdbcSlotProvider constructor(
         private val updateMapper: SnowflakeCustomMapper) : ISlotProvider, AutoCloseable {
 
     @Autowired
-    constructor(networkConfig: NetworkConfig,
-                transactionTemplate: TransactionTemplate,
-                jdbcSlotProviderProperties: JdbcSlotProviderProperties,
-                mapper: SnowflakeSlotMapper,
-                updateMapper: SnowflakeCustomMapper) :
-            this(1024, networkConfig, transactionTemplate, jdbcSlotProviderProperties, mapper, updateMapper)
+    constructor(
+            snowflakeConfig: SnowflakeConfig,
+            networkConfig: NetworkConfig,
+            transactionTemplate: TransactionTemplate,
+            jdbcSlotProviderProperties: JdbcSlotProviderProperties,
+            mapper: SnowflakeSlotMapper,
+            updateMapper: SnowflakeCustomMapper) :
+            this(1024, snowflakeConfig, networkConfig, transactionTemplate, jdbcSlotProviderProperties, mapper, updateMapper)
 
     companion object {
         @JvmStatic
@@ -51,19 +56,24 @@ class JdbcSlotProvider constructor(
     }
 
     private var maxSlotCount = maxSlot
+    private var scope = snowflakeConfig.scope
 
     private val ipAddr = networkConfig.getIPAddress()
     private var task: IntervalTask? = null
     private val renewCount = AtomicLong()
 
     fun getRenewCount(): Long {
-       return renewCount.get()
+        return renewCount.get()
     }
 
     @Volatile
     private var stopped = false
     var slot: Short? = null
 
+    
+    fun getSlotValue(slot: Short): String {
+        return "$scope:$slot"
+    }
 
     val instanceId: String by lazy {
         when (jdbcSlotProviderProperties.instanceIdentity) {
@@ -71,6 +81,8 @@ class JdbcSlotProvider constructor(
             else -> UUID.randomUUID().toString().replace("-", "")
         }
     }
+
+
 
     private fun getTimeExpired(): Long = System.currentTimeMillis() + jdbcSlotProviderProperties.timeout.toMillis()
 
@@ -85,6 +97,8 @@ class JdbcSlotProvider constructor(
             this.task?.cancel()
             this.slot = slotGot.toShort()
             SecondIntervalTimeoutTimer.interval(Duration.ofMillis(interval), this::updateTimeExpired)
+        }else if(throwIfNoneSlot){
+            throw SnowflakeException("There is no available slot for snowflake.")
         }
         return slotGot
     }
@@ -93,11 +107,11 @@ class JdbcSlotProvider constructor(
         if (this.stopped) {
             return SecondIntervalTimeoutTimer.TaskResult.Break
         }
-        transactionTemplate.configure(isolationLevel = Isolation.SERIALIZABLE).execute {
-            val id = instanceId
-            val expired = getTimeExpired()
-            val slotValue = slot ?: throw RuntimeException("slot value is null currently, jdbc slot update task fault.")
+        val id = instanceId
+        val expired = getTimeExpired()
+        val slotValue = getSlotValue(slot ?: throw RuntimeException("slot value is null currently, jdbc slot update task fault."))
 
+        transactionTemplate.configure(isolationLevel = Isolation.SERIALIZABLE).execute {
             val count = this.mapper.update {
                 set(SnowflakeSlot.timeExpired).equalTo(expired)
                 where(SnowflakeSlot.slotNumber, SqlBuilder.isEqualTo(slotValue))
@@ -130,7 +144,7 @@ class JdbcSlotProvider constructor(
             }
 
             val count = transactionTemplate.configure(isolationLevel = Isolation.SERIALIZABLE).execute {
-                updateMapper.tryUpdate(latestSlot, instanceId, ipAddr, getTimeExpired(), System.currentTimeMillis())
+                updateMapper.tryUpdate(getSlotValue(latestSlot), instanceId, ipAddr, getTimeExpired(), System.currentTimeMillis())
             } ?: 0
 
             if (count == 1) {
@@ -146,17 +160,19 @@ class JdbcSlotProvider constructor(
      * @return record, isNew
      */
     private fun getOrCreateSlot(latestId: Short): Pair<SnowflakeSlotRecord, Boolean> {
+        val slotValue = getSlotValue(latestId)
+
         var isNew = false
-        var r = transactionTemplate.configure(isReadOnly = true, isolationLevel =Isolation.SERIALIZABLE).execute {
+        var r = transactionTemplate.configure(isReadOnly = true, isolationLevel = Isolation.SERIALIZABLE).execute {
             mapper.selectOne {
-                where(SnowflakeSlot.slotNumber, SqlBuilder.isEqualTo(latestId))
+                where(SnowflakeSlot.slotNumber, SqlBuilder.isEqualTo(slotValue))
             }
         }
 
         if (r == null) {
             r = try {
                 val record = SnowflakeSlotRecord(
-                        latestId,
+                        slotValue,
                         this.instanceId,
                         ipAddr,
                         getTimeExpired()
@@ -168,9 +184,9 @@ class JdbcSlotProvider constructor(
                 record
             } catch (e: DuplicateKeyException) {
                 log.debug(e.toString())
-                val existed = transactionTemplate.configure(isReadOnly = true,  isolationLevel = Isolation.SERIALIZABLE).execute {
+                val existed = transactionTemplate.configure(isReadOnly = true, isolationLevel = Isolation.SERIALIZABLE).execute {
                     mapper.selectOne {
-                        where(SnowflakeSlot.slotNumber, SqlBuilder.isEqualTo(latestId))
+                        where(SnowflakeSlot.slotNumber, SqlBuilder.isEqualTo(slotValue))
                     }
                 }
                 existed

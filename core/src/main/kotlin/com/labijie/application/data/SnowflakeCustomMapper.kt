@@ -18,7 +18,7 @@ interface SnowflakeCustomMapper {
             "instance=#{instanceId}, addr=#{addr}, time_expired=#{timeExpired} " +
             "where slot_number=#{slotNumber} and (instance=#{instanceId} or time_expired <= #{nowTime})")
     fun tryUpdate(
-            @Param("slotNumber") slotNumber: Short,
+            @Param("slotNumber") slotNumber: String,
             @Param("instanceId") instanceId: String,
             @Param("addr") addr: String,
             @Param("timeExpired") timeExpired: Long,

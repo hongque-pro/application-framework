@@ -8,7 +8,7 @@ import org.mybatis.dynamic.sql.SqlTable
 
 object SnowflakeSlotDynamicSqlSupport {
     object SnowflakeSlot : SqlTable("core_snowflake_slots") {
-        val slotNumber = column<Short>("slot_number", JDBCType.SMALLINT)
+        val slotNumber = column<String>("slot_number", JDBCType.VARCHAR)
 
         val instance = column<String>("`instance`", JDBCType.VARCHAR)
 

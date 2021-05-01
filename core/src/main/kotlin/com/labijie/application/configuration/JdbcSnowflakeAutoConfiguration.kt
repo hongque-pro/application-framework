@@ -42,6 +42,6 @@ class JdbcSnowflakeAutoConfiguration {
             transactionTemplate:TransactionTemplate,
             networkConfig: NetworkConfig,
             snowflakeConfig: SnowflakeConfig): ISlotProvider {
-        return JdbcSlotProvider(networkConfig, transactionTemplate, jdbcSlotProviderProperties, mapper, updateMapper)
+        return JdbcSlotProvider(snowflakeConfig, networkConfig, transactionTemplate, jdbcSlotProviderProperties, mapper, updateMapper)
     }
 }

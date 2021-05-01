@@ -40,7 +40,7 @@ interface SnowflakeSlotMapper {
 
     @SelectProvider(type=SqlProviderAdapter::class, method="select")
     @Results(id="SnowflakeSlotRecordResult", value = [
-        Result(column="slot_number", property="slotNumber", jdbcType=JdbcType.SMALLINT, id=true),
+        Result(column="slot_number", property="slotNumber", jdbcType=JdbcType.VARCHAR, id=true),
         Result(column="instance", property="instance", jdbcType=JdbcType.VARCHAR),
         Result(column="addr", property="addr", jdbcType=JdbcType.VARCHAR),
         Result(column="time_expired", property="timeExpired", jdbcType=JdbcType.BIGINT)

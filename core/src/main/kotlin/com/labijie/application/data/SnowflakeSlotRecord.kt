@@ -4,7 +4,7 @@
 package com.labijie.application.data
 
 data class SnowflakeSlotRecord(
-    var slotNumber: Short? = null,
+    var slotNumber: String? = null,
     var instance: String? = null,
     var addr: String? = null,
     var timeExpired: Long? = null

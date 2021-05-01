@@ -1,3 +1,10 @@
+processResources {
+    from(rootProject.getRootDir().toString() + "/sql-scripts") {
+        include "snowflake.sql"
+    }
+}
+
+
 dependencies {
     compile "com.labijie.infra:commons-core-starter:$infra_commons_version"
     compile "com.labijie.infra:commons-snowflake-starter:$infra_commons_version"

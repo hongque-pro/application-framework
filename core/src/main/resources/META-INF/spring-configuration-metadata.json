@@ -98,7 +98,7 @@
       "name": "infra.snowflake.jdbc.instance-identity",
       "type": "com.labijie.application.snowflake.InstanceIdentity",
       "sourceType": "com.labijie.application.snowflake.JdbcSlotProviderProperties",
-      "defaultValue": "IP"
+      "defaultValue": "UUID"
     },
     {
       "name": "infra.snowflake.jdbc.timeout",

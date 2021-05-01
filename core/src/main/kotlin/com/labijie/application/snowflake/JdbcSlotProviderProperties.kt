@@ -11,6 +11,6 @@ import java.time.Duration
  */
 @ConfigurationProperties("infra.snowflake.jdbc")
 data class JdbcSlotProviderProperties(
-        var instanceIdentity: InstanceIdentity = InstanceIdentity.IP,
+        var instanceIdentity: InstanceIdentity = InstanceIdentity.UUID,
         var timeout: Duration = Duration.ofMinutes(3)
 )

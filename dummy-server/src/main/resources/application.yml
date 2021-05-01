@@ -21,9 +21,8 @@ infra:
       jwt:
         simpleKey:  aaa
   snowflake:
-    provider: static
-    static:
-      slot: 1
+    provider: jdbc
+
 application:
   sms:
     controller-enabled: true

@@ -4,7 +4,7 @@ buildscript {
         slf4j_version = '1.7.30'
         infra_caching_version='1.2.2'
         infra_commons_version='2.1.0'
-        infra_oauth2_version = '1.1.1'
+        infra_oauth2_version = '1.1.2'
         infra_stream_version='1.0.0'
 
         uber_h3_version='3.7.0'

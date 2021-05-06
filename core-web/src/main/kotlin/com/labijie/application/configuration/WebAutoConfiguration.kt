@@ -159,8 +159,6 @@ class WebAutoConfiguration : WebMvcConfigurer {
 
             val consumers = setOf("application/json")
 
-            val applicationName = environment.getApplicationName(false)
-
             val info = ApiInfoBuilder()
                     .title("Application Framework")
                     .version(gitProperties?.get("build.version") ?: "0.0")

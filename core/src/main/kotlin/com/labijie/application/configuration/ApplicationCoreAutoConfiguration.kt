@@ -14,12 +14,14 @@ import com.labijie.application.okhttp.IOkHttpClientCustomizer
 import com.labijie.application.okhttp.OkHttpLoggingInterceptor
 import com.labijie.application.web.client.MultiRestTemplates
 import com.labijie.caching.ICacheManager
+import com.labijie.infra.commons.snowflake.configuration.SnowflakeAutoConfiguration
 import com.labijie.infra.json.JacksonHelper
 import com.labijie.infra.security.Rfc6238TokenService
 import okhttp3.ConnectionPool
 import okhttp3.OkHttpClient
 import org.springframework.beans.factory.ObjectProvider
 import org.springframework.boot.autoconfigure.AutoConfigureBefore
+import org.springframework.boot.autoconfigure.ImportAutoConfiguration
 import org.springframework.boot.autoconfigure.condition.*
 import org.springframework.boot.autoconfigure.web.client.RestTemplateAutoConfiguration
 import org.springframework.boot.context.properties.ConfigurationProperties

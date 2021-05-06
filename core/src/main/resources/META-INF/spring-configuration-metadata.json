@@ -15,6 +15,10 @@
     {
       "name": "application.sms.async",
       "type": "com.labijie.application.configuration.SmsAsyncSettings"
+    },
+    {
+      "name": "infra.snowflake.jdbc",
+      "type": "com.labijie.application.snowflake.JdbcSlotProviderProperties"
     }
   ],
   "properties": [
@@ -88,9 +92,30 @@
       "type": "java.lang.Boolean",
       "sourceType": "com.labijie.application.configuration.OkHttpClientProperties",
       "defaultValue": true
+    },
+
+    {
+      "name": "infra.snowflake.jdbc.instance-identity",
+      "type": "com.labijie.application.snowflake.InstanceIdentity",
+      "sourceType": "com.labijie.application.snowflake.JdbcSlotProviderProperties",
+      "defaultValue": "UUID"
+    },
+    {
+      "name": "infra.snowflake.jdbc.timeout",
+      "type": "java.time.Duration",
+      "sourceType": "com.labijie.application.snowflake.JdbcSlotProviderProperties",
+      "defaultValue": "3m"
     }
   ],
   "hints": [
+    {
+      "name": "infra.snowflake.provider",
+      "values": [
+        {
+          "value": "jdbc"
+        }
+      ]
+    },
     {
       "name": "application.validation.regex.keys",
       "values": [

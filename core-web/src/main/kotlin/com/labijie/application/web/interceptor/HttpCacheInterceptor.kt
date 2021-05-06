@@ -3,12 +3,11 @@ package com.labijie.application.web.interceptor
 import com.labijie.application.web.annotation.HttpCache
 import org.springframework.http.CacheControl
 import org.springframework.http.HttpHeaders
-import org.springframework.web.servlet.ModelAndView
-import org.springframework.web.servlet.handler.HandlerInterceptorAdapter
-import javax.servlet.http.HttpServletRequest
-import javax.servlet.http.HttpServletResponse
 import org.springframework.web.method.HandlerMethod
 import org.springframework.web.servlet.HandlerInterceptor
+import org.springframework.web.servlet.ModelAndView
+import javax.servlet.http.HttpServletRequest
+import javax.servlet.http.HttpServletResponse
 
 
 /**

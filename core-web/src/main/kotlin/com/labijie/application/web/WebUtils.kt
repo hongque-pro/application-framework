@@ -138,7 +138,7 @@ fun HandlerMethod.hasAnnotationOnMethodOrClass(annotation: KClass<out Annotation
     return this.hasMethodAnnotation(annotation.java) || AnnotationUtils.isAnnotationDeclaredLocally(annotation.java, this.method.declaringClass)
 }
 
-private const val ROLE_PREFIX = Constants.SCOPE_AUTHORITY_PREFIX
+private const val ROLE_PREFIX = Constants.ROLE_AUTHORITY_PREFIX
 
 fun roleAuthority(role: String): SimpleGrantedAuthority {
     return SimpleGrantedAuthority("$ROLE_PREFIX${role}")

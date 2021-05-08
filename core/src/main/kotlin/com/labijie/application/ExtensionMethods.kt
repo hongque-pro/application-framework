@@ -152,6 +152,10 @@ inline fun <reified T : Enum<*>> Number.toEnum(): T {
     return getEnumFromNumber(T::class.java, this) as T
 }
 
+inline fun <reified T : Enum<*>> String.toEnum(): T {
+    return getEnumFromString(T::class.java, this) as T
+}
+
 fun getEnumFromNumber(enumClass: Class<*>, value: Number): Enum<*>? {
     val enumClz = enumClass.enumConstants.map {
         it as Enum<*>
@@ -163,6 +167,16 @@ fun getEnumFromNumber(enumClass: Class<*>, value: Number): Enum<*>? {
         } else {
             it.ordinal == value.toInt()
         }
+    }
+}
+
+fun getEnumFromString(enumClass: Class<*>, value: String, ignoreCase: Boolean = false): Enum<*>? {
+    val enumClz = enumClass.enumConstants.map {
+        it as Enum<*>
+    }
+    return enumClz.firstOrNull {
+        val enum = it as Enum<*>
+        enum.name.equals(value, ignoreCase = ignoreCase)
     }
 }
 

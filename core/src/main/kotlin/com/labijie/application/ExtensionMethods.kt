@@ -175,8 +175,7 @@ fun getEnumFromString(enumClass: Class<*>, value: String, ignoreCase: Boolean = 
         it as Enum<*>
     }
     return enumClz.firstOrNull {
-        val enum = it as Enum<*>
-        enum.name.equals(value, ignoreCase = ignoreCase)
+        it.name.equals(value, ignoreCase = ignoreCase)
     }
 }
 

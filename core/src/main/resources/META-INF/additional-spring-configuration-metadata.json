@@ -1,0 +1,29 @@
+{
+  "hints": [
+    {
+      "name": "infra.snowflake.provider",
+      "values": [
+        {
+          "value": "jdbc"
+        }
+      ]
+    },
+    {
+      "name": "spring.cloud.stream.bindings.keys",
+      "values": [
+        {
+          "value": "handleSms-out-0"
+        },
+        {
+          "value": "handleSms-in-0"
+        }
+      ],
+      "providers": [
+        {
+          "name": "any"
+        }
+      ]
+    }
+
+  ]
+}

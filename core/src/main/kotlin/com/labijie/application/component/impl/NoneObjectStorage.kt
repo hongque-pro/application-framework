@@ -12,7 +12,7 @@ import java.net.URL
  * @date 2019-09-22
  */
 open class NoneObjectStorage : IObjectStorage {
-    override fun uploadObject(key: String, stream: InputStream, bucketPolicy: BucketPolicy) {
+    override fun uploadObject(key: String, stream: InputStream, bucketPolicy: BucketPolicy, contentLength: Long?) {
 
     }
 

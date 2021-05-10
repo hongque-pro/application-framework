@@ -1,0 +1,7 @@
+dependencies {
+    api project(":core")
+    implementation "io.minio:minio:$minio_version"
+    compileOnly "org.springframework.boot:spring-boot-starter-web"
+
+    kapt "org.springframework.boot:spring-boot-configuration-processor:$spring_boot_version"
+}

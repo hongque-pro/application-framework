@@ -2,6 +2,7 @@ package com.labijie.application.aliyun.impl.component
 
 import com.aliyun.oss.OSSErrorCode
 import com.aliyun.oss.OSSException
+import com.aliyun.oss.model.ObjectMetadata
 import com.labijie.application.BucketPolicy
 import com.labijie.application.aliyun.AliyunUtils
 import com.labijie.application.aliyun.OssPolicy
@@ -35,8 +36,13 @@ class AliyunOssStorage(private val aliyunUtils: AliyunUtils) : IObjectStorage {
         return aliyunUtils.oss.getObject(key, bucketPolicy.toOssPolicy())
     }
 
-    override fun uploadObject(key: String, stream: InputStream, bucketPolicy: BucketPolicy) {
-        aliyunUtils.oss.putObject(key, stream, bucketPolicy.toOssPolicy())
+    override fun uploadObject(key: String, stream: InputStream, bucketPolicy: BucketPolicy, contentLength: Long?) {
+        val metadata = contentLength?.let {
+            ObjectMetadata().apply {
+                this.contentLength = it
+            }
+        }
+        aliyunUtils.oss.putObject(key, stream, bucketPolicy.toOssPolicy(), metadata)
     }
 
     override fun generateObjectUrl(key: String, bucketPolicy: BucketPolicy): URL {

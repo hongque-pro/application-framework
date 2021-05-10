@@ -15,6 +15,6 @@ interface IObjectStorage {
     fun existObject(key:String, throwIfNotExisted:Boolean = false, bucketPolicy: BucketPolicy = BucketPolicy.PRIVATE) : Boolean
     fun deleteObject(key:String, bucketPolicy: BucketPolicy = BucketPolicy.PRIVATE):Boolean
     fun generateObjectUrl(key:String, bucketPolicy: BucketPolicy = BucketPolicy.PRIVATE):URL
-    fun uploadObject(key:String, stream: InputStream, bucketPolicy: BucketPolicy = BucketPolicy.PRIVATE)
+    fun uploadObject(key:String, stream: InputStream, bucketPolicy: BucketPolicy = BucketPolicy.PRIVATE, contentLength: Long? = null)
     fun getObject(key:String, bucketPolicy: BucketPolicy = BucketPolicy.PRIVATE):ByteArray
 }

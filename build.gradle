@@ -38,6 +38,8 @@ buildscript {
         aliyun_sdk_oss_version='3.12.0'
 //        aliyun_sdk_afs_version='1.0.0'
 
+        minio_version='8.2.1'
+
         huawei_esdk_obs_version='3.20.6.2'
 
         typescript_gen_version='2.17.558'
@@ -101,6 +103,8 @@ allprojects {
     apply plugin: 'kotlin-spring'
     apply plugin: 'java-library'
     apply plugin: 'com.gorylenko.gradle-git-properties'
+    apply plugin: 'kotlin-kapt'
+
     if(!project.name.startsWith("dummy")) {
         apply plugin: 'maven-publish'
     }

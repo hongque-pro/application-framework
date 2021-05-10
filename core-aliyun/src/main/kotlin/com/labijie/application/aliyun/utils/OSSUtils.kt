@@ -3,6 +3,7 @@ package com.labijie.application.aliyun.utils
 import com.aliyun.oss.ClientBuilderConfiguration
 import com.aliyun.oss.OSS
 import com.aliyun.oss.OSSClientBuilder
+import com.aliyun.oss.model.ObjectMetadata
 import com.aliyun.oss.model.PutObjectResult
 import com.labijie.application.aliyun.AliyunProcessException
 import com.labijie.application.aliyun.OssPolicy
@@ -49,10 +50,14 @@ open class OSSUtils internal constructor(private val configuration: AliyunProper
         }
     }
 
-    open fun putObject(key: String, stream: InputStream, policy: OssPolicy = OssPolicy.PRIVATE): PutObjectResult {
+    open fun putObject(key: String, stream: InputStream, policy: OssPolicy = OssPolicy.PRIVATE, metadata: ObjectMetadata?): PutObjectResult {
         return useClient(policy) {
             val bucket = getBucketProperties(policy)
-            it.putObject(bucket.bucket, key, stream)
+            if(metadata != null){
+                it.putObject(bucket.bucket, key, stream, metadata)
+            }else{
+                it.putObject(bucket.bucket, key, stream)
+            }
         }
     }
 

@@ -57,7 +57,7 @@ class MinioAutoConfiguration {
 
     @ConditionalOnBean()
     @Configuration(proxyBeanMethods = false)
-    @ConditionalOnProperty(prefix = "application.minio", name = ["sts-controller-enabled"], havingValue = "true", matchIfMissing = true)
+    @ConditionalOnProperty(prefix = "application.minio", name = ["controller-enabled"], havingValue = "true", matchIfMissing = true)
     @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
     protected class MinioWebAutoConfiguration {
 

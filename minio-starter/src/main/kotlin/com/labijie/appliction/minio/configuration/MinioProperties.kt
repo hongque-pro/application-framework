@@ -15,7 +15,7 @@ data class MinioProperties(
     var publicBucket: String = "",
     var accessKey: String = "",
     var secretKey: String = "",
-    var stsControllerEnabled: Boolean = true,
+    var controllerEnabled: Boolean = true,
     /**
      * presigned object url timeout.
      */

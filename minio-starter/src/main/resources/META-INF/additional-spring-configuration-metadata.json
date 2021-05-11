@@ -9,7 +9,7 @@
       "defaultValue": "us-east-1"
     },
     {
-      "name": "application.minio.sts-controller-enabled",
+      "name": "application.minio.controller-enabled",
       "defaultValue": true
     },
     {

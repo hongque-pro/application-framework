@@ -36,6 +36,7 @@ import org.springframework.context.ConfigurableApplicationContext
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Lazy
+import org.springframework.core.Ordered
 import org.springframework.core.annotation.Order
 import org.springframework.core.env.Environment
 import org.springframework.http.client.OkHttp3ClientHttpRequestFactory
@@ -56,9 +57,10 @@ import javax.annotation.PreDestroy
 @Configuration(proxyBeanMethods = false)
 @EnableConfigurationProperties(ValidationConfiguration::class)
 @AutoConfigureBefore(RestTemplateAutoConfiguration::class)
-@Order(Int.MAX_VALUE)
 @EnableAsync
-class ApplicationCoreAutoConfiguration {
+class ApplicationCoreAutoConfiguration: Ordered {
+
+    override fun getOrder(): Int = Int.MAX_VALUE
 
     @Bean
     @ConditionalOnMissingBean(IMessageSender::class)
@@ -222,4 +224,6 @@ class ApplicationCoreAutoConfiguration {
             }
         }
     }
+
+
 }

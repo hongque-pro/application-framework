@@ -19,7 +19,7 @@ class HuaweiObsStorage(private val huaweiUtils: HuaweiUtils): IObjectStorage {
         return huaweiUtils.generateObjectUrl(key, bucketPolicy)
     }
 
-    override fun uploadObject(key: String, stream: InputStream, bucketPolicy: BucketPolicy) {
+    override fun uploadObject(key: String, stream: InputStream, bucketPolicy: BucketPolicy, contentLength: Long?) {
         return huaweiUtils.uploadObject(key, stream, bucketPolicy)
     }
 

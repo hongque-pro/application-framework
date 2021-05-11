@@ -1,0 +1,16 @@
+{
+  "properties": [
+    {
+      "name": "application.minio.endpoint",
+      "defaultValue": "http://localhost:9000"
+    },
+    {
+      "name": "application.minio.region",
+      "defaultValue": "us-east-1"
+    },
+    {
+      "name": "application.minio.sts-controller-enabled",
+      "defaultValue": true
+    }
+  ]
+}

@@ -1,13 +1,42 @@
 package com.labijie.appliction.minio
 
 import com.labijie.appliction.minio.configuration.MinioProperties
-import org.springframework.web.client.RestTemplate
+import com.labijie.appliction.minio.model.AssumedCredentials
+import com.labijie.appliction.minio.model.S3Policy
+import com.labijie.infra.json.JacksonHelper
+import io.minio.credentials.AssumeRoleProvider
+import okhttp3.OkHttpClient
+import okhttp3.RequestBody.Companion.toRequestBody
+import java.lang.IllegalArgumentException
 
-object MinioUtils {
-    /**
-     * https://github.com/minio/minio/blob/master/docs/sts/assume-role.md
-     */
-    fun assumeRole(restTemplate: RestTemplate, minioProperties: MinioProperties){
 
+open class MinioUtils(
+    private val applicationName: String,
+    private val properties: MinioProperties,
+    private val okHttpClient: OkHttpClient) {
+
+    init {
+        if((properties.publicBucket.isBlank() || properties.privateBucket.isBlank()) && applicationName.isBlank()){
+            throw IllegalArgumentException("When public bucket or private bucket use blank name, application name can not be blank.")
+        }
+    }
+
+    private val emptyHttpBody = "".toRequestBody()
+
+    fun assumeRole(): AssumedCredentials {
+        val assume = AssumeRoleProvider(
+            properties.baseUrl().toString(),
+            properties.accessKey,
+            properties.secretKey,
+            properties.safeStsTokenDurationInSeconds(),
+            JacksonHelper.serializeAsString(S3Policy(properties.safePrivateBucket(applicationName), properties.safePublicBucket(applicationName))),
+            properties.region,
+            null,
+            null,
+            null,
+            okHttpClient,
+        )
+        val credential = assume.fetch()
+        return AssumedCredentials.fromCredentials(credential)
     }
 }

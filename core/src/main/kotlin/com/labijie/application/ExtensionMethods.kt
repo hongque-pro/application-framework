@@ -48,7 +48,7 @@ fun parseDateTime(
     zone: ZoneOffset = ZoneOffset.ofHours(8),
     defaultValue: Long = 0
 ): Long {
-    if(timeString.isBlank()){
+    if (timeString.isBlank()) {
         return defaultValue
     }
     return try {
@@ -136,11 +136,27 @@ fun Any.formUrlEncode(urlSafeValue: Boolean = true): String {
     val map = (this as? Map<*, *>) ?: this.toMap()
     return map.entries.filter { !(it.value?.toString().isNullOrBlank()) && !(it.value?.toString().isNullOrEmpty()) }
         .joinToString("&") {
-            "${it.key}=${if (urlSafeValue) URLEncoder.encode(
-                it.value.toString(),
-                Charsets.UTF_8.name()
-            ) else it.value}"
+            "${it.key}=${
+                if (urlSafeValue) URLEncoder.encode(
+                    it.value.toString(),
+                    Charsets.UTF_8.name()
+                ) else it.value
+            }"
         }
+}
+
+fun Any.queryStringEncode(): String {
+    val map = (this as? Map<*, *>) ?: this.toMap()
+    return QueryStringEncoder(null).apply {
+        map.forEach {
+            val name = it.key?.toString()
+            val value = it.value?.toString()
+            if (!name.isNullOrBlank() && !value.isNullOrBlank()) {
+                this.addParam(name, value)
+            }
+        }
+
+    }.toString().removePrefix("?")
 }
 
 fun <T : Any> T.propertiesFrom(source: Any): T {
@@ -416,23 +432,23 @@ fun <T> Array<T>?.isNullOrEmpty(): Boolean {
     return this == null || this.isEmpty()
 }
 
-fun ICacheManager.removeAfterTransactionCommit(key: String, region: String = "", delay:Duration = Duration.ZERO) {
+fun ICacheManager.removeAfterTransactionCommit(key: String, region: String = "", delay: Duration = Duration.ZERO) {
     val sync = CacheRemoveTransactionSynchronization(this, key, region, delay)
     TransactionSynchronizationManager.registerSynchronization(sync)
 }
 
 internal class CacheRemoveTransactionSynchronization(
-    private val cacheManager:ICacheManager,
-    private val key:String,
-    private val region:String,
-    private val delay:Duration
+    private val cacheManager: ICacheManager,
+    private val key: String,
+    private val region: String,
+    private val delay: Duration
 ) : TransactionSynchronization {
     override fun afterCommit() {
-        if(delay.seconds > 0) {
-            SecondIntervalTimeoutTimer.newTimeout(delay.toMillis()){
+        if (delay.seconds > 0) {
+            SecondIntervalTimeoutTimer.newTimeout(delay.toMillis()) {
                 this.cacheManager.remove(key, region)
             }
-        }else{
+        } else {
             cacheManager.remove(key, region)
         }
     }

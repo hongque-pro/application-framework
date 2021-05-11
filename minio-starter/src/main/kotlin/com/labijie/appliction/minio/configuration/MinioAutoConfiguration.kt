@@ -1,25 +1,31 @@
 package com.labijie.appliction.minio.configuration
 
+import com.labijie.application.component.IObjectStorage
+import com.labijie.application.configuration.ApplicationCoreAutoConfiguration
 import com.labijie.appliction.minio.MinioObjectStorage
+import com.labijie.appliction.minio.MinioUtils
 import com.labijie.appliction.minio.web.MinioStsController
-import io.minio.GetObjectArgs
+import com.labijie.infra.spring.configuration.getApplicationName
 import io.minio.MinioClient
 import okhttp3.OkHttpClient
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.boot.autoconfigure.AutoConfigureBefore
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication
-import org.springframework.boot.autoconfigure.jersey.JerseyProperties
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.core.env.Environment
 
 @Configuration(proxyBeanMethods = false)
 @EnableConfigurationProperties(MinioProperties::class)
+@ConditionalOnMissingBean(IObjectStorage::class)
+@AutoConfigureBefore(ApplicationCoreAutoConfiguration::class)
 class MinioAutoConfiguration {
 
     @Bean
-    @ConditionalOnMissingBean(MinioClient::class)
     fun minioClient(
         properties: MinioProperties,
         @Autowired(required = false)
@@ -36,20 +42,26 @@ class MinioAutoConfiguration {
     }
 
     @Bean
+    fun minioUtils(environment: Environment, properties: MinioProperties, okHttpClient: OkHttpClient): MinioUtils {
+        return MinioUtils(environment.getApplicationName(), properties, okHttpClient)
+    }
+
+    @Bean
     fun minioObjectStorage(
+        environment: Environment,
         minioClient: MinioClient,
         minioProperties: MinioProperties
     ): MinioObjectStorage {
-        return MinioObjectStorage(minioProperties, minioClient)
+        return MinioObjectStorage(environment.getApplicationName(), minioProperties, minioClient)
     }
 
+    @ConditionalOnBean()
     @Configuration(proxyBeanMethods = false)
     @ConditionalOnProperty(prefix = "application.minio", name = ["sts-controller-enabled"], havingValue = "true", matchIfMissing = true)
     @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
     protected class MinioWebAutoConfiguration {
 
         @Bean
-        @ConditionalOnMissingBean(MinioStsController::class)
         fun minioStsController(): MinioStsController {
             return minioStsController()
         }

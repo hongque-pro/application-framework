@@ -5,24 +5,32 @@ import com.labijie.application.component.IObjectStorage
 import com.labijie.appliction.minio.configuration.MinioProperties
 import io.minio.*
 import io.minio.http.Method
+import org.omg.CORBA.Environment
+import java.awt.GraphicsEnvironment
 import java.io.FileInputStream
 import java.io.InputStream
+import java.lang.IllegalArgumentException
 import java.net.URL
 import java.security.InvalidKeyException
 import java.util.concurrent.TimeUnit
 
 class MinioObjectStorage(
+    private val applicationName: String,
     private val properties: MinioProperties,
     private val minioClient: MinioClient
 ) : IObjectStorage {
 
-    private val basUrl = if (properties.domainUrl.isBlank()) properties.endpoint else URL(properties.domainUrl.trim())
+    init {
+        if((properties.publicBucket.isBlank() || properties.privateBucket.isBlank()) && applicationName.isBlank()){
+            throw IllegalArgumentException("When public bucket or private bucket use blank name, application name can not be blank.")
+        }
+    }
 
     private fun getBucket(bucketPolicy: BucketPolicy): String {
         return if (bucketPolicy == BucketPolicy.PUBLIC) {
-            this.properties.publicBucket
+            this.properties.safePublicBucket(applicationName)
         } else {
-            this.properties.privateBucket
+            this.properties.safePrivateBucket(applicationName)
         }
     }
 
@@ -61,7 +69,7 @@ class MinioObjectStorage(
 
     override fun generateObjectUrl(key: String, bucketPolicy: BucketPolicy): URL {
         return if (bucketPolicy == BucketPolicy.PUBLIC) {
-            URL(this.basUrl, "${getBucket(bucketPolicy)}/$key")
+            URL(properties.baseUrl(), "${getBucket(bucketPolicy)}/$key")
         } else {
             val url = minioClient.getPresignedObjectUrl(
                 GetPresignedObjectUrlArgs
@@ -69,7 +77,7 @@ class MinioObjectStorage(
                     .method(Method.PUT)
                     .bucket(getBucket(bucketPolicy))
                     .`object`(key)
-                    .expiry(properties.presignedExpiration.seconds.toInt(), TimeUnit.SECONDS)
+                    .expiry(properties.presignedDuration.seconds.toInt(), TimeUnit.SECONDS)
                     .build()
             )
             return URL(url)

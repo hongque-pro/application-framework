@@ -1,0 +1,2 @@
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+  com.labijie.appliction.minio.configuration.MinioAutoConfiguration

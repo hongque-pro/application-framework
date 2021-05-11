@@ -5,8 +5,6 @@ import com.labijie.application.component.IObjectStorage
 import com.labijie.appliction.minio.configuration.MinioProperties
 import io.minio.*
 import io.minio.http.Method
-import org.omg.CORBA.Environment
-import java.awt.GraphicsEnvironment
 import java.io.FileInputStream
 import java.io.InputStream
 import java.lang.IllegalArgumentException
@@ -77,7 +75,7 @@ class MinioObjectStorage(
                     .method(Method.PUT)
                     .bucket(getBucket(bucketPolicy))
                     .`object`(key)
-                    .expiry(properties.presignedDuration.seconds.toInt(), TimeUnit.SECONDS)
+                    .expiry(properties.preSignedDuration.seconds.toInt(), TimeUnit.SECONDS)
                     .build()
             )
             return URL(url)

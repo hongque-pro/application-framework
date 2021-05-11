@@ -11,6 +11,14 @@
     {
       "name": "application.minio.sts-controller-enabled",
       "defaultValue": true
+    },
+    {
+      "name": "application.minio.pre-signed-duration",
+      "defaultValue": "10m"
+    },
+    {
+      "name": "application.minio.sts-token-duration",
+      "defaultValue": "10m"
     }
   ]
 }

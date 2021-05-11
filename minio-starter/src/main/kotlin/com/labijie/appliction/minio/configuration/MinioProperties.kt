@@ -19,7 +19,7 @@ data class MinioProperties(
     /**
      * presigned object url timeout.
      */
-    var presignedDuration: Duration = Duration.ofMinutes(10),
+    var preSignedDuration: Duration = Duration.ofMinutes(10),
     /**
      * sts (assumeRole) token timeout.
      */

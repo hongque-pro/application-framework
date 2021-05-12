@@ -24,11 +24,13 @@ open class MinioUtils(
     private val emptyHttpBody = "".toRequestBody()
 
     fun assumeRole(): AssumedCredentials {
+        val timeout = properties.safeStsTokenDurationInSeconds()
+
         val assume = AssumeRoleProvider(
             properties.baseUrl().toString(),
             properties.accessKey,
             properties.secretKey,
-            properties.safeStsTokenDurationInSeconds(),
+            timeout,
             JacksonHelper.serializeAsString(S3Policy(properties.safePrivateBucket(applicationName), properties.safePublicBucket(applicationName))),
             properties.region,
             null,
@@ -37,6 +39,6 @@ open class MinioUtils(
             okHttpClient,
         )
         val credential = assume.fetch()
-        return AssumedCredentials.fromCredentials(credential)
+        return AssumedCredentials.fromCredentials(credential, timeout)
     }
 }

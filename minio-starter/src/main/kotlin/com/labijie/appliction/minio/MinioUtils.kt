@@ -31,7 +31,7 @@ open class MinioUtils(
             properties.accessKey,
             properties.secretKey,
             timeout,
-            JacksonHelper.serializeAsString(S3Policy(properties.safePrivateBucket(applicationName), properties.safePublicBucket(applicationName))),
+            JacksonHelper.serializeAsString(S3Policy.make(properties.safePrivateBucket(applicationName), properties.safePublicBucket(applicationName))),
             properties.region,
             null,
             null,

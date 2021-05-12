@@ -1,7 +1,6 @@
 package com.labijie.appliction.minio.web
 
 import com.labijie.application.model.SimpleValue
-import com.labijie.application.propertiesFrom
 import com.labijie.appliction.minio.MinioObjectStorage
 import com.labijie.appliction.minio.MinioUtils
 import com.labijie.appliction.minio.configuration.MinioProperties
@@ -9,7 +8,6 @@ import com.labijie.appliction.minio.model.AssumedCredentials
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.validation.annotation.Validated
 import org.springframework.web.bind.annotation.*
-import java.net.URL
 import javax.validation.constraints.NotBlank
 
 

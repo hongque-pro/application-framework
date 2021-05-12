@@ -1,8 +1,6 @@
 package com.labijie.appliction.minio.model
 
 import io.minio.credentials.Credentials
-import io.minio.messages.ResponseDate
-import java.time.Duration
 
 data class AssumedCredentials(
     val accessKey: String,
@@ -11,7 +9,7 @@ data class AssumedCredentials(
     val sessionToken: String
 ) {
     companion object {
-        fun fromCredentials(credentials: Credentials, expiredDurationSeconds: Int): AssumedCredentials {
+        fun fromCredentials(credentials: Credentials, expireInSeconds: Int): AssumedCredentials {
             //过期时间有时区问题，等待官方改进？
 //            val expiration = credentials::class.java.declaredFields.first {
 //                it.name == "expiration"
@@ -25,7 +23,7 @@ data class AssumedCredentials(
             return AssumedCredentials(
                 credentials.accessKey(),
                 credentials.secretKey(),
-                expiredDurationSeconds,
+                expireInSeconds,
                 credentials.sessionToken()
             )
         }

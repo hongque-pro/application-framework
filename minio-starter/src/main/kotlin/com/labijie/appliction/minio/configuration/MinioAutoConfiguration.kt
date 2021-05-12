@@ -1,7 +1,8 @@
 package com.labijie.appliction.minio.configuration
 
 import com.labijie.application.component.IObjectStorage
-import com.labijie.application.configuration.ApplicationCoreAutoConfiguration
+import com.labijie.application.configuration.DefaultsAutoConfiguration
+import com.labijie.appliction.minio.MinioInitializer
 import com.labijie.appliction.minio.MinioObjectStorage
 import com.labijie.appliction.minio.MinioUtils
 import com.labijie.appliction.minio.web.MinioStsController
@@ -22,7 +23,7 @@ import org.springframework.core.env.Environment
 @Configuration(proxyBeanMethods = false)
 @EnableConfigurationProperties(MinioProperties::class)
 @ConditionalOnMissingBean(IObjectStorage::class)
-@AutoConfigureBefore(ApplicationCoreAutoConfiguration::class)
+@AutoConfigureBefore(DefaultsAutoConfiguration::class)
 class MinioAutoConfiguration {
 
     @Bean
@@ -53,6 +54,11 @@ class MinioAutoConfiguration {
         minioProperties: MinioProperties
     ): MinioObjectStorage {
         return MinioObjectStorage(environment.getApplicationName(), minioProperties, minioClient)
+    }
+
+    @Bean
+    fun minioInitializer(environment: Environment): MinioInitializer {
+        return MinioInitializer()
     }
 
     @ConditionalOnBean()

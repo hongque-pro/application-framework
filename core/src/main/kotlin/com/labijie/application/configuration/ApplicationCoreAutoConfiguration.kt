@@ -58,31 +58,10 @@ import javax.annotation.PreDestroy
 @EnableConfigurationProperties(ValidationConfiguration::class)
 @AutoConfigureBefore(RestTemplateAutoConfiguration::class)
 @EnableAsync
-class ApplicationCoreAutoConfiguration: Ordered {
+@Order(-1)
+class ApplicationCoreAutoConfiguration {
 
-    override fun getOrder(): Int = Int.MAX_VALUE
 
-    @Bean
-    @ConditionalOnMissingBean(IMessageSender::class)
-    fun noneMessageSender(
-        environment: Environment,
-        cacheManager: ICacheManager,
-        rfc6238TokenService: Rfc6238TokenService
-    ): IMessageSender {
-        return NoneMessageSender(environment, cacheManager, rfc6238TokenService)
-    }
-
-    @Bean
-    @ConditionalOnMissingBean(IHumanChecker::class)
-    fun noneHumanChecker(): NoneHumanChecker {
-        return NoneHumanChecker()
-    }
-
-    @Bean
-    @ConditionalOnMissingBean(IObjectStorage::class)
-    fun noneObjectStorage(): IObjectStorage {
-        return NoneObjectStorage()
-    }
 
     @Bean
     @ConditionalOnNotWebApplication

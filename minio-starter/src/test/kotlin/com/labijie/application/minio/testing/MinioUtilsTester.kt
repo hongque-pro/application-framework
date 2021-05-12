@@ -18,8 +18,8 @@ class MinioUtilsTester {
         try {
             val minioProperties = MinioProperties(
                 endpoint = URL("http://47.100.188.60:9000"),
-                accessKey = "minioadmin",
-                secretKey = "minioadmin"
+                accessKey = "stsadmin",
+                secretKey = "stsadmin-secret"
             )
 
             val utils = MinioUtils("dummy-app", minioProperties, OkHttpClient())

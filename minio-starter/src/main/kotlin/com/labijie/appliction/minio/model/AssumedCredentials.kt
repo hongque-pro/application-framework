@@ -3,7 +3,6 @@ package com.labijie.appliction.minio.model
 import io.minio.credentials.Credentials
 import io.minio.messages.ResponseDate
 import java.time.Duration
-import javax.crypto.SecretKey
 
 data class AssumedCredentials(
     val accessKey: String,
@@ -13,11 +12,11 @@ data class AssumedCredentials(
 ) {
     companion object {
         fun fromCredentials(credentials: Credentials): AssumedCredentials {
-            val expiration = credentials::class.java.fields.first {
+            val expiration = credentials::class.java.declaredFields.first {
                 it.name == "expiration"
             }
             expiration.isAccessible = true
-            val responseDate = expiration.get(null) as? ResponseDate
+            val responseDate = expiration.get(credentials) as? ResponseDate
 
             val timeout = responseDate?.zonedDateTime()?.toInstant()?.toEpochMilli()
                 ?: System.currentTimeMillis() + Duration.ofDays(30).toMillis()

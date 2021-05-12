@@ -28,7 +28,15 @@ class MinioStsController {
     private lateinit var minioObjectStorage: MinioObjectStorage
 
     private val config by lazy {
-        MinioConfig().propertiesFrom(properties)
+        MinioConfig().apply {
+            val baseUrl = properties.baseUrl()
+            this.schema = baseUrl.protocol
+            this.host = baseUrl.host
+            this.port = if(baseUrl.port > 0) baseUrl.port else null
+            this.region = properties.region
+            this.privateBucket = properties.privateBucket
+            this.publicBucket = properties.publicBucket
+        }
     }
 
     @GetMapping("/cnf")
@@ -36,7 +44,7 @@ class MinioStsController {
         return config
     }
 
-    @PostMapping("/assumeRole")
+    @PostMapping("/assume-role")
     fun assumeRole(): AssumedCredentials = minioUtils.assumeRole()
 
 
@@ -51,7 +59,9 @@ class MinioStsController {
 
 
     data class MinioConfig(
-        var domainUrl: String = "",
+        var schema: String = "",
+        var host: String = "",
+        var port: Int? = null,
         var region: String = "",
         var privateBucket: String = "",
         var publicBucket: String = "",

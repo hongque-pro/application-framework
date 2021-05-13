@@ -1,4 +1,4 @@
-package com.labijie.application.web.configuration
+package com.labijie.application.configuration
 
 import com.labijie.infra.oauth2.resource.IResourceAuthorizationConfigurer
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication

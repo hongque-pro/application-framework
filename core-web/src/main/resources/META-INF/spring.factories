@@ -1,2 +1,2 @@
 org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
-  com.labijie.application.web.configuration.WebAutoConfiguration
+  com.labijie.application.configuration.WebAutoConfiguration

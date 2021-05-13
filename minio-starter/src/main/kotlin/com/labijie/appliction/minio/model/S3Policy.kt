@@ -4,33 +4,31 @@ import com.fasterxml.jackson.annotation.JsonProperty
 import com.labijie.infra.json.JacksonHelper
 
 class S3Policy private constructor(buckets: List<String>, policy: List<S3PolicyStatement>? = null){
+
+    private constructor(bucket: String, policy: List<S3PolicyStatement>? = null): this(listOf(bucket), policy)
+
+    private constructor(bucket: String, policy: S3PolicyStatement? = null): this(listOf(bucket), policy?.let { listOf(it) })
+
     /*
     //TODO:目前并不支持创建非匿名用户的策略：
     https://github.com/minio/minio/issues/9530
      */
 
     companion object {
-        fun make(vararg buckets: String) = S3Policy(buckets.toList())
-
         const val POLICY_EFFECT_ALLOW = "Allow"
-        const val POLICY_EFFECT_DENY = "Deny"
+        //const val POLICY_EFFECT_DENY = "Deny"
 
+        fun makeReadWrite(vararg buckets: String) : S3Policy {
+           return S3Policy(buckets.toList()).apply {
+               this.statement.forEach {
+                   it.action = listOf("s3:GetObject", "s3:PutObject")
+               }
+           }
+        }
 
-//        fun makePrivate(bucket: String): S3Policy {
-//            val statement: S3PolicyStatement = S3PolicyStatementWithPrincipal(bucket).apply {
-//                this.action = listOf()
-//                //this.effect = POLICY_EFFECT_DENY
-//            }
-//
-//            return S3Policy(listOf(bucket), listOf(statement))
-//        }
-
-        fun makePublic(bucket: String): S3Policy {
-            val statement: S3PolicyStatement = S3PolicyStatementWithPrincipal(bucket).apply {
-                this.action = listOf("s3:GetObject","s3:GetBucketLocation")
-            }
-
-            return S3Policy(listOf(bucket), listOf(statement))
+        fun makeReadonly(bucket: String, includePrincipal: Boolean = true): S3Policy {
+            val getStatement = if(includePrincipal) S3PolicyStatementWithPrincipal(bucket) else S3PolicyStatement(bucket)
+            return S3Policy(bucket, getStatement)
         }
     }
 

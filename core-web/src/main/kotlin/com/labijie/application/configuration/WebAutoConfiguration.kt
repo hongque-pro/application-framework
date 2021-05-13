@@ -137,9 +137,6 @@ class WebAutoConfiguration : WebMvcConfigurer {
         fun oauthDocket(environment: Environment): Docket {
 
             val consumers = setOf("application/json")
-
-            val applicationName = environment.getApplicationName(false)
-
             val info = ApiInfoBuilder()
                     .title("Security OAuth2")
                     .version("1.0")

@@ -1,46 +1,84 @@
 package com.labijie.application.minio.testing
 
 import com.labijie.application.BucketPolicy
-import com.labijie.appliction.minio.MinioObjectStorage
-import com.labijie.appliction.minio.makeBucketIfNotExisted
-import com.labijie.appliction.minio.removeBucketIfExisted
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
+import java.io.ByteArrayInputStream
 import java.util.*
-import kotlin.test.AfterTest
-import kotlin.test.BeforeTest
 
-class MinioObjectStorageTester {
-
-    private val client = MinioTestHelper.createMinioClient()
-
-    private val storage = MinioObjectStorage(
-        "test",
-        MinioTestHelper.minioProperties,
-        client
-    )
-
-    @AfterTest
-    private fun cleanBuckets(){
-        val bucket1 = storage.getBucket(BucketPolicy.PUBLIC)
-        client.removeBucketIfExisted(bucket1)
-
-        val bucket2 = storage.getBucket(BucketPolicy.PRIVATE)
-        client.removeBucketIfExisted(bucket2)
-    }
-
-    @BeforeTest
-    private fun initBuckets(){
-        val bucket1 = storage.getBucket(BucketPolicy.PUBLIC)
-        client.makeBucketIfNotExisted(bucket1, BucketPolicy.PUBLIC)
-
-        val bucket2 = storage.getBucket(BucketPolicy.PRIVATE)
-        client.makeBucketIfNotExisted(bucket2, BucketPolicy.PRIVATE)
+class MinioObjectStorageTester : AbstractTester() {
+    @Test
+    fun testDeleteNothing() {
+        storage.deleteObject(UUID.randomUUID().toString(), BucketPolicy.PRIVATE)
+        storage.deleteObject(UUID.randomUUID().toString(), BucketPolicy.PUBLIC)
     }
 
     @Test
-    fun testDeleteNotExisted(){
-        val deleted =storage.deleteObject(UUID.randomUUID().toString(), BucketPolicy.PRIVATE)
-        Assertions.assertFalse(deleted)
+    fun testExist() {
+        var existed = storage.existObject(UUID.randomUUID().toString(), false, BucketPolicy.PRIVATE)
+        Assertions.assertFalse(existed)
     }
+
+    @Test
+    fun testUpload() {
+        val key = UUID.randomUUID().toString()
+
+        storage.uploadObject(
+            key,
+            ByteArrayInputStream("Test".toByteArray()),
+            BucketPolicy.PRIVATE,
+            "Test".toByteArray().size.toLong()
+        )
+
+        val existed = storage.existObject(key, false, BucketPolicy.PRIVATE)
+        Assertions.assertTrue(existed)
+    }
+
+    @Test
+    fun testUploadOverride() {
+        val key = UUID.randomUUID().toString()
+
+        val content1 = UUID.randomUUID().toString()
+        storage.uploadObject(
+            key,
+            ByteArrayInputStream(content1.toByteArray(Charsets.UTF_8)),
+            BucketPolicy.PRIVATE,
+            content1.toByteArray().size.toLong()
+        )
+
+        val got1 = storage.getObject(key, BucketPolicy.PRIVATE).toString(Charsets.UTF_8)
+        Assertions.assertEquals(content1, got1)
+
+        val content2 = UUID.randomUUID().toString()
+
+        storage.uploadObject(
+            key,
+            ByteArrayInputStream(content2.toByteArray(Charsets.UTF_8)),
+            BucketPolicy.PRIVATE,
+            content2.toByteArray().size.toLong()
+        )
+
+        val got2 = storage.getObject(key, BucketPolicy.PRIVATE).toString(Charsets.UTF_8)
+        Assertions.assertEquals(content2, got2)
+    }
+
+    @Test
+    fun testDeleteExisted() {
+        val key = UUID.randomUUID().toString()
+        storage.uploadObject(
+            key,
+            ByteArrayInputStream("Test".toByteArray()),
+            BucketPolicy.PRIVATE,
+            "Test".toByteArray().size.toLong()
+        )
+
+        var existed = storage.existObject(key, false, BucketPolicy.PRIVATE)
+        Assertions.assertTrue(existed)
+
+        storage.deleteObject(key, BucketPolicy.PRIVATE)
+
+        existed = storage.existObject(key, false, BucketPolicy.PRIVATE)
+        Assertions.assertFalse(existed)
+    }
+
 }

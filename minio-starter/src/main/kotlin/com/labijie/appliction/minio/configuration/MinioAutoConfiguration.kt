@@ -34,6 +34,8 @@ class MinioAutoConfiguration {
     ): MinioClient {
         return MinioClient.builder()
             .endpoint(properties.endpoint)
+            .endpoint(properties.endpoint)
+            .region(properties.region)
             .apply {
                 if (httpClient != null) {
                     this.httpClient(httpClient)

@@ -1,9 +1,7 @@
 package com.labijie.application.minio.testing
 
 import com.labijie.application.BucketPolicy
-import com.labijie.appliction.minio.makeBucketIfNotExisted
-import io.minio.MinioClient
-import io.minio.RemoveBucketArgs
+import com.labijie.appliction.minio.*
 import java.net.ConnectException
 import java.net.SocketTimeoutException
 import kotlin.test.Test
@@ -11,28 +9,21 @@ import kotlin.test.Test
 class MinioClientExtensionTester {
 
     @Test
-    fun testMakeBucket(){
-        val client = MinioTestHelper.createMinioClient()
+    fun testMakeBucket() {
+        val client = TestKit.createMinioClient()
         try {
             client.makeBucketIfNotExisted("test-private", BucketPolicy.PRIVATE)
             client.makeBucketIfNotExisted("test-public", BucketPolicy.PUBLIC)
-        }catch (e: ConnectException){
+        } catch (e: ConnectException) {
             e.printStackTrace()
-        }
-        catch (e:SocketTimeoutException){
+        } catch (e: SocketTimeoutException) {
             e.printStackTrace()
-        }
-        finally {
-            //deleteBucket(client, "test")
+        } finally {
+            client.removeBucketIfExisted("test-private")
+            client.removeBucketIfExisted("test-public")
         }
     }
 
-    private fun deleteBucket(client: MinioClient, bucket:String){
-        try {
-            client.removeBucket(RemoveBucketArgs.builder().bucket(bucket).build())
-        }catch (e: Exception){
-            e.printStackTrace()
-        }
-    }
+
 
 }

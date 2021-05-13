@@ -10,7 +10,7 @@ class MinioUtilsTester {
     @Test
     fun testAssumeRole() {
         try {
-            val utils = MinioTestHelper.createMinioUtils()
+            val utils = TestKit.createMinioUtils()
 
             val result = utils.assumeRole()
 

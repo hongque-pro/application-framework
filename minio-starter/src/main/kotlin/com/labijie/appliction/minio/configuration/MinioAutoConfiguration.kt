@@ -61,7 +61,7 @@ class MinioAutoConfiguration {
         return MinioInitializer()
     }
 
-    @ConditionalOnBean()
+    @ConditionalOnMissingBean(MinioStsController::class)
     @Configuration(proxyBeanMethods = false)
     @ConditionalOnProperty(prefix = "application.minio", name = ["controller-enabled"], havingValue = "true", matchIfMissing = true)
     @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
@@ -69,7 +69,7 @@ class MinioAutoConfiguration {
 
         @Bean
         fun minioStsController(): MinioStsController {
-            return minioStsController()
+            return MinioStsController()
         }
     }
 }

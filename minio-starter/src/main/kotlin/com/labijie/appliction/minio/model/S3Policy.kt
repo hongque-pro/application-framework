@@ -27,7 +27,7 @@ class S3Policy private constructor(buckets: List<String>, policy: List<S3PolicyS
 
         fun makePublic(bucket: String): S3Policy {
             val statement: S3PolicyStatement = S3PolicyStatementWithPrincipal(bucket).apply {
-                this.action = listOf("s3:GetObject")
+                this.action = listOf("s3:GetObject","s3:GetBucketLocation")
             }
 
             return S3Policy(listOf(bucket), listOf(statement))

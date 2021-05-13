@@ -5,7 +5,9 @@ import com.labijie.appliction.minio.MinioObjectStorage
 import com.labijie.appliction.minio.MinioUtils
 import com.labijie.appliction.minio.configuration.MinioProperties
 import com.labijie.appliction.minio.model.AssumedCredentials
+import com.labijie.infra.spring.configuration.getApplicationName
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.core.env.Environment
 import org.springframework.validation.annotation.Validated
 import org.springframework.web.bind.annotation.*
 import javax.validation.constraints.NotBlank
@@ -15,6 +17,8 @@ import javax.validation.constraints.NotBlank
 @RequestMapping("/objects")
 @Validated
 class MinioStsController {
+    @Autowired
+    private lateinit var environment: Environment
 
     @Autowired
     private lateinit var properties: MinioProperties
@@ -32,8 +36,8 @@ class MinioStsController {
             this.host = baseUrl.host
             this.port = if(baseUrl.port > 0) baseUrl.port else null
             this.region = properties.region
-            this.privateBucket = properties.privateBucket
-            this.publicBucket = properties.publicBucket
+            this.privateBucket = properties.safePrivateBucket(environment.getApplicationName())
+            this.publicBucket = properties.safePublicBucket(environment.getApplicationName())
         }
     }
 

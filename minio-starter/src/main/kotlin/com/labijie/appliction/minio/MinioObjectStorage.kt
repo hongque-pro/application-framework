@@ -4,6 +4,7 @@ import com.labijie.application.BucketPolicy
 import com.labijie.application.component.IObjectStorage
 import com.labijie.appliction.minio.configuration.MinioProperties
 import io.minio.*
+import io.minio.errors.ErrorResponseException
 import io.minio.http.Method
 import java.io.FileInputStream
 import java.io.InputStream
@@ -19,12 +20,12 @@ class MinioObjectStorage(
 ) : IObjectStorage {
 
     init {
-        if((properties.publicBucket.isBlank() || properties.privateBucket.isBlank()) && applicationName.isBlank()){
+        if ((properties.publicBucket.isBlank() || properties.privateBucket.isBlank()) && applicationName.isBlank()) {
             throw IllegalArgumentException("When public bucket or private bucket use blank name, application name can not be blank.")
         }
     }
 
-    private fun getBucket(bucketPolicy: BucketPolicy): String {
+    fun getBucket(bucketPolicy: BucketPolicy): String {
         return if (bucketPolicy == BucketPolicy.PUBLIC) {
             this.properties.safePublicBucket(applicationName)
         } else {
@@ -45,13 +46,20 @@ class MinioObjectStorage(
                     .build()
             )
             state != null
-        } catch (e: InvalidKeyException) {
-            false
+        } catch (ex: Exception) {
+            when (ex) {
+                is ErrorResponseException-> {
+                    if(ex.errorResponse().code() == MinioErrorCodes.NoSuchBucket) {
+                        return false
+                    }
+                }
+            }
+            throw ex
         }
     }
 
     override fun deleteObject(key: String, bucketPolicy: BucketPolicy): Boolean {
-        return try {
+        try {
             minioClient.removeObject(
                 RemoveObjectArgs
                     .builder()
@@ -59,9 +67,16 @@ class MinioObjectStorage(
                     .`object`(key)
                     .build()
             )
-            true
-        } catch (e: InvalidKeyException) {
-            false
+            return true
+        } catch (ex: Exception) {
+            when (ex) {
+                is ErrorResponseException-> {
+                    if(ex.errorResponse().code() == MinioErrorCodes.NoSuchBucket) {
+                        return true
+                    }
+                }
+            }
+            throw ex
         }
     }
 

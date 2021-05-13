@@ -4,6 +4,7 @@ import com.labijie.infra.oauth2.resource.IResourceAuthorizationConfigurer
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication
 import org.springframework.context.annotation.Configuration
 import org.springframework.core.Ordered
+import org.springframework.http.HttpMethod
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configurers.ExpressionUrlAuthorizationConfigurer
 
@@ -19,7 +20,8 @@ class DefaultResourceSecurityConfiguration : IResourceAuthorizationConfigurer, O
 
     override fun configure(registry: ExpressionUrlAuthorizationConfigurer<HttpSecurity>.ExpressionInterceptUrlRegistry) {
         //TODO: wait resource server starter fix this bug
-        registry.and().csrf().disable()
+        registry.and().cors()
+        registry.antMatchers(HttpMethod.OPTIONS).permitAll()
 
         val paths = mutableListOf(
             "/actuator/**",

@@ -13,6 +13,7 @@ import org.mybatis.spring.annotation.MapperScan
 import org.mybatis.spring.annotation.MapperScans
 import org.mybatis.spring.boot.autoconfigure.MybatisAutoConfiguration
 import org.springframework.boot.autoconfigure.AutoConfigureAfter
+import org.springframework.boot.autoconfigure.AutoConfigureBefore
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration
@@ -29,7 +30,8 @@ import org.springframework.transaction.support.TransactionTemplate
  */
 @ConditionalOnProperty(prefix = "infra.snowflake", name = ["provider"], havingValue = "jdbc", matchIfMissing = false)
 @Configuration(proxyBeanMethods = false)
-@AutoConfigureAfter(DataSourceAutoConfiguration::class, MybatisAutoConfiguration::class, CommonsAutoConfiguration::class)
+@AutoConfigureAfter(DataSourceAutoConfiguration::class, MybatisAutoConfiguration::class)
+@AutoConfigureBefore(CommonsAutoConfiguration::class)
 @MapperScan(basePackageClasses = [SnowflakeSlotMapper::class, SnowflakeCustomMapper::class])
 @EnableConfigurationProperties(JdbcSlotProviderProperties::class)
 class JdbcSnowflakeAutoConfiguration {

@@ -8,7 +8,7 @@ import java.net.URL
 import java.time.Duration
 
 object MinioTestHelper {
-    private val minioProperties = MinioProperties(
+    val minioProperties = MinioProperties(
         endpoint = URL("http://47.100.188.60:9000"),
         accessKey = "stsadmin",
         secretKey = "stsadmin-secret"

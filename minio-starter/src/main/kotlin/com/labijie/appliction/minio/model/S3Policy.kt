@@ -16,14 +16,14 @@ class S3Policy private constructor(buckets: List<String>, policy: List<S3PolicyS
         const val POLICY_EFFECT_DENY = "Deny"
 
 
-        fun makePrivate(bucket: String): S3Policy {
-            val statement: S3PolicyStatement = S3PolicyStatementWithPrincipal(bucket).apply {
-                this.action = listOf("s3:*")
-                this.effect = POLICY_EFFECT_DENY
-            }
-
-            return S3Policy(listOf(bucket), listOf(statement))
-        }
+//        fun makePrivate(bucket: String): S3Policy {
+//            val statement: S3PolicyStatement = S3PolicyStatementWithPrincipal(bucket).apply {
+//                this.action = listOf()
+//                //this.effect = POLICY_EFFECT_DENY
+//            }
+//
+//            return S3Policy(listOf(bucket), listOf(statement))
+//        }
 
         fun makePublic(bucket: String): S3Policy {
             val statement: S3PolicyStatement = S3PolicyStatementWithPrincipal(bucket).apply {

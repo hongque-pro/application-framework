@@ -31,10 +31,7 @@ import org.springframework.http.converter.HttpMessageConverter
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter
 import org.springframework.validation.beanvalidation.MethodValidationPostProcessor
 import org.springframework.web.method.support.HandlerMethodArgumentResolver
-import org.springframework.web.servlet.config.annotation.ContentNegotiationConfigurer
-import org.springframework.web.servlet.config.annotation.InterceptorRegistry
-import org.springframework.web.servlet.config.annotation.ViewControllerRegistry
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurer
+import org.springframework.web.servlet.config.annotation.*
 import springfox.documentation.builders.ApiInfoBuilder
 import springfox.documentation.builders.PathSelectors
 import springfox.documentation.builders.RequestHandlerSelectors
@@ -65,6 +62,15 @@ class WebAutoConfiguration : WebMvcConfigurer {
 
     @Autowired
     private lateinit var environment:Environment
+
+    override fun addCorsMappings(registry: CorsRegistry) {
+        registry.addMapping("/**")
+            .allowedOrigins("*")
+            .allowedMethods("*")
+            .allowCredentials(true)
+            .maxAge(3600)
+            .allowedHeaders("*");
+    }
 
 
     override fun addFormatters(registry: FormatterRegistry) {

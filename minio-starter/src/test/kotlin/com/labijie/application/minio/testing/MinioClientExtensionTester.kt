@@ -14,8 +14,8 @@ class MinioClientExtensionTester {
     fun testMakeBucket(){
         val client = MinioTestHelper.createMinioClient()
         try {
-            client.makeBucketIfNotExisted("test", BucketPolicy.PUBLIC)
-            client.makeBucketIfNotExisted("test", BucketPolicy.PUBLIC)
+            client.makeBucketIfNotExisted("test-private", BucketPolicy.PRIVATE)
+            client.makeBucketIfNotExisted("test-public", BucketPolicy.PUBLIC)
         }catch (e: ConnectException){
             e.printStackTrace()
         }
@@ -23,7 +23,7 @@ class MinioClientExtensionTester {
             e.printStackTrace()
         }
         finally {
-            deleteBucket(client, "test")
+            //deleteBucket(client, "test")
         }
     }
 

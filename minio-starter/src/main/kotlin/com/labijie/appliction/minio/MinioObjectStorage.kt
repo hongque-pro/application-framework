@@ -4,12 +4,12 @@ import com.labijie.application.BucketPolicy
 import com.labijie.application.component.IObjectStorage
 import com.labijie.appliction.minio.configuration.MinioProperties
 import io.minio.*
+import io.minio.errors.ErrorResponseException
 import io.minio.http.Method
+import org.slf4j.LoggerFactory
 import java.io.FileInputStream
 import java.io.InputStream
-import java.lang.IllegalArgumentException
 import java.net.URL
-import java.security.InvalidKeyException
 import java.util.concurrent.TimeUnit
 
 class MinioObjectStorage(
@@ -18,13 +18,18 @@ class MinioObjectStorage(
     private val minioClient: MinioClient
 ) : IObjectStorage {
 
+    companion object{
+        internal val logger = LoggerFactory.getLogger(MinioObjectStorage::class.java)
+        const val MIN_PART_SIZE =  5 *1024L * 1024L
+    }
+
     init {
-        if((properties.publicBucket.isBlank() || properties.privateBucket.isBlank()) && applicationName.isBlank()){
+        if ((properties.publicBucket.isBlank() || properties.privateBucket.isBlank()) && applicationName.isBlank()) {
             throw IllegalArgumentException("When public bucket or private bucket use blank name, application name can not be blank.")
         }
     }
 
-    private fun getBucket(bucketPolicy: BucketPolicy): String {
+    fun getBucket(bucketPolicy: BucketPolicy): String {
         return if (bucketPolicy == BucketPolicy.PUBLIC) {
             this.properties.safePublicBucket(applicationName)
         } else {
@@ -45,23 +50,35 @@ class MinioObjectStorage(
                     .build()
             )
             state != null
-        } catch (e: InvalidKeyException) {
-            false
+        } catch (ex: ErrorResponseException) {
+            if(ex.isNoSuchKey || ex.IsNoSuchBucketError){
+                return false
+            }
+            throw ex
         }
     }
 
     override fun deleteObject(key: String, bucketPolicy: BucketPolicy): Boolean {
-        return try {
+        val bucket = getBucket(bucketPolicy)
+        try {
             minioClient.removeObject(
                 RemoveObjectArgs
                     .builder()
-                    .bucket(getBucket(bucketPolicy))
+                    .bucket(bucket)
                     .`object`(key)
                     .build()
             )
-            true
-        } catch (e: InvalidKeyException) {
-            false
+            return true
+        } catch (ex: Exception) {
+            when (ex) {
+                is ErrorResponseException-> {
+                    if(ex.errorResponse().code() == MinioErrorCodes.NoSuchBucket) {
+                        logger.warn("Bucket '$bucket' is not found when delete object '$key'.")
+                        return false
+                    }
+                }
+            }
+            throw ex
         }
     }
 
@@ -84,14 +101,13 @@ class MinioObjectStorage(
 
     override fun uploadObject(key: String, stream: InputStream, bucketPolicy: BucketPolicy, contentLength: Long?) {
         var size = -1L
-        var partSize = 120 * 1024L //5M ~ 5G
+        var partSize = MIN_PART_SIZE//5M ~ 5G
 
         if (contentLength != null) {
             size = contentLength
             partSize = -1
         }
 
-        FileInputStream("")
         val args = PutObjectArgs.builder()
             .bucket(getBucket(bucketPolicy))
             .`object`(key)

@@ -4,24 +4,15 @@ import com.labijie.application.ApplicationInitializationRunner
 import com.labijie.application.ErrorRegistry
 import com.labijie.application.IErrorRegistry
 import com.labijie.application.async.handler.MessageHandler
-import com.labijie.application.component.IHumanChecker
 import com.labijie.application.component.IMessageSender
-import com.labijie.application.component.IObjectStorage
-import com.labijie.application.component.impl.NoneHumanChecker
-import com.labijie.application.component.impl.NoneMessageSender
-import com.labijie.application.component.impl.NoneObjectStorage
 import com.labijie.application.okhttp.IOkHttpClientCustomizer
 import com.labijie.application.okhttp.OkHttpLoggingInterceptor
 import com.labijie.application.web.client.MultiRestTemplates
-import com.labijie.caching.ICacheManager
-import com.labijie.infra.commons.snowflake.configuration.SnowflakeAutoConfiguration
 import com.labijie.infra.json.JacksonHelper
-import com.labijie.infra.security.Rfc6238TokenService
 import okhttp3.ConnectionPool
 import okhttp3.OkHttpClient
 import org.springframework.beans.factory.ObjectProvider
 import org.springframework.boot.autoconfigure.AutoConfigureBefore
-import org.springframework.boot.autoconfigure.ImportAutoConfiguration
 import org.springframework.boot.autoconfigure.condition.*
 import org.springframework.boot.autoconfigure.web.client.RestTemplateAutoConfiguration
 import org.springframework.boot.context.properties.ConfigurationProperties
@@ -36,9 +27,7 @@ import org.springframework.context.ConfigurableApplicationContext
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Lazy
-import org.springframework.core.Ordered
 import org.springframework.core.annotation.Order
-import org.springframework.core.env.Environment
 import org.springframework.http.client.OkHttp3ClientHttpRequestFactory
 import org.springframework.http.converter.StringHttpMessageConverter
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter
@@ -58,31 +47,8 @@ import javax.annotation.PreDestroy
 @EnableConfigurationProperties(ValidationConfiguration::class)
 @AutoConfigureBefore(RestTemplateAutoConfiguration::class)
 @EnableAsync
-class ApplicationCoreAutoConfiguration: Ordered {
-
-    override fun getOrder(): Int = Int.MAX_VALUE
-
-    @Bean
-    @ConditionalOnMissingBean(IMessageSender::class)
-    fun noneMessageSender(
-        environment: Environment,
-        cacheManager: ICacheManager,
-        rfc6238TokenService: Rfc6238TokenService
-    ): IMessageSender {
-        return NoneMessageSender(environment, cacheManager, rfc6238TokenService)
-    }
-
-    @Bean
-    @ConditionalOnMissingBean(IHumanChecker::class)
-    fun noneHumanChecker(): NoneHumanChecker {
-        return NoneHumanChecker()
-    }
-
-    @Bean
-    @ConditionalOnMissingBean(IObjectStorage::class)
-    fun noneObjectStorage(): IObjectStorage {
-        return NoneObjectStorage()
-    }
+@Order(-1)
+class ApplicationCoreAutoConfiguration {
 
     @Bean
     @ConditionalOnNotWebApplication

@@ -1,15 +1,15 @@
 package com.labijie.appliction.minio.web
 
 import com.labijie.application.model.SimpleValue
-import com.labijie.application.propertiesFrom
 import com.labijie.appliction.minio.MinioObjectStorage
 import com.labijie.appliction.minio.MinioUtils
 import com.labijie.appliction.minio.configuration.MinioProperties
 import com.labijie.appliction.minio.model.AssumedCredentials
+import com.labijie.infra.spring.configuration.getApplicationName
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.core.env.Environment
 import org.springframework.validation.annotation.Validated
 import org.springframework.web.bind.annotation.*
-import java.net.URL
 import javax.validation.constraints.NotBlank
 
 
@@ -17,6 +17,8 @@ import javax.validation.constraints.NotBlank
 @RequestMapping("/objects")
 @Validated
 class MinioStsController {
+    @Autowired
+    private lateinit var environment: Environment
 
     @Autowired
     private lateinit var properties: MinioProperties
@@ -28,7 +30,15 @@ class MinioStsController {
     private lateinit var minioObjectStorage: MinioObjectStorage
 
     private val config by lazy {
-        MinioConfig().propertiesFrom(properties)
+        MinioConfig().apply {
+            val baseUrl = properties.baseUrl()
+            this.schema = baseUrl.protocol
+            this.host = baseUrl.host
+            this.port = if(baseUrl.port > 0) baseUrl.port else null
+            this.region = properties.region
+            this.privateBucket = properties.safePrivateBucket(environment.getApplicationName())
+            this.publicBucket = properties.safePublicBucket(environment.getApplicationName())
+        }
     }
 
     @GetMapping("/cnf")
@@ -36,7 +46,7 @@ class MinioStsController {
         return config
     }
 
-    @PostMapping("/assumeRole")
+    @PostMapping("/assume-role")
     fun assumeRole(): AssumedCredentials = minioUtils.assumeRole()
 
 
@@ -51,7 +61,9 @@ class MinioStsController {
 
 
     data class MinioConfig(
-        var domainUrl: String = "",
+        var schema: String = "",
+        var host: String = "",
+        var port: Int? = null,
         var region: String = "",
         var privateBucket: String = "",
         var publicBucket: String = "",

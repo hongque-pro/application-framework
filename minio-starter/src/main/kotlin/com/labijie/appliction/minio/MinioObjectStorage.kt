@@ -3,6 +3,7 @@ package com.labijie.appliction.minio
 import com.labijie.application.BucketPolicy
 import com.labijie.application.component.IObjectStorage
 import com.labijie.appliction.minio.configuration.MinioProperties
+import com.labijie.infra.utils.logger
 import io.minio.*
 import io.minio.errors.ErrorResponseException
 import io.minio.http.Method
@@ -83,20 +84,23 @@ class MinioObjectStorage(
     }
 
     override fun generateObjectUrl(key: String, bucketPolicy: BucketPolicy): URL {
-        return if (bucketPolicy == BucketPolicy.PUBLIC) {
-            URL(properties.baseUrl(), "${getBucket(bucketPolicy)}/$key")
-        } else {
-            val url = minioClient.getPresignedObjectUrl(
-                GetPresignedObjectUrlArgs
-                    .builder()
-                    .method(Method.PUT)
-                    .bucket(getBucket(bucketPolicy))
-                    .`object`(key)
-                    .expiry(properties.preSignedDuration.seconds.toInt(), TimeUnit.SECONDS)
-                    .build()
-            )
-            return URL(url)
+        if(bucketPolicy == BucketPolicy.PUBLIC){
+            return URL(properties.baseUrl(), "${getBucket(bucketPolicy)}/$key")
         }
+        return presignUrl(bucketPolicy, key, Method.GET)
+    }
+
+    fun presignUrl(bucketPolicy: BucketPolicy, key: String, method: Method): URL {
+        val url = minioClient.getPresignedObjectUrl(
+            GetPresignedObjectUrlArgs
+                .builder()
+                .method(method)
+                .bucket(getBucket(bucketPolicy))
+                .`object`(key)
+                .expiry(properties.preSignedDuration.seconds.toInt(), TimeUnit.SECONDS)
+                .build()
+        )
+        return URL(url)
     }
 
     override fun uploadObject(key: String, stream: InputStream, bucketPolicy: BucketPolicy, contentLength: Long?) {

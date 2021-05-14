@@ -1,11 +1,15 @@
 package com.labijie.appliction.minio.web
 
+import com.labijie.application.BucketPolicy
 import com.labijie.application.model.SimpleValue
 import com.labijie.appliction.minio.MinioObjectStorage
 import com.labijie.appliction.minio.MinioUtils
 import com.labijie.appliction.minio.configuration.MinioProperties
 import com.labijie.appliction.minio.model.AssumedCredentials
 import com.labijie.infra.spring.configuration.getApplicationName
+import io.minio.GetPresignedObjectUrlArgs
+import io.minio.MinioClient
+import io.minio.http.Method
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.core.env.Environment
 import org.springframework.validation.annotation.Validated
@@ -57,6 +61,16 @@ class MinioStsController {
     fun preSignUrl(@NotBlank @RequestParam("key") key: String): SimpleValue<String> {
         val url = minioObjectStorage.generateObjectUrl(key)
         return SimpleValue(url.toString())
+    }
+
+    /**
+     * 获取私有存储桶（Bucket）临时访问路径
+     */
+    @PostMapping("/pre-sign-upload")
+    fun preSignUpload(@NotBlank @RequestParam("key") key: String,
+                      @RequestParam("b") bucket: BucketPolicy): SimpleValue<String> {
+        val url = minioObjectStorage.presignUrl(bucket, key, Method.PUT)
+        return SimpleValue((url.toString()))
     }
 
 

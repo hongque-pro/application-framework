@@ -21,8 +21,6 @@ open class MinioUtils(
         }
     }
 
-    private val emptyHttpBody = "".toRequestBody()
-
     fun assumeRole(): AssumedCredentials {
         val provider = assumeRoleProvider()
         val credential = provider.fetch()

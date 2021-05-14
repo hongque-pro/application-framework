@@ -1,6 +1,7 @@
 package com.labijie.application.minio.testing
 
 import com.labijie.application.BucketPolicy
+import io.minio.PostPolicy
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import java.io.ByteArrayInputStream

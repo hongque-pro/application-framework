@@ -2,7 +2,7 @@ server:
   port: 9898
 spring:
   application:
-    name: dummy
+    name: framework-dummy
   cloud:
     stream:
       default-binder: memory
@@ -12,9 +12,9 @@ spring:
         sms-output:
           destination: sms
   datasource:
-    url: jdbc:mysql://localhost:3306/af-test?characterEncoding=utf-8&useSSL=false&serverTimezone=UTC
-    username: root
-    password: 123456
+    url: jdbc:h2:mem:testdb;mode=mysql
+    username: sa
+    driver-class-name: org.h2.Driver
 
 infra:
   oauth2:
@@ -22,9 +22,15 @@ infra:
       jwt:
         simpleKey:  aaa
   snowflake:
-    provider: jdbc
+    provider: static
+    static:
+      slot: 1
 
 application:
+  minio:
+    endpoint: http://47.100.188.60:9000
+    accessKey: stsadmin
+    secretKey: stsadmin-secret
   sms:
     controller-enabled: true
   human-checker:

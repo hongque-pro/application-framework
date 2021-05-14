@@ -19,7 +19,7 @@ class MinioInitializer : IModuleInitializer {
         val applicationName = environment.getApplicationName(true)
 
         val privateBucket = minioProperties.safePrivateBucket(applicationName)
-        val publicBucket = minioProperties.safePrivateBucket(applicationName)
+        val publicBucket = minioProperties.safePublicBucket(applicationName)
 
         try {
 

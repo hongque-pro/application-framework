@@ -638,10 +638,10 @@ object MimeUtils {
             ".$ext"
         } else ext
 
-        return this.extensions.getOrDefault(normalized, "")
+        return this.extensions.getOrDefault(normalized, "application/octet-stream")
     }
 
     fun getExtensionsByMime(mime: String): String {
-        return this.mimes.getOrDefault(mime, "")
+        return this.mimes.getOrDefault(mime, "application/octet-stream")
     }
 }

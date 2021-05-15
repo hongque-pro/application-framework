@@ -1,3 +1,3 @@
 package com.labijie.appliction.minio
 
-data class PresignedUrl(val url:String, val expiration: Int)
+data class PresignedUrl(val url:String, val expireInSeconds: Int, val contentType: String)

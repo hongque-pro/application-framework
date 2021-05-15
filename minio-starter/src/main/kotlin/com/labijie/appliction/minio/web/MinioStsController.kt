@@ -1,9 +1,11 @@
 package com.labijie.appliction.minio.web
 
 import com.labijie.application.BucketPolicy
+import com.labijie.application.MimeUtils
 import com.labijie.application.model.SimpleValue
 import com.labijie.appliction.minio.MinioObjectStorage
 import com.labijie.appliction.minio.MinioUtils
+import com.labijie.appliction.minio.PresignedUrl
 import com.labijie.appliction.minio.configuration.MinioProperties
 import com.labijie.appliction.minio.model.AssumedCredentials
 import com.labijie.infra.spring.configuration.getApplicationName
@@ -15,6 +17,8 @@ import org.springframework.core.env.Environment
 import org.springframework.validation.annotation.Validated
 import org.springframework.web.bind.annotation.*
 import javax.validation.constraints.NotBlank
+import kotlin.io.path.Path
+import kotlin.io.path.extension
 
 
 @RestController
@@ -58,9 +62,11 @@ class MinioStsController {
      * 获取私有存储桶（Bucket）临时访问路径
      */
     @PostMapping("/pre-sign-url")
-    fun preSignUrl(@NotBlank @RequestParam("key") key: String): SimpleValue<String> {
+    fun preSignUrl(@NotBlank @RequestParam("key") key: String): PresignedUrl {
         val url = minioObjectStorage.generateObjectUrl(key)
-        return SimpleValue(url.toString())
+        val ext = key.substringAfterLast('.', "")
+        val contentType = MimeUtils.getMimeByExtensions(ext)
+        return PresignedUrl(url.toString(), properties.preSignedDuration.seconds.toInt(), contentType)
     }
 
     /**
@@ -68,9 +74,11 @@ class MinioStsController {
      */
     @PostMapping("/pre-sign-upload")
     fun preSignUpload(@NotBlank @RequestParam("key") key: String,
-                      @RequestParam("b") bucket: BucketPolicy): SimpleValue<String> {
+                      @RequestParam("b") bucket: BucketPolicy): PresignedUrl {
         val url = minioObjectStorage.presignUrl(bucket, key, Method.PUT)
-        return SimpleValue((url.toString()))
+        val ext = key.substringAfterLast('.', "")
+        val contentType = MimeUtils.getMimeByExtensions(ext)
+        return PresignedUrl(url.toString(), properties.preSignedDuration.seconds.toInt(), contentType)
     }
 
 

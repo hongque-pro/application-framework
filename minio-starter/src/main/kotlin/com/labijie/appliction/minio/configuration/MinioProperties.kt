@@ -36,6 +36,6 @@ data class MinioProperties(
     }
 
     fun safePublicBucket(applicationName: String): String {
-        return privateBucket.ifNullOrBlank { "$applicationName-public" }
+        return publicBucket.ifNullOrBlank { "$applicationName-public" }
     }
 }

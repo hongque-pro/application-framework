@@ -38,7 +38,7 @@ RESPONSE:
 ```
 h-token: "stamp;captcha;userKey"
 ```
-> 其中`captcha`为用户输入的验证码
+> 3个值用`;`拼接起来，其中`captcha`为用户输入的验证码
 
 若验证失败会返回`http code`403:
 ```

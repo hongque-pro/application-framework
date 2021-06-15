@@ -61,7 +61,10 @@ buildscript {
     repositories {
         mavenLocal()
         if(maven_repo != null) {
-            maven { url maven_repo }
+            maven {
+                allowInsecureProtocol=true
+                url maven_repo
+            }
         }
         mavenCentral()
         maven { url 'https://repo.spring.io/plugins-snapshot' }
@@ -142,7 +145,10 @@ allprojects {
     repositories {
         mavenLocal()
         if(maven_repo != null) {
-            maven { url maven_repo }
+            maven {
+                allowInsecureProtocol=true
+                url maven_repo
+            }
         }
         mavenCentral()
     }

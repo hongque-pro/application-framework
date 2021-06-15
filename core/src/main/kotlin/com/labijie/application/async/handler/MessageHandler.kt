@@ -18,10 +18,10 @@ class MessageHandler(
         const val STREAM_SMS_IN = "handleSms-in-0"
     }
 
-    @Bean
+    /*@Bean
     fun handleSms() : Consumer<SendSmsTemplateParam> {
         return Consumer {
             messageSender.sendSmsTemplate(it, async = false, checkTimeout = true)
         }
-    }
+    }*/
 }

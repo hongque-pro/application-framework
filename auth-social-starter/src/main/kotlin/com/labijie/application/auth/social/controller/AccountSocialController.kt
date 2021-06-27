@@ -7,6 +7,7 @@ import com.labijie.application.auth.social.model.SocialLoginInfo
 import com.labijie.application.identity.model.SocialRegisterInfo
 import com.labijie.application.identity.model.SocialUserAndRoles
 import com.labijie.application.identity.service.ISocialUserService
+import com.labijie.application.web.roleAuthority
 import com.labijie.infra.oauth2.TwoFactorSignInHelper
 import com.labijie.infra.oauth2.filter.ClientRequired
 import org.springframework.security.oauth2.common.OAuth2AccessToken
@@ -52,7 +53,7 @@ class AccountSocialController(
     ): OAuth2AccessToken {
         val u = userRoles.user
         val roles = userRoles.roles.map {
-            it.name.orEmpty()
+            roleAuthority(it.name.orEmpty())
         }
 
         //账号是否锁定
@@ -64,6 +65,8 @@ class AccountSocialController(
             u.id!!.toString(),
             u.userName!!,
             authorities = roles,
+            twoFactorEnabled= u.twoFactorEnabled?:false,
+            scope=clientDetails.scope,
             attachedFields = if (userRoles.loginProvider.isNotBlank()) {
                 mapOf(
                     OAuth2SocialConstants.LoginProviderFieldName to userRoles.loginProvider,

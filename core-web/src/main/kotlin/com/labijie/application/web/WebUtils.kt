@@ -164,7 +164,7 @@ fun TwoFactorPrincipal.hasAnyRole(vararg roles: String): Boolean {
         return false
     }
     return this.authorities.any {
-        roles.contains("$ROLE_PREFIX${it.authority}")
+        roles.map { r->"$ROLE_PREFIX$r" }.contains(it.authority)
     }
 }
 

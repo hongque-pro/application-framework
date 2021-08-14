@@ -15,6 +15,7 @@ import com.labijie.application.web.client.MultiRestTemplates
 import com.labijie.infra.json.JacksonHelper
 import com.labijie.infra.spring.configuration.NetworkConfig
 import com.labijie.infra.utils.ShortId
+import java.math.BigDecimal
 import javax.validation.Valid
 
 /**
@@ -60,7 +61,7 @@ class WechatCarPaymentProvider(
             "mch_id" to options.appAccount,
             "body" to trade.subject,
             "out_trade_no" to trade.tradeId,
-            "total_fee" to (trade.amount.toDouble() * 100).toInt().toString(),
+            "total_fee" to (trade.amount.multiply(BigDecimal("100"))).toString(),
             "spbill_create_ip" to this.hostIPAddress,
             "notify_url" to this.getPaymentCallbackUrl(trade.state),
             "trade_type" to "PAP",

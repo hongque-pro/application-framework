@@ -77,7 +77,7 @@ class AlipayPaymentProvider(
 
         val map = mutableMapOf<String, Any>(
             "out_trade_no" to trade.tradeId,
-            "total_amount" to String.format("%.2f", trade.amount.toDouble()),
+            "total_amount" to trade.amount.toAmount(),
             "subject" to trade.subject,
             "timeout_express" to "${timeoutMinutes}m",
             "buyer_id" to trade.platformBuyerId
@@ -169,7 +169,7 @@ class AlipayPaymentProvider(
 
         val map = mutableMapOf<String, Any>(
             "out_biz_no" to trade.tradeId,
-            "trans_amount" to String.format("%.2f", trade.amount.toDouble()),
+            "trans_amount" to trade.amount.toAmount(),
             "product_code" to "TRANS_ACCOUNT_NO_PWD",
             "biz_scene" to "DIRECT_TRANSFER"
         )

@@ -25,6 +25,7 @@ import org.apache.commons.codec.digest.DigestUtils
 import org.springframework.http.MediaType
 import java.math.BigDecimal
 import java.math.RoundingMode
+import java.text.DecimalFormat
 import java.time.Instant
 import java.time.ZoneOffset
 import java.util.*
@@ -50,6 +51,12 @@ abstract class AbstractWechatPaymenProvider(
 
 
     protected val hostIPAddress = networkConfig.getIPAddress().ifNullOrBlank { "127.0.0.1" }
+
+    protected fun BigDecimal.toAmount(): String {
+        val v = this.multiply(BigDecimal("100")).toString()
+        val f = DecimalFormat("#")
+        return f.format(v)
+    }
 
     protected fun <TResponse : WechatResponse> requestApi(
         url: String,

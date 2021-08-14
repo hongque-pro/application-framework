@@ -43,11 +43,12 @@ class AlipayCarPaymentProvider(
 
     private fun buildBizContent( trade: PlatformTrade): MutableMap<String, String> {
         val scene = trade.scene as CarParkingScene
+
         val parameters = mutableMapOf(
             "car_number" to scene.carNumber,
             "out_trade_no" to trade.tradeId,
             "subject" to trade.subject,
-            "total_fee" to String.format("%.2f", trade.amount.toDouble()),
+            "total_fee" to String.format("%.2f", trade.amount.toAmount()),
             "parking_id" to scene.platformParkingId!!,
             "seller_id" to scene.platformSellerId!!,
             "out_parking_id" to scene.parkingId!!.toString(),

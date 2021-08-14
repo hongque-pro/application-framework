@@ -16,6 +16,7 @@ import com.labijie.application.web.client.MultiRestTemplates
 import com.labijie.infra.json.JacksonHelper
 import com.labijie.infra.utils.logger
 import java.math.BigDecimal
+import java.text.DecimalFormat
 import javax.validation.Valid
 import kotlin.reflect.KClass
 
@@ -27,6 +28,11 @@ import kotlin.reflect.KClass
  */
 abstract class AbstractAlipayPaymentProvider(paymentProperties: PaymentProperties, options: AlipayPaymentOptions, restTemplates: MultiRestTemplates) :
     SceneSupportedPaymentProvider<AlipayPaymentOptions, IAlipayPaymentSceneSupport>(paymentProperties, options, restTemplates) {
+
+    protected fun BigDecimal.toAmount(): String{
+        val df = DecimalFormat("#.##")
+        return df.format(this)
+    }
 
     fun <T: AlipayResponseBase> requestApi(
         url:String,

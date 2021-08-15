@@ -53,7 +53,7 @@ abstract class AbstractWechatPaymenProvider(
     protected val hostIPAddress = networkConfig.getIPAddress().ifNullOrBlank { "127.0.0.1" }
 
     protected fun BigDecimal.toAmount(): String {
-        val v = this.multiply(BigDecimal("100")).toString()
+        val v = this.multiply(BigDecimal("100"))
         val f = DecimalFormat("#")
         return f.format(v)
     }

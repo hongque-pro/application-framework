@@ -37,7 +37,7 @@ import kotlin.reflect.KClass
  * Copyright: Copyright (c) 2020
  * Github: https://github.com/endink
  */
-abstract class AbstractWechatPaymenProvider(
+abstract class AbstractWechatPaymentProvider(
     paymentProperties: PaymentProperties,
     networkConfig: NetworkConfig,
     options: WechatPaymentOptions,

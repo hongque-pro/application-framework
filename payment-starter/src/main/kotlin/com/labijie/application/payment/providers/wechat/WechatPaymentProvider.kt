@@ -12,8 +12,6 @@ import com.labijie.application.web.client.MultiRestTemplates
 import com.labijie.infra.spring.configuration.NetworkConfig
 import com.labijie.infra.utils.ShortId
 import com.labijie.infra.utils.ifNullOrBlank
-import java.math.BigDecimal
-import java.text.DecimalFormat
 import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneOffset
@@ -26,7 +24,7 @@ class WechatPaymentProvider(
     networkConfig: NetworkConfig,
     options: WechatPaymentOptions,
     restTemplates: MultiRestTemplates
-) : AbstractWechatPaymenProvider(paymentProperties, networkConfig, options, restTemplates) {
+) : AbstractWechatPaymentProvider(paymentProperties, networkConfig, options, restTemplates) {
 
 
     override fun queryTrade(@Valid query: PaymentTradeQuery): PaymentTradeQueryResult? {

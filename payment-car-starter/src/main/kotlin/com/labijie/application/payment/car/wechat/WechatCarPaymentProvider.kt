@@ -6,7 +6,7 @@ import com.labijie.application.payment.car.getCarScene
 import com.labijie.application.payment.car.scene.CarParkingScene
 import com.labijie.application.payment.car.wechat.scene.WechatParkingSceneInfo
 import com.labijie.application.payment.configuration.PaymentProperties
-import com.labijie.application.payment.providers.wechat.AbstractWechatPaymenProvider
+import com.labijie.application.payment.providers.wechat.AbstractWechatPaymentProvider
 import com.labijie.application.payment.providers.wechat.IWechatPaymentSceneSupport
 import com.labijie.application.payment.providers.wechat.WechatPaymentOptions
 import com.labijie.application.payment.providers.wechat.model.WechatTradeQueryResponse
@@ -15,7 +15,6 @@ import com.labijie.application.web.client.MultiRestTemplates
 import com.labijie.infra.json.JacksonHelper
 import com.labijie.infra.spring.configuration.NetworkConfig
 import com.labijie.infra.utils.ShortId
-import java.math.BigDecimal
 import javax.validation.Valid
 
 /**
@@ -40,7 +39,7 @@ class WechatCarPaymentProvider(
     options: WechatPaymentOptions,
     restTemplates: MultiRestTemplates,
     private val carPaymentOptions: WechatCarPaymentOptions
-) : AbstractWechatPaymenProvider(paymentProperties, networkConfig, options, restTemplates) {
+) : AbstractWechatPaymentProvider(paymentProperties, networkConfig, options, restTemplates) {
 
     companion object {
         const val TRADE_SCENE_PARKING = "PARKING"

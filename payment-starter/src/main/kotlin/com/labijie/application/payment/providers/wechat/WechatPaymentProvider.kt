@@ -214,7 +214,7 @@ class WechatPaymentProvider(
             "partner_trade_no" to trade.tradeId,
             "openid" to trade.platformPayeeId,
             "check_name" to if (trade.payeeRealName.isNullOrBlank()) "NO_CHECK" else "FORCE_CHECK",
-            "amount" to (trade.amount.multiply(BigDecimal("100"))).toString(),
+            "amount" to trade.amount.toAmount(),
             "desc" to trade.remark.ifNullOrBlank { "OTHERS" },
             "spbill_create_ip" to this.hostIPAddress
         )

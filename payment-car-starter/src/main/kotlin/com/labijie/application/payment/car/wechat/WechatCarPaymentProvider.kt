@@ -61,7 +61,7 @@ class WechatCarPaymentProvider(
             "mch_id" to options.appAccount,
             "body" to trade.subject,
             "out_trade_no" to trade.tradeId,
-            "total_fee" to (trade.amount.multiply(BigDecimal("100"))).toString(),
+            "total_fee" to trade.amount.toAmount(),
             "spbill_create_ip" to this.hostIPAddress,
             "notify_url" to this.getPaymentCallbackUrl(trade.state),
             "trade_type" to "PAP",

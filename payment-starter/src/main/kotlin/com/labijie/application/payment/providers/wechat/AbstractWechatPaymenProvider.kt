@@ -276,8 +276,8 @@ abstract class AbstractWechatPaymenProvider(
             "mch_id" to options.appAccount,
             "nonce_str" to ShortId.newId(),
             "out_refund_no" to trade.refundId,
-            "total_fee" to trade.amount.multiply(BigDecimal(100)).toInt().toString(),
-            "refund_fee" to trade.refundAmount.multiply(BigDecimal(100)).toInt().toString(),
+            "total_fee" to trade.amount.toAmount(),
+            "refund_fee" to trade.refundAmount.toAmount(),
             "notify_url" to this.getRefundCallbackUrl(trade.state)
         )
 

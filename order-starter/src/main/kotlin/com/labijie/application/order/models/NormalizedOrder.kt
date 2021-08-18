@@ -27,7 +27,7 @@ open class NormalizedOrder(
 
     @get:NotBlank
     @get:Length(max=128)
-    val subject:String = "",
+    var subject:String = "",
 
     /**
      * 付款交易的 id

@@ -48,4 +48,12 @@ interface IPaymentProvider {
      * 查询退款
      */
     fun queryRefund(@Valid query: RefundQuery): RefundResult?
+
+    /**
+     * 关闭订单
+     */
+    fun closeTrade(param: TradeCloseParam): TradeCloseResult {
+        return TradeCloseResult(param.outTradeNo ?: "", TradeCloseStatus.FAIL, "NOT_SUPPORTED")
+    }
+
 }

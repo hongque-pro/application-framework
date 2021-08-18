@@ -33,6 +33,13 @@ class PaymentUtils(
         return provider.createTrade(trade)
     }
 
+    fun closeTrade(providerName: String, close: TradeCloseParam): TradeCloseResult {
+        this.validateProviderName(providerName)
+
+        val provider =getPaymentProvider(providerName)
+        return provider.closeTrade(close)
+    }
+
     fun queryTrade(providerName:String, query: PaymentTradeQuery): PaymentTradeQueryResult? {
         this.validateProviderName(providerName)
 

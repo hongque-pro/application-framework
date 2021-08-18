@@ -1,9 +1,11 @@
 package com.labijie.application.order
 
 import com.labijie.application.configure
+import com.labijie.application.exception.DataMaybeChangedException
 import com.labijie.application.order.component.IOrderAdapter
 import com.labijie.application.order.component.IOrderAdapterLocator
 import com.labijie.application.order.data.OrderPaymentTrade
+import com.labijie.application.order.data.OrderPaymentTradeExample
 import com.labijie.application.order.data.mapper.OrderPaymentTradeMapper
 import com.labijie.application.order.event.OrderPaymentCompletedEvent
 import com.labijie.application.order.event.OrderPaymentCompletingEvent
@@ -552,5 +554,40 @@ open class DefaultOrderWorkflow(
         )
         val newOrder = this.adaptOrder(newData) //幂等不再抛出异常
         return newOrder
+    }
+
+    override fun <T : Any> closeOrder(orderCloseInput: OrderCloseInput): TradeCloseStatus {
+        val paymentOrders = orderPaymentTradeMapper.selectByExample(OrderPaymentTradeExample().apply {
+            this.createCriteria()
+                .andOrderTypeEqualTo(orderCloseInput.type).andOrderIdEqualTo(orderCloseInput.orderId)
+        })
+
+        if(paymentOrders.isNullOrEmpty()) {
+            throw OrderNotFoundException(orderCloseInput.type, orderCloseInput.orderId)
+        }
+
+        val paymentOrder = paymentOrders[0]
+        if(paymentOrder.status == PaymentTradeStatus.Paid.code) {
+            throw OrderInvalidPaymentStatusException("订单不为待支付状态，无法关闭")
+        } else if(paymentOrder.status == PaymentTradeStatus.Close.code) {
+            return TradeCloseStatus.ORDER_CLOSED
+        }
+
+        val res = paymentUtils.closeTrade(paymentOrder.paymentProvider, TradeCloseParam(outTradeNo = paymentOrder.id?.toString()))
+
+        if(res.status == TradeCloseStatus.SUCCESS || res.status == TradeCloseStatus.ORDER_CLOSED) {
+            OrderPaymentTrade().apply {
+                this.id = paymentOrder.id
+                this.timeEffected = System.currentTimeMillis()
+                this.status = PaymentTradeStatus.Close.code
+
+                val cnt = orderPaymentTradeMapper.updateByPrimaryKeySelective(this)
+                if(cnt != 1) {
+                    throw DataMaybeChangedException("订单可能已被其他程序修改")
+                }
+            }
+        }
+
+        return res.status
     }
 }

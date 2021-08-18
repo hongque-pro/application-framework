@@ -3,6 +3,7 @@ package com.labijie.application.order
 import com.labijie.application.order.models.*
 import com.labijie.application.payment.PaymentTradeStatus
 import com.labijie.application.payment.RefundResult
+import com.labijie.application.payment.TradeCloseStatus
 import kotlin.reflect.KClass
 
 interface IOrderWorkflow {
@@ -37,4 +38,6 @@ interface IOrderWorkflow {
     fun <T: Any> beginRefund(refund: OrderRefundInput, orderType: KClass<T>) : OrderAndRefund<T>
 
     fun <T:Any> endRefund(orderId:Long, orderType: KClass<T>, succeed:Boolean, timeEffected: Long? = null)
+
+    fun <T:Any> closeOrder(orderCloseInput: OrderCloseInput): TradeCloseStatus
 }

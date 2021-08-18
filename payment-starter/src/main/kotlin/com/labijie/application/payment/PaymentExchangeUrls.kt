@@ -6,5 +6,6 @@ open class PaymentExchangeUrls(
     var transferUrl:String = "https://api.mch.weixin.qq.com/mmpaymkttransfers/promotion/transfers",
     var queryTransferUrl:String = "https://api.mch.weixin.qq.com/mmpaymkttransfers/gettransferinfo",
     var refundUrl:String = "https://api.mch.weixin.qq.com/secapi/pay/refund",
-    var queryRefundUrl:String = "https://api.mch.weixin.qq.com/pay/refundquery"
+    var queryRefundUrl:String = "https://api.mch.weixin.qq.com/pay/refundquery",
+    var closeTradeUrl:String = "https://api.mch.weixin.qq.com/pay/closeorder"
 )

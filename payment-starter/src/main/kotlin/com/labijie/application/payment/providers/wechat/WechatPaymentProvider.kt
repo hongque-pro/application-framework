@@ -1,8 +1,10 @@
 package com.labijie.application.payment.providers.wechat
 
+import com.labijie.application.exception.ThirdPartyExchangeException
 import com.labijie.application.parseDateTime
 import com.labijie.application.payment.*
 import com.labijie.application.payment.configuration.PaymentProperties
+import com.labijie.application.payment.exception.PaymentException
 import com.labijie.application.payment.exception.PaymentExchangeException
 import com.labijie.application.payment.exception.TransferException
 import com.labijie.application.payment.providers.wechat.model.*
@@ -12,6 +14,7 @@ import com.labijie.application.web.client.MultiRestTemplates
 import com.labijie.infra.spring.configuration.NetworkConfig
 import com.labijie.infra.utils.ShortId
 import com.labijie.infra.utils.ifNullOrBlank
+import com.labijie.infra.utils.logger
 import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneOffset
@@ -267,5 +270,34 @@ class WechatPaymentProvider(
 
     override fun queryRefund(query: RefundQuery): RefundResult? {
         return queryRefundCore(options.exchange.queryRefundUrl, query)
+    }
+
+    override fun closeTrade(param: TradeCloseParam): TradeCloseResult {
+        if(param.outTradeNo.isNullOrBlank()) {
+            throw PaymentException(options.providerName, "未传入outTradeNo")
+        }
+
+        val parameters = mutableMapOf(
+                "appid" to options.appId,
+                "mch_id" to options.appAccount,
+                "out_trade_no" to (param.outTradeNo ?: ""),
+                "nonce_str" to ShortId.newId(),
+        )
+        signatureData(parameters)
+
+        try {
+            requestApi(options.exchange.closeTradeUrl, parameters, WechatCloseResponse::class)
+            return TradeCloseResult(param.outTradeNo!!, TradeCloseStatus.SUCCESS)
+        } catch (e: PaymentExchangeException) {
+            if(e.platformErrorCode == "ORDERPAID") {
+                return TradeCloseResult(param.outTradeNo!!, TradeCloseStatus.ORDER_PAID)
+            } else if(e.platformErrorCode == "ORDERCLOSED") {
+                return TradeCloseResult(param.outTradeNo!!, TradeCloseStatus.ORDER_CLOSED)
+            } else {
+                logger.error("关闭订单出错", e)
+                return TradeCloseResult(param.outTradeNo!!, TradeCloseStatus.FAIL, e.platformErrorCode ?: "UNKNOW")
+            }
+        }
+
     }
 }

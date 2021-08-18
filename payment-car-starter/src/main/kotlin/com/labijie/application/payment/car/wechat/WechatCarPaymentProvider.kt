@@ -6,7 +6,7 @@ import com.labijie.application.payment.car.getCarScene
 import com.labijie.application.payment.car.scene.CarParkingScene
 import com.labijie.application.payment.car.wechat.scene.WechatParkingSceneInfo
 import com.labijie.application.payment.configuration.PaymentProperties
-import com.labijie.application.payment.providers.wechat.AbstractWechatPaymenProvider
+import com.labijie.application.payment.providers.wechat.AbstractWechatPaymentProvider
 import com.labijie.application.payment.providers.wechat.IWechatPaymentSceneSupport
 import com.labijie.application.payment.providers.wechat.WechatPaymentOptions
 import com.labijie.application.payment.providers.wechat.model.WechatTradeQueryResponse
@@ -39,7 +39,7 @@ class WechatCarPaymentProvider(
     options: WechatPaymentOptions,
     restTemplates: MultiRestTemplates,
     private val carPaymentOptions: WechatCarPaymentOptions
-) : AbstractWechatPaymenProvider(paymentProperties, networkConfig, options, restTemplates) {
+) : AbstractWechatPaymentProvider(paymentProperties, networkConfig, options, restTemplates) {
 
     companion object {
         const val TRADE_SCENE_PARKING = "PARKING"
@@ -60,7 +60,7 @@ class WechatCarPaymentProvider(
             "mch_id" to options.appAccount,
             "body" to trade.subject,
             "out_trade_no" to trade.tradeId,
-            "total_fee" to (trade.amount.toDouble() * 100).toInt().toString(),
+            "total_fee" to trade.amount.toAmount(),
             "spbill_create_ip" to this.hostIPAddress,
             "notify_url" to this.getPaymentCallbackUrl(trade.state),
             "trade_type" to "PAP",

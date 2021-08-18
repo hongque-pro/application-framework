@@ -25,6 +25,7 @@ import org.apache.commons.codec.digest.DigestUtils
 import org.springframework.http.MediaType
 import java.math.BigDecimal
 import java.math.RoundingMode
+import java.text.DecimalFormat
 import java.time.Instant
 import java.time.ZoneOffset
 import java.util.*
@@ -36,7 +37,7 @@ import kotlin.reflect.KClass
  * Copyright: Copyright (c) 2020
  * Github: https://github.com/endink
  */
-abstract class AbstractWechatPaymenProvider(
+abstract class AbstractWechatPaymentProvider(
     paymentProperties: PaymentProperties,
     networkConfig: NetworkConfig,
     options: WechatPaymentOptions,
@@ -50,6 +51,12 @@ abstract class AbstractWechatPaymenProvider(
 
 
     protected val hostIPAddress = networkConfig.getIPAddress().ifNullOrBlank { "127.0.0.1" }
+
+    protected fun BigDecimal.toAmount(): String {
+        val v = this.multiply(BigDecimal("100"))
+        val f = DecimalFormat("#")
+        return f.format(v)
+    }
 
     protected fun <TResponse : WechatResponse> requestApi(
         url: String,
@@ -269,8 +276,8 @@ abstract class AbstractWechatPaymenProvider(
             "mch_id" to options.appAccount,
             "nonce_str" to ShortId.newId(),
             "out_refund_no" to trade.refundId,
-            "total_fee" to trade.amount.multiply(BigDecimal(100)).toInt().toString(),
-            "refund_fee" to trade.refundAmount.multiply(BigDecimal(100)).toInt().toString(),
+            "total_fee" to trade.amount.toAmount(),
+            "refund_fee" to trade.refundAmount.toAmount(),
             "notify_url" to this.getRefundCallbackUrl(trade.state)
         )
 

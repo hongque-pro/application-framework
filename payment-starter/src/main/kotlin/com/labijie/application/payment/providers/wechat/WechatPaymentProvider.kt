@@ -27,7 +27,8 @@ class WechatPaymentProvider(
     networkConfig: NetworkConfig,
     options: WechatPaymentOptions,
     restTemplates: MultiRestTemplates
-) : AbstractWechatPaymenProvider(paymentProperties, networkConfig, options, restTemplates) {
+) : AbstractWechatPaymentProvider(paymentProperties, networkConfig, options, restTemplates) {
+
 
     override fun queryTrade(@Valid query: PaymentTradeQuery): PaymentTradeQueryResult? {
         return queryTradeCore(options.exchange.queryTradeUrl, query, WechatTradeQueryResponse::class) {
@@ -46,7 +47,7 @@ class WechatPaymentProvider(
             "mch_id" to options.appAccount,
             "body" to trade.subject,
             "out_trade_no" to trade.tradeId,
-            "total_fee" to (trade.amount.toDouble() * 100).toInt().toString(),
+            "total_fee" to trade.amount.toAmount(),
             "spbill_create_ip" to trade.clientIPAddress.ifNullOrBlank { this.hostIPAddress },
             "time_start" to startTime.format(WechatUtilities.DATETIME_FORMAT),
             "time_expire" to endTime.format(WechatUtilities.DATETIME_FORMAT),
@@ -214,7 +215,7 @@ class WechatPaymentProvider(
             "partner_trade_no" to trade.tradeId,
             "openid" to trade.platformPayeeId,
             "check_name" to if (trade.payeeRealName.isNullOrBlank()) "NO_CHECK" else "FORCE_CHECK",
-            "amount" to (trade.amount.toDouble() * 100).toInt().toString(),
+            "amount" to trade.amount.toAmount(),
             "desc" to trade.remark.ifNullOrBlank { "OTHERS" },
             "spbill_create_ip" to this.hostIPAddress
         )

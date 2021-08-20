@@ -557,13 +557,16 @@ open class DefaultOrderWorkflow(
     }
 
     override fun <T : Any> closeOrder(orderCloseInput: OrderCloseInput): TradeCloseStatus {
+        orderCloseInput.type ?: throw OrderAdapterNotFoundException("无此类订单")
+        val adapter = adapterLocator.findAdapter(orderCloseInput.type!!)
+
         val paymentOrders = orderPaymentTradeMapper.selectByExample(OrderPaymentTradeExample().apply {
             this.createCriteria()
-                .andOrderTypeEqualTo(orderCloseInput.type).andOrderIdEqualTo(orderCloseInput.orderId)
+                .andOrderTypeEqualTo(adapter.orderTypeName).andOrderIdEqualTo(orderCloseInput.orderId)
         })
 
         if(paymentOrders.isNullOrEmpty()) {
-            throw OrderNotFoundException(orderCloseInput.type, orderCloseInput.orderId)
+            throw OrderNotFoundException(adapter.orderTypeName, orderCloseInput.orderId)
         }
 
         val paymentOrder = paymentOrders[0]

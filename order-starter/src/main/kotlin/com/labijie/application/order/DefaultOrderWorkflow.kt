@@ -556,7 +556,7 @@ open class DefaultOrderWorkflow(
         return newOrder
     }
 
-    override fun <T : Any> closeOrder(orderCloseInput: OrderCloseInput): TradeCloseStatus {
+    override fun <T : Any> closeOrder(orderCloseInput: OrderCloseInput<T>): TradeCloseStatus {
         orderCloseInput.type ?: throw OrderAdapterNotFoundException("无此类订单")
         val adapter = adapterLocator.findAdapter(orderCloseInput.type!!)
 

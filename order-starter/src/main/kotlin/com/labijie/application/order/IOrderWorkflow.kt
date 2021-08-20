@@ -39,5 +39,5 @@ interface IOrderWorkflow {
 
     fun <T:Any> endRefund(orderId:Long, orderType: KClass<T>, succeed:Boolean, timeEffected: Long? = null)
 
-    fun <T:Any> closeOrder(orderCloseInput: OrderCloseInput): TradeCloseStatus
+    fun <T:Any> closeOrder(orderCloseInput: OrderCloseInput<T>): TradeCloseStatus
 }

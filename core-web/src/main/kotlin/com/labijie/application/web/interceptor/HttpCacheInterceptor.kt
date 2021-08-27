@@ -16,12 +16,8 @@ import javax.servlet.http.HttpServletResponse
  * @date 2019-09-21
  */
 object HttpCacheInterceptor : HandlerInterceptor {
-    override fun postHandle(
-        request: HttpServletRequest,
-        response: HttpServletResponse,
-        handler: Any,
-        modelAndView: ModelAndView?
-    ) {
+
+    override fun preHandle(request: HttpServletRequest, response: HttpServletResponse, handler: Any): Boolean {
         val method = (handler as? HandlerMethod);
         if (method != null) {
             val anno = method.getMethodAnnotation(HttpCache::class.java)
@@ -30,5 +26,6 @@ object HttpCacheInterceptor : HandlerInterceptor {
                 response.setHeader(HttpHeaders.CACHE_CONTROL, value);
             }
         }
+        return super.preHandle(request, response, handler)
     }
 }

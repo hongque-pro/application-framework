@@ -7,9 +7,7 @@ import com.labijie.application.order.component.IOrderAdapterLocator
 import com.labijie.application.order.data.OrderPaymentTrade
 import com.labijie.application.order.data.OrderPaymentTradeExample
 import com.labijie.application.order.data.mapper.OrderPaymentTradeMapper
-import com.labijie.application.order.event.OrderPaymentCompletedEvent
-import com.labijie.application.order.event.OrderPaymentCompletingEvent
-import com.labijie.application.order.event.OrderPaymentTransactionHook
+import com.labijie.application.order.event.*
 import com.labijie.application.order.exception.*
 import com.labijie.application.order.models.*
 import com.labijie.application.payment.*
@@ -544,6 +542,17 @@ open class DefaultOrderWorkflow(
                     throw OrderInvalidPaymentStatusException(adapter.orderTypeName, order.id, PaymentStatus.REFUNDING, newOrder.paymentStatus)
                 }
             }
+
+            this.applicationEventPublisher.publishEvent(
+                OrderRefundCompletingEvent(this, adapter, order, value)
+            )
+
+            TransactionSynchronizationManager.registerSynchronization(
+                OrderRefundTransactionHook(
+                    this.applicationEventPublisher,
+                    OrderRefundCompletedEvent(this, adapter, order, value),
+                )
+            )
         }
     }
 

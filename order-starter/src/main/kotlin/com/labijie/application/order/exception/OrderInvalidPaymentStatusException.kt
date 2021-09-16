@@ -1,7 +1,7 @@
 package com.labijie.application.order.exception
 
 import com.labijie.application.order.OrderErrors
-import com.labijie.application.order.PaymentStatus
+import com.labijie.application.model.PaymentStatus
 
 class OrderInvalidPaymentStatusException constructor(message:String, cause:Throwable? = null)
     : OrderException(message, errorCode = OrderErrors.InvalidPaymentStatus, cause = cause) {

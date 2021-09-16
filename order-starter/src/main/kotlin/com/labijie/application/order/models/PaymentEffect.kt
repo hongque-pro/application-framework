@@ -1,6 +1,6 @@
 package com.labijie.application.order.models
 
-import com.labijie.application.order.PaymentStatus
+import com.labijie.application.model.PaymentStatus
 import com.labijie.application.payment.DeductMode
 
 data class PaymentEffect(

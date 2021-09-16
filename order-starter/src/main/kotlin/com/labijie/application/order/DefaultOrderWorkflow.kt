@@ -2,6 +2,8 @@ package com.labijie.application.order
 
 import com.labijie.application.configure
 import com.labijie.application.exception.DataMaybeChangedException
+import com.labijie.application.model.OrderStatus
+import com.labijie.application.model.PaymentStatus
 import com.labijie.application.order.component.IOrderAdapter
 import com.labijie.application.order.component.IOrderAdapterLocator
 import com.labijie.application.order.data.OrderPaymentTrade
@@ -23,7 +25,6 @@ import org.springframework.transaction.support.TransactionTemplate
 import java.math.BigDecimal
 import java.time.Duration
 import kotlin.concurrent.thread
-import kotlin.math.min
 import kotlin.reflect.KClass
 
 /**
@@ -491,7 +492,7 @@ open class DefaultOrderWorkflow(
 
                 transactionTemplate.configure(isolationLevel = Isolation.READ_COMMITTED).execute {
 
-                    val updated = adapter.effectPayment(order.id, value,PaymentStatus.PAID)
+                    val updated = adapter.effectPayment(order.id, value, PaymentStatus.PAID)
                     if (!updated) {
                         val newOrder = adapter.getNormalizedOrder(order.id) //幂等不再抛出异常
                         if(newOrder.paymentStatus != PaymentStatus.REFUNDED && newOrder.paymentStatus != PaymentStatus.REFUNDING) {

@@ -1,6 +1,6 @@
 package com.labijie.application.order.component
 
-import com.labijie.application.order.PaymentStatus
+import com.labijie.application.model.PaymentStatus
 import com.labijie.application.order.models.NormalizedOrder
 import com.labijie.application.order.models.PaymentEffect
 import kotlin.reflect.KClass
@@ -27,10 +27,10 @@ interface IOrderAdapter<T:Any> {
     /**
      * 变更订单的支付逻辑
      */
-    fun effectPayment(orderId:Long, value:PaymentEffect, currentStatus:PaymentStatus) : Boolean
+    fun effectPayment(orderId:Long, value:PaymentEffect, currentStatus: PaymentStatus) : Boolean
 
     /**
      * 变更订单的支付逻辑
      */
-    fun effectPayment(orderId:Long, value:PaymentEffect, minStatus:PaymentStatus?, statusMax:PaymentStatus?) : Boolean
+    fun effectPayment(orderId:Long, value:PaymentEffect, minStatus: PaymentStatus?, statusMax: PaymentStatus?) : Boolean
 }

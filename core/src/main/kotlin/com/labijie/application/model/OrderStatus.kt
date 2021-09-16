@@ -1,4 +1,4 @@
-package com.labijie.application.order.models
+package com.labijie.application.model
 
 import com.labijie.application.IDescribeEnum
 

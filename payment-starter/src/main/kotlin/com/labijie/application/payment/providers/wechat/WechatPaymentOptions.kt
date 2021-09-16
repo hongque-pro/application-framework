@@ -26,6 +26,8 @@ class WechatPaymentOptions : PaymentOptions() {
      */
     var merchantKey: String = ""
 
+    var certificateSerialNo: String = ""
+
     var httpClientCertificateFile: String? = null
     var httpClientCertificatePassword: String? = null
 }

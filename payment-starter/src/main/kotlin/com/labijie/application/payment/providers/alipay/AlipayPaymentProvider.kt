@@ -198,9 +198,9 @@ class AlipayPaymentProvider(
         val usedOptions = checkPaymentOptions(overrideOptions) ?: this.options
 
         //参考： https://opendocs.alipay.com/apis/api_28/alipay.fund.trans.uni.transfer
-        val mntAuthCode = if (trade.mode == TradeMode.ISV) trade.platformMerchantKey else null
+        //val mntAuthCode = if (trade.mode == TradeMode.ISV) trade.platformMerchantKey else null
         val parameters =
-            buildCommonsParams("alipay.fund.trans.uni.transfer", mntAuthCode, overrideOptions = usedOptions)
+            buildCommonsParams("alipay.fund.trans.uni.transfer", null, overrideOptions = usedOptions)
         val bizContent = buildTransferBizContent(trade)
         combineBizContent(parameters, bizContent)
 
@@ -225,11 +225,11 @@ class AlipayPaymentProvider(
     override fun queryTransfer(query: PaymentTransferQuery, overrideOptions: PaymentOptions?): TransferQueryResult? {
         //参考：https://opendocs.alipay.com/apis/api_28/alipay.fund.trans.order.query
         val usedOptions = checkPaymentOptions(overrideOptions) ?: this.options
-        val mntAuthCode = if (query.mode == TradeMode.ISV) query.platformMerchantKey else null
+        //val mntAuthCode = if (query.mode == TradeMode.ISV) query.platformMerchantKey else null
         val parameters =
-            buildCommonsParams("alipay.fund.trans.order.query", mntAuthCode, overrideOptions = usedOptions)
+            buildCommonsParams("alipay.fund.trans.order.query", null, overrideOptions = usedOptions)
         val bizContent = mapOf<String, Any>(
-            "order_id" to query.platformTradeId
+            "order_id" to query.tradeId
         )
         combineBizContent(parameters, bizContent)
 

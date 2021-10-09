@@ -106,16 +106,18 @@ abstract class AbstractWechatPaymentProvider(
         signAlias: String = "sign",
         signTypeAlias: String = "sign_type",
         overrideOptions: WechatPaymentOptions? = null,
-        joinSignType: Boolean = true
+        joinSignType: Boolean = true,
+        signType:String = WechatUtilities.SIGN_TYPE_HMAC_SHA256
     ) {
         val usedOptions = overrideOptions ?: this.options
 
-        val aliasType = signTypeAlias.ifBlank { "sign_type" }
         val aliasSign = signAlias.ifBlank { "sign" }
+
         if (joinSignType) {
-            data[aliasType] = WechatUtilities.SIGN_TYPE_HMAC_SHA256
+            val aliasType = signTypeAlias.ifBlank { "sign_type" }
+            data[aliasType] = signType
         }
-        val sign = WechatUtilities.signature(data, usedOptions.merchantKey, WechatUtilities.SIGN_TYPE_HMAC_SHA256)
+        val sign = WechatUtilities.signature(data, usedOptions.merchantKey, signType)
         data[aliasSign] = sign
     }
 

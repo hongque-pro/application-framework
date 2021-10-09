@@ -38,7 +38,7 @@ class WechatTester : AbstractPaymentProviderTester<WechatPaymentProvider>() {
             it.appSecret = this.testConfig.getOrDefault("appSecret", "")
             it.appAccount = this.testConfig.getOrDefault("appAccount", "")
             it.merchantKey = this.testConfig.getOrDefault("merchantKey", "")
-            it.httpClientCertificateFile = "wechat.test.p12"
+            it.httpClientCertificateFile = "wechat.cert.p12"
             it.httpClientCertificatePassword = this.testConfig.getOrDefault("appAccount", "")
 
         }
@@ -84,6 +84,13 @@ class WechatTester : AbstractPaymentProviderTester<WechatPaymentProvider>() {
             refundId = "497819362191736832",
             tradeId = "497819362191736832"
         ){
+            Assertions.assertNotNull(it)
+        }
+    }
+
+    @Test
+    fun testTransfer(){
+        super.testTransfer(null) {
             Assertions.assertNotNull(it)
         }
     }

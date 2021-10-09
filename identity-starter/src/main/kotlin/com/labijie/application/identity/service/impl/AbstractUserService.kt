@@ -374,6 +374,7 @@ abstract class AbstractUserService constructor(
         return u
     }
 
+
     private fun getUserByPrimaryField(usr: String): UserRecord? {
         return userMapper.selectOne {
             where(User.phoneNumber, isEqualTo(usr))

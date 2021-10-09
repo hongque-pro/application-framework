@@ -156,9 +156,7 @@ class WechatPaymentProvider(
     }
 
     override fun queryTransfer(query: PaymentTransferQuery, overrideOptions: PaymentOptions?): TransferQueryResult? {
-        if (query.mode == TradeMode.ISV) {
-            throw TransferException("Isv mode for wechat transfer was not supported")
-        }
+
         val useOptions = this.checkPaymentOptions(overrideOptions) ?: this.options
         val parameters = mutableMapOf(
             "appid" to useOptions.appId,
@@ -202,27 +200,28 @@ class WechatPaymentProvider(
 
     override fun transfer(trade: TransferTrade, overrideOptions: PaymentOptions?): TransferTradeResult {
         //参考： https://pay.weixin.qq.com/wiki/doc/api/tools/mch_pay.php?chapter=14_2
-        if (trade.mode == TradeMode.ISV) {
-            throw TransferException("Isv mode for wechat transfer was not supported")
-        }
+
         val useOptions = this.checkPaymentOptions(overrideOptions) ?: this.options
 
 
         val parameters = mutableMapOf(
             "mch_appid" to useOptions.appId,
             "mchid" to useOptions.appAccount,
-            "nonceStr" to ShortId.newId(),
+            "nonce_str" to ShortId.newId(),
             "partner_trade_no" to trade.tradeId,
             "openid" to trade.platformPayeeId,
             "check_name" to if (trade.payeeRealName.isNullOrBlank()) "NO_CHECK" else "FORCE_CHECK",
             "amount" to trade.amount.toAmount(),
-            "desc" to trade.remark.ifNullOrBlank { "OTHERS" },
-            "spbill_create_ip" to this.hostIPAddress
+            "desc" to trade.remark.ifNullOrBlank { "OTHERS" }
         )
+        if(this.hostIPAddress.isNotBlank()){
+            parameters["spbill_create_ip"] = this.hostIPAddress
+        }
         if (!trade.payeeRealName.isNullOrBlank()) {
             parameters["re_user_name"] = trade.payeeRealName.orEmpty()
         }
-        signatureData(parameters, overrideOptions = useOptions)
+        //付款 API 如果不使用 MD5 签名会报签名字段超过 32 个字符的错误
+        signatureData(parameters, overrideOptions = useOptions, joinSignType = false, signType = WechatUtilities.SIGN_TYPE_MD5)
         val response = requestTransfer(trade, parameters, useOptions)
         return TransferTradeResult(
             response.partnerTradeNo,
@@ -250,7 +249,7 @@ class WechatPaymentProvider(
                 throw ex
             }
             //出错时候并且是 SYSTEMERROR 时查询一次
-            val query = PaymentTransferQuery(trade.tradeId, "", trade.mode, trade.platformMerchantKey)
+            val query = PaymentTransferQuery(trade.tradeId, isPlatformTradeId = false)
             val r = queryTransfer(query, useOptions) ?: throw ex
             WechatTransferResponse().apply {
                 val pattern = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")

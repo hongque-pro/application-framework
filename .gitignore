@@ -41,4 +41,4 @@ hs_err_pid*
 *.jks
 
 *.test.json
-*.test.p12
+*.p12

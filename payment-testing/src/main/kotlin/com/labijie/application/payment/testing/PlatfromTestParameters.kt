@@ -12,4 +12,10 @@ class PlatfromTestParameters {
     var subject:String = ""
     var platformBuyerId:String = ""
     var timeoutMinutes:Int = 60 * 24
+
+    /**
+     * 用于测试付款的收款人真实姓名
+     */
+    var buyerRealName:String? = null
+
 }

@@ -29,8 +29,4 @@ data class TransferTrade(
      */
     @get:Length(max=100)
     var remark: String? = null,
-
-    override var mode: TradeMode = TradeMode.Merchant,
-
-    override var platformMerchantKey: String = ""
-) : IPlatformIsvParameter
+)

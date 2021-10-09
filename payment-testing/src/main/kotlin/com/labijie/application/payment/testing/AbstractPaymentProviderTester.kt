@@ -10,6 +10,7 @@ import com.labijie.infra.commons.snowflake.configuration.SnowflakeConfig
 import com.labijie.infra.commons.snowflake.providers.StaticSlotProvider
 import com.labijie.infra.json.JacksonHelper
 import com.labijie.infra.spring.configuration.NetworkConfig
+import com.labijie.infra.utils.ifNullOrBlank
 import okhttp3.OkHttpClient
 import org.junit.jupiter.api.Assertions
 import org.springframework.boot.web.client.RestTemplateBuilder
@@ -207,6 +208,40 @@ abstract class AbstractPaymentProviderTester<T : IPaymentProvider> {
             val queryResult = this.paymentProvider.queryTrade(query)
             printObject(queryResult)
             Assertions.assertNotNull(queryResult)
+        }
+    }
+
+    open fun testTransfer(
+        tradeId: String? = null,
+        onCompleted: ((r: TransferTradeResult?) -> Unit)? = null
+    ){
+        if (testEnabled) {
+            val parameters = this.buildPlatfromTestParameters()
+
+            val transferTrade = TransferTrade(
+                tradeId.ifNullOrBlank { idGenerator.newId().toString() },
+                parameters.platformBuyerId,
+                BigDecimal(0.01),
+                parameters.buyerRealName,
+                "付款测试",
+                "这是一笔金额为 ${0.01} 的付款测试"
+            )
+            val result = this.paymentProvider.transfer(transferTrade)
+            onCompleted?.invoke(result)
+        }
+    }
+
+    open fun testQueryTransfer(tradeId: String, isPlatformTradeId: Boolean = false,
+                               onCompleted: ((r: TransferQueryResult?) -> Unit)? = null){
+        if (testEnabled) {
+            val parameters = this.buildPlatfromTestParameters()
+
+            val transferTrade = PaymentTransferQuery(
+                tradeId,
+                isPlatformTradeId
+            )
+            val result = this.paymentProvider.queryTransfer(transferTrade)
+            onCompleted?.invoke(result)
         }
     }
 }

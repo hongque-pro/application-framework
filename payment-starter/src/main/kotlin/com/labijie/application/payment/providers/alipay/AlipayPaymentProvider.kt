@@ -222,7 +222,7 @@ class AlipayPaymentProvider(
     }
 
 
-    override fun queryTransfer(query: PaymentTransferQuery, overrideOptions: PaymentOptions?): TransferQueryResult? {
+    override fun queryTransfer(query: TransferQuery, overrideOptions: PaymentOptions?): TransferQueryResult? {
         //参考：https://opendocs.alipay.com/apis/api_28/alipay.fund.trans.order.query
         val usedOptions = checkPaymentOptions(overrideOptions) ?: this.options
         //val mntAuthCode = if (query.mode == TradeMode.ISV) query.platformMerchantKey else null

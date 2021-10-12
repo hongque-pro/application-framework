@@ -37,7 +37,7 @@ interface IPaymentProvider {
     /**
      * 查询转账单（必须同时提供业务单号和平台单号）
      */
-    fun queryTransfer(query: PaymentTransferQuery, overrideOptions: PaymentOptions? = null): TransferQueryResult?
+    fun queryTransfer(query: TransferQuery, overrideOptions: PaymentOptions? = null): TransferQueryResult?
 
     /**
      * 申请退款

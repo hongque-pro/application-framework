@@ -94,4 +94,11 @@ class WechatTester : AbstractPaymentProviderTester<WechatPaymentProvider>() {
             Assertions.assertNotNull(it)
         }
     }
+
+    @Test
+    fun testQueryTransfer(){
+        super.testQueryTransfer("111111", false) {
+            Assertions.assertNotNull(it)
+        }
+    }
 }

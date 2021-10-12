@@ -236,7 +236,7 @@ abstract class AbstractPaymentProviderTester<T : IPaymentProvider> {
         if (testEnabled) {
             val parameters = this.buildPlatfromTestParameters()
 
-            val transferTrade = PaymentTransferQuery(
+            val transferTrade = TransferQuery(
                 tradeId,
                 isPlatformTradeId
             )

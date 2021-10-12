@@ -144,7 +144,7 @@ class WechatCarPaymentProvider(
         throw NotImplementedError()
     }
 
-    override fun queryTransfer(query: PaymentTransferQuery, overrideOptions: PaymentOptions?): TransferQueryResult? {
+    override fun queryTransfer(query: TransferQuery, overrideOptions: PaymentOptions?): TransferQueryResult? {
         throw NotImplementedError()
     }
 

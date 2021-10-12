@@ -1,6 +1,5 @@
 package com.labijie.application.payment.providers.wechat
 
-import com.labijie.application.exception.ThirdPartyExchangeException
 import com.labijie.application.parseDateTime
 import com.labijie.application.payment.*
 import com.labijie.application.payment.configuration.PaymentProperties
@@ -155,22 +154,26 @@ class WechatPaymentProvider(
         }
     }
 
-    override fun queryTransfer(query: PaymentTransferQuery, overrideOptions: PaymentOptions?): TransferQueryResult? {
+    override fun queryTransfer(query: TransferQuery, overrideOptions: PaymentOptions?): TransferQueryResult? {
+        if(query.isPlatformTradeId){
+            throw TransferException("Platform transfer trade id is not supported for query")
+        }
 
         val useOptions = this.checkPaymentOptions(overrideOptions) ?: this.options
         val parameters = mutableMapOf(
             "appid" to useOptions.appId,
             "mch_id" to useOptions.appAccount,
-            "partner_trade_no" to query.tradeId
+            "partner_trade_no" to query.tradeId,
+            "nonce_str" to ShortId.newId()
         )
-        signatureData(parameters, overrideOptions = useOptions)
+        signatureData(parameters, overrideOptions = useOptions, joinSignType = false, signType = WechatUtilities.SIGN_TYPE_MD5)
         val response =
             try {
                 requestApi(
                     useOptions.exchange.queryTransferUrl,
                     parameters,
                     WechatTransferQueryResponse::class,
-                    useClientCertificate = false,
+                    useClientCertificate = true,
                     overrideOptions = useOptions
                 )
             } catch (e: PaymentExchangeException) {
@@ -249,7 +252,7 @@ class WechatPaymentProvider(
                 throw ex
             }
             //出错时候并且是 SYSTEMERROR 时查询一次
-            val query = PaymentTransferQuery(trade.tradeId, isPlatformTradeId = false)
+            val query = TransferQuery(trade.tradeId, isPlatformTradeId = false)
             val r = queryTransfer(query, useOptions) ?: throw ex
             WechatTransferResponse().apply {
                 val pattern = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")

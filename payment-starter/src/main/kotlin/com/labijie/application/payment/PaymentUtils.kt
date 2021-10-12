@@ -1,10 +1,5 @@
 package com.labijie.application.payment
 
-import com.fasterxml.jackson.annotation.JsonInclude
-import com.fasterxml.jackson.databind.MapperFeature
-import com.fasterxml.jackson.databind.PropertyNamingStrategy
-import com.fasterxml.jackson.databind.SerializationFeature
-import com.fasterxml.jackson.dataformat.xml.XmlMapper
 import com.labijie.application.payment.exception.UnsupportedPaymentProviderException
 
 class PaymentUtils(
@@ -60,7 +55,7 @@ class PaymentUtils(
     /**
      * 查询转账单（必须同时提供业务单号和平台单号）
      */
-    fun queryTransfer(providerName:String, query: PaymentTransferQuery, overrideOptions: PaymentOptions? = null): TransferQueryResult?{
+    fun queryTransfer(providerName:String, query: TransferQuery, overrideOptions: PaymentOptions? = null): TransferQueryResult?{
         this.validateProviderName(providerName)
 
         val provider =getPaymentProvider(providerName)

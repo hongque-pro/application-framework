@@ -156,7 +156,7 @@ class WechatPaymentProvider(
 
     override fun queryTransfer(query: TransferQuery, overrideOptions: PaymentOptions?): TransferQueryResult? {
         if(query.isPlatformTradeId){
-            throw TransferException("Platform transfer trade id is not supported for query")
+            throw TransferException(options.providerName, "Platform transfer trade id is not supported for query")
         }
 
         val useOptions = this.checkPaymentOptions(overrideOptions) ?: this.options
@@ -251,6 +251,7 @@ class WechatPaymentProvider(
             if (ex.platformErrorCode != WechatPaymentErrors.SYSTEMERROR) {
                 throw ex
             }
+
             //出错时候并且是 SYSTEMERROR 时查询一次
             val query = TransferQuery(trade.tradeId, isPlatformTradeId = false)
             val r = queryTransfer(query, useOptions) ?: throw ex

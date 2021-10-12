@@ -47,7 +47,7 @@ open class MultiRestTemplates(
         pfxFile: String?,
         password: String?
     ): RestTemplate {
-        return clients.getOrPut(pfxFile) {
+        return clients.getOrPut(pfxFile ?: "___no_cert") {
             val client = createOkHttpClient(pfxFile, password)
             restTemplateBuilder.build().apply {
                 this.requestFactory = OkHttp3ClientHttpRequestFactory(client)

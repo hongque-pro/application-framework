@@ -221,7 +221,7 @@ abstract class AbstractPaymentProviderTester<T : IPaymentProvider> {
             val transferTrade = TransferTrade(
                 tradeId.ifNullOrBlank { idGenerator.newId().toString() },
                 parameters.platformBuyerId,
-                BigDecimal(0.01),
+                BigDecimal(1),
                 parameters.buyerRealName,
                 "付款测试",
                 "这是一笔金额为 ${0.01} 的付款测试"

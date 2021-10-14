@@ -20,5 +20,5 @@ class PaymentProperties {
             return "/callback/pay_refund/v$VERSION/$provider"
         }
     }
-    var callbackBaseUrl = "http://localhost"
+    var callbackBaseUrl = "http://localhost:8080"
 }

@@ -14,6 +14,7 @@ import com.labijie.infra.json.JacksonHelper
 import com.labijie.infra.utils.ifNullOrBlank
 import com.labijie.infra.utils.throwIfNecessary
 import io.netty.handler.codec.http.QueryStringDecoder
+import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
@@ -34,7 +35,7 @@ abstract class AbstractCallbackMvcInterceptor<TCallbackContext : AbstractCallbac
 
     companion object {
         @JvmStatic
-        val log = LoggerFactory.getLogger(PaymentCallbackMvcInterceptor::class.java)
+        val log: Logger = LoggerFactory.getLogger(PaymentCallbackMvcInterceptor::class.java)
 
 
         @JvmStatic
@@ -175,7 +176,7 @@ abstract class AbstractCallbackMvcInterceptor<TCallbackContext : AbstractCallbac
                 this.appendLine("Callback version:  ${context.version}")
                 this.appendLine("HttpStatus:  ${response.status}")
                 this.appendLine("Content Type:  ${response.contentType}")
-                this.appendLine("Content Length:  ${length}")
+                this.appendLine("Content Length:  $length")
                 this.appendLine("Encoding:  ${response.characterEncoding}")
                 this.appendLine("Body:  ${response.characterEncoding}")
                 this.appendLine(callBackResponse.body)

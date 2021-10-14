@@ -3,7 +3,6 @@ package com.labijie.application.configuration
 import com.labijie.application.ApplicationInitializationRunner
 import com.labijie.application.ErrorRegistry
 import com.labijie.application.IErrorRegistry
-import com.labijie.application.async.handler.MessageHandler
 import com.labijie.application.component.IMessageSender
 import com.labijie.application.model.SendSmsTemplateParam
 import com.labijie.application.okhttp.IOkHttpClientCustomizer
@@ -34,11 +33,8 @@ import org.springframework.http.converter.AbstractHttpMessageConverter
 import org.springframework.http.converter.ByteArrayHttpMessageConverter
 import org.springframework.http.converter.StringHttpMessageConverter
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter
-import org.springframework.messaging.converter.ByteArrayMessageConverter
-import org.springframework.messaging.converter.StringMessageConverter
 import org.springframework.scheduling.annotation.EnableAsync
 import org.springframework.web.client.RestTemplate
-import java.io.ByteArrayOutputStream
 import java.util.concurrent.TimeUnit
 import java.util.function.Consumer
 import java.util.stream.Collectors

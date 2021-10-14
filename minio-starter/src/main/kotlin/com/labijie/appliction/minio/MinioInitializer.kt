@@ -40,9 +40,9 @@ class MinioInitializer : IModuleInitializer {
     private fun StringBuilder.appendBucketCheckState(bucket: String, created: Boolean, policy: BucketPolicy) {
         val policyName = if (policy == BucketPolicy.PRIVATE) "private" else "public"
         if (created) {
-            this.appendLine("Minio $policy bucket '$bucket' has been created.")
+            this.appendLine("Minio $policyName bucket '$bucket' has been created.")
         } else {
-            this.appendLine("Minio $policy bucket '$bucket' already existed, skip creation step.")
+            this.appendLine("Minio $policyName bucket '$bucket' already existed, skip creation step.")
         }
     }
 }

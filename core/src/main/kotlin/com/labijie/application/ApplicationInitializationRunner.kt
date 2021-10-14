@@ -8,9 +8,8 @@ import com.labijie.infra.utils.ifNullOrBlank
 import com.labijie.infra.utils.logger
 import org.springframework.beans.BeansException
 import org.springframework.beans.factory.ObjectProvider
-import org.springframework.boot.SpringApplication
-import org.springframework.boot.WebApplicationType
 import org.springframework.boot.context.event.ApplicationReadyEvent
+import org.springframework.boot.info.GitProperties
 import org.springframework.boot.web.context.WebServerInitializedEvent
 import org.springframework.boot.web.server.WebServer
 import org.springframework.context.ApplicationContext
@@ -20,7 +19,6 @@ import org.springframework.context.ConfigurableApplicationContext
 import org.springframework.context.event.EventListener
 import org.springframework.core.Ordered
 import org.springframework.core.env.Environment
-import org.springframework.util.ClassUtils
 import org.springframework.web.context.WebApplicationContext
 import java.lang.StringBuilder
 import java.lang.reflect.Method
@@ -48,6 +46,7 @@ class ApplicationInitializationRunner<T : ConfigurableApplicationContext>(
     private lateinit var environment: Environment
     private lateinit var errorRegistrations: ObjectProvider<IErrorRegistration>
     private lateinit var errorRegistry: IErrorRegistry
+    private lateinit var gitProperties: GitProperties
 
 
     override fun setApplicationContext(applicationContext: ApplicationContext) {
@@ -58,17 +57,18 @@ class ApplicationInitializationRunner<T : ConfigurableApplicationContext>(
         profiles = applicationContext.environment.activeProfiles.joinToString()
         errorRegistrations = applicationContext.getBeanProvider(IErrorRegistration::class.java)
         errorRegistry = applicationContext.getBean(IErrorRegistry::class.java)
+        gitProperties = applicationContext.getBean(GitProperties::class.java)
     }
 
 
     private fun initJackson() {
-        val eumnModule = com.fasterxml.jackson.databind.module.SimpleModule("eumn-module")
-        eumnModule.addDeserializer(Enum::class.java, DescribeEnumDeserializer())
-        eumnModule.addSerializer(Enum::class.java, DescribeEnumSerializer)
+        val enumModule = com.fasterxml.jackson.databind.module.SimpleModule("eumn-module")
+        enumModule.addDeserializer(Enum::class.java, DescribeEnumDeserializer())
+        enumModule.addSerializer(Enum::class.java, DescribeEnumSerializer)
 
-        JacksonHelper.webCompatibilityMapper.registerModule(eumnModule)
+        JacksonHelper.webCompatibilityMapper.registerModule(enumModule)
 
-        JacksonHelper.defaultObjectMapper.registerModule(eumnModule)
+        JacksonHelper.defaultObjectMapper.registerModule(enumModule)
     }
 
     @EventListener(ApplicationReadyEvent::class)
@@ -149,7 +149,7 @@ class ApplicationInitializationRunner<T : ConfigurableApplicationContext>(
         println(
             """
 [${this.applicationName}] has been started !! 
-        
+application framework ver: ${gitProperties.get("git.build.version")}        
 current profiles: $profiles
 module loaded:  ${moduleList.ifNullOrBlank("none module")}
 --------------------------------------------------------------------

@@ -6,6 +6,7 @@ import com.labijie.infra.json.JacksonHelper
 import com.labijie.infra.spring.configuration.getApplicationName
 import com.labijie.infra.utils.ifNullOrBlank
 import com.labijie.infra.utils.logger
+import com.labijie.infra.utils.toLocalDateTime
 import org.springframework.beans.BeansException
 import org.springframework.beans.factory.ObjectProvider
 import org.springframework.boot.context.event.ApplicationReadyEvent
@@ -149,7 +150,8 @@ class ApplicationInitializationRunner<T : ConfigurableApplicationContext>(
         println(
             """
 [${this.applicationName}] has been started !! 
-application framework ver: ${gitProperties.get("git.build.version")}        
+framework ver: ${gitProperties.get("build.version")}        
+framework commit: ${gitProperties.commitTime.toLocalDateTime().toLocalDate()}  
 current profiles: $profiles
 module loaded:  ${moduleList.ifNullOrBlank("none module")}
 --------------------------------------------------------------------

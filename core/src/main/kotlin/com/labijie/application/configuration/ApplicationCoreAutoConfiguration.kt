@@ -30,10 +30,15 @@ import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Lazy
 import org.springframework.core.annotation.Order
 import org.springframework.http.client.OkHttp3ClientHttpRequestFactory
+import org.springframework.http.converter.AbstractHttpMessageConverter
+import org.springframework.http.converter.ByteArrayHttpMessageConverter
 import org.springframework.http.converter.StringHttpMessageConverter
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter
+import org.springframework.messaging.converter.ByteArrayMessageConverter
+import org.springframework.messaging.converter.StringMessageConverter
 import org.springframework.scheduling.annotation.EnableAsync
 import org.springframework.web.client.RestTemplate
+import java.io.ByteArrayOutputStream
 import java.util.concurrent.TimeUnit
 import java.util.function.Consumer
 import java.util.stream.Collectors
@@ -152,11 +157,25 @@ class ApplicationCoreAutoConfiguration {
       ): RestTemplateCustomizer {
         return RestTemplateCustomizer { rt ->
           rt.requestFactory = OkHttp3ClientHttpRequestFactory(okHttpClient)
-          rt.messageConverters.add(0, MappingJackson2HttpMessageConverter(JacksonHelper.defaultObjectMapper))
-          rt.messageConverters.add(1, StringHttpMessageConverter(Charsets.UTF_8))
 
-          rt.messageConverters.filterIsInstance<StringHttpMessageConverter>().forEach {
-            it.setWriteAcceptCharset(false)
+          //替换默认的 json mapper 转换
+          rt.messageConverters.removeIf {
+            it is MappingJackson2HttpMessageConverter
+          }
+
+          rt.messageConverters.add(0, MappingJackson2HttpMessageConverter(JacksonHelper.defaultObjectMapper))
+
+          //修正 UTF-8 编码
+          rt.messageConverters.filterIsInstance<AbstractHttpMessageConverter<*>>().forEach {
+            when (it) {
+                is StringHttpMessageConverter -> {
+                  it.defaultCharset = Charsets.UTF_8
+                  it.setWriteAcceptCharset(false)
+                }
+                !is ByteArrayHttpMessageConverter -> {
+                  it.defaultCharset = Charsets.UTF_8
+                }
+            }
           }
         }
       }
@@ -175,7 +194,7 @@ class ApplicationCoreAutoConfiguration {
 
       @Bean
       @ConditionalOnMissingBean(MultiRestTemplates::class)
-      fun clientCertificateTemplates(
+      fun multiRestTemplates(
         customizers: ObjectProvider<IOkHttpClientCustomizer>,
         httpClientFactory: OkHttpClientFactory,
         okHttpClientProperties: OkHttpClientProperties,

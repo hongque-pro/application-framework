@@ -109,14 +109,14 @@ abstract class AbstractPaymentProviderTester<T : IPaymentProvider> {
         }
     }
 
-    protected open fun createTrade(): PlatformTrade {
+    protected open fun createTrade(mode: TradeMode = TradeMode.Merchant): PlatformTrade {
         val parameters = this.buildPlatfromTestParameters()
         return PlatformTrade().apply {
             this.amount = BigDecimal(0.01)
-            this.mode = TradeMode.ISV
+            this.mode = mode
             this.tradeId = idGenerator.newId().toString()
 
-            this.subject = parameters.subject.ifBlank { "小程序停车账单" }
+            this.subject = parameters.subject.ifBlank { "这是一笔测试支付" }
             this.platformBuyerId = parameters.platformBuyerId
             this.platformMerchantKey = parameters.platformMerchantKey
 
@@ -124,8 +124,8 @@ abstract class AbstractPaymentProviderTester<T : IPaymentProvider> {
         }
     }
 
-    open fun testCreateTrade() {
-        val trade = this.createTrade()
+    open fun testCreateTrade(mode: TradeMode = TradeMode.Merchant) {
+        val trade = this.createTrade(mode)
         if (testEnabled) {
             val result = this.paymentProvider.createTrade(trade)
             printObject(result)
@@ -133,8 +133,8 @@ abstract class AbstractPaymentProviderTester<T : IPaymentProvider> {
     }
 
 
-    open fun testCreateOneMoreTime() {
-        val trade = this.createTrade()
+    protected fun testCreateOneMoreTime(mode: TradeMode = TradeMode.Merchant) {
+        val trade = this.createTrade(mode)
         if (testEnabled) {
             val result1 = this.paymentProvider.createTrade(trade)
             printObject(result1)
@@ -146,7 +146,7 @@ abstract class AbstractPaymentProviderTester<T : IPaymentProvider> {
     open fun testQueryNotExisted() {
         val parameters = buildPlatfromTestParameters()
         val query =
-            PaymentTradeQuery(id = 123456789.toString(), isPlatformTradeId = false, mode = TradeMode.ISV).apply {
+            PaymentTradeQuery(id = 1123456789.toString(), isPlatformTradeId = false, mode = TradeMode.ISV).apply {
                 this.platformMerchantKey = parameters.platformMerchantKey
             }
         if (testEnabled) {

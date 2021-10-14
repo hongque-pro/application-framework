@@ -16,8 +16,10 @@ import com.labijie.infra.json.JacksonHelper
 import com.labijie.infra.utils.ifNullOrBlank
 import com.labijie.infra.utils.logger
 import com.labijie.infra.utils.throwIfNecessary
+import com.sun.xml.internal.stream.writers.UTF8OutputStreamWriter
 import org.springframework.http.*
 import org.springframework.web.client.RestTemplate
+import java.io.ByteArrayOutputStream
 import java.io.StringWriter
 import java.time.format.DateTimeFormatter
 import javax.swing.Spring

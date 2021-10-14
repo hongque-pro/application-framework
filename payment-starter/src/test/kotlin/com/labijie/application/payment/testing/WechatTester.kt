@@ -1,5 +1,6 @@
 package com.labijie.application.payment.testing
 
+import com.labijie.application.payment.TradeMode
 import com.labijie.application.payment.configuration.PaymentProperties
 import com.labijie.application.payment.providers.wechat.WechatPaymentOptions
 import com.labijie.application.payment.providers.wechat.WechatPaymentProvider
@@ -53,8 +54,8 @@ class WechatTester : AbstractPaymentProviderTester<WechatPaymentProvider>() {
     }
 
     @Test
-    override fun testCreateOneMoreTime() {
-        super.testCreateOneMoreTime()
+    fun testCreateOneMoreTime() {
+        super.testCreateOneMoreTime(TradeMode.Merchant)
     }
 
     @Test

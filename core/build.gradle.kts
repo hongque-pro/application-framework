@@ -1,3 +1,6 @@
+plugins {
+    id("com.gorylenko.gradle-git-properties")
+}
 dependencies {
     api("com.labijie.infra:commons-core-starter:${Versions.infraCommons}")
     api("com.labijie.infra:commons-snowflake-starter:${Versions.infraCommons}")
@@ -8,8 +11,10 @@ dependencies {
     api("org.springframework.cloud:spring-cloud-commons")
 
     api("com.labijie:caching-kotlin-core-starter:${Versions.infraCaching}")
-    api("org.hibernate.validator:hibernate-validator:${Versions.hibernateValidator}")
-    api("org.owasp.antisamy:antisamy:${Versions.antisamy}")
+    api("org.hibernate.validator:hibernate-validator")
+    api("org.owasp.antisamy:antisamy:${Versions.antisamy}") {
+        exclude(module = "slf4j-simple")
+    }
 
     api("com.squareup.okhttp3:okhttp")
     api("org.springframework:spring-web")

@@ -3,11 +3,8 @@ package com.labijie.application.validation
 import com.labijie.application.ApplicationRuntimeException
 import com.labijie.application.SpringContext
 import com.labijie.application.configuration.ValidationConfiguration
-import com.labijie.application.toKebabCase
-import org.springframework.core.env.Environment
 import javax.validation.ConstraintValidator
 import javax.validation.ConstraintValidatorContext
-import kotlin.reflect.full.declaredMemberProperties
 
 /**
  * Created with IntelliJ IDEA.

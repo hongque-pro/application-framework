@@ -49,7 +49,6 @@ import javax.annotation.PreDestroy
 @Configuration(proxyBeanMethods = false)
 @EnableConfigurationProperties(ValidationConfiguration::class)
 @AutoConfigureBefore(RestTemplateAutoConfiguration::class)
-@EnableAsync
 @Order(-1)
 class ApplicationCoreAutoConfiguration {
 

@@ -1,17 +1,12 @@
 package com.labijie.application.validation
 
-import io.netty.util.internal.ResourcesUtil
 import com.labijie.infra.utils.logger
 import org.owasp.validator.html.AntiSamy
 import org.owasp.validator.html.Policy
 import org.owasp.validator.html.PolicyException
-import java.io.FileNotFoundException
-import java.net.URL
-import javax.validation.Constraint
+import org.springframework.core.io.ClassPathResource
 import javax.validation.ConstraintValidator
 import javax.validation.ConstraintValidatorContext
-import org.springframework.core.io.ClassPathResource
-
 
 
 /**

@@ -117,15 +117,15 @@ class QueryStringEncoder @JvmOverloads constructor(uri: String?, private val cha
         var i = start
         while (i < len) {
             val c = s[i]
-            if (c.toInt() < 0x80) {
+            if (c.code < 0x80) {
                 if (dontNeedEncoding(c)) {
                     uriBuilder.append(c)
                 } else {
-                    appendEncoded(c.toInt())
+                    appendEncoded(c.code)
                 }
-            } else if (c.toInt() < 0x800) {
-                appendEncoded(0xc0 or (c.toInt() shr 6))
-                appendEncoded(0x80 or (c.toInt() and 0x3f))
+            } else if (c.code < 0x800) {
+                appendEncoded(0xc0 or (c.code shr 6))
+                appendEncoded(0x80 or (c.code and 0x3f))
             } else if (c.isSurrogate()) {
                 if (!Character.isHighSurrogate(c)) {
                     appendEncoded(WRITE_UTF_UNKNOWN.toInt())
@@ -140,9 +140,9 @@ class QueryStringEncoder @JvmOverloads constructor(uri: String?, private val cha
                 // Extra method to allow inlining the rest of writeUtf8 which is the most likely code path.
                 writeUtf8Surrogate(c, s[i])
             } else {
-                appendEncoded(0xe0 or (c.toInt() shr 12))
-                appendEncoded(0x80 or (c.toInt() shr 6 and 0x3f))
-                appendEncoded(0x80 or (c.toInt() and 0x3f))
+                appendEncoded(0xe0 or (c.code shr 12))
+                appendEncoded(0x80 or (c.code shr 6 and 0x3f))
+                appendEncoded(0x80 or (c.code and 0x3f))
             }
             i++
         }
@@ -151,7 +151,7 @@ class QueryStringEncoder @JvmOverloads constructor(uri: String?, private val cha
     private fun writeUtf8Surrogate(c: Char, c2: Char) {
         if (!Character.isLowSurrogate(c2)) {
             appendEncoded(WRITE_UTF_UNKNOWN.toInt())
-            appendEncoded(if (c2.isHighSurrogate()) WRITE_UTF_UNKNOWN.toInt() else c2.toByte().toInt())
+            appendEncoded(if (c2.isHighSurrogate()) WRITE_UTF_UNKNOWN.toInt() else c2.code.toInt())
             return
         }
         val codePoint = Character.toCodePoint(c, c2)
@@ -167,7 +167,7 @@ class QueryStringEncoder @JvmOverloads constructor(uri: String?, private val cha
     }
 
     companion object {
-        private const val WRITE_UTF_UNKNOWN = '?'.toByte()
+        private const val WRITE_UTF_UNKNOWN = '?'.code
         private val CHAR_MAP = "0123456789ABCDEF".toCharArray()
 
         /**

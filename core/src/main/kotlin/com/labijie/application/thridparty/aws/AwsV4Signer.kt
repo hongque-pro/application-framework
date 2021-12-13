@@ -54,7 +54,7 @@ class AwsV4Signer private constructor() {
 
     internal class Ns(val origin: String) {
         override fun toString(): String {
-            return origin.toLowerCase()
+            return origin.lowercase()
         }
     }
 
@@ -93,7 +93,7 @@ class AwsV4Signer private constructor() {
             val uriObj = UriComponentsBuilder.fromHttpUrl(uri).build()
             this.canonicalURI = (uriObj.path?.removePrefix("/")).ifNullOrBlank { "/" }
             val host = uriObj.host ?: throw IllegalArgumentException("no host in uri: '$uri'")
-            this.awsHeaders[Ns("Host")] = if (uriObj.port == null || uriObj.port < 0) host else "$host:${uriObj.port}"
+            this.awsHeaders[Ns("Host")] = if (uriObj.port < 0) host else "$host:${uriObj.port}"
 
             val self = this
             uriObj.queryParams.forEach { (name, values) ->
@@ -211,8 +211,8 @@ class AwsV4Signer private constructor() {
 
         /* Step 1.3 添加查询参数，换行. */
         val queryString = StringBuilder()
-        if (!queryParametes.isNullOrEmpty()) {
-            val qs = queryParametes!!.flatMap {
+        if (queryParametes.isNotEmpty()) {
+            val qs = queryParametes.flatMap {
                 val key = UriUtils.encode(it.key, Charsets.UTF_8)
                 it.value.map { v ->
                     val value = UriUtils.encode(v, Charsets.UTF_8)
@@ -225,10 +225,10 @@ class AwsV4Signer private constructor() {
         canonicalURL.append(queryString)
 
         /* Step 1.4 添加headers, 每个header都需要换行. */
-        if (!awsHeaders.isNullOrEmpty()) {
+        if (awsHeaders.isNotEmpty()) {
             canonicalURL.append(awsHeaders.toList().joinToString("\n") {
                 val value = it.second.trim().replace(Regex(" +"), " ")
-                "${it.first}:${it.second}"
+                "${it.first}:${value}"
             })
                 .append("\n")
         }
@@ -312,7 +312,7 @@ class AwsV4Signer private constructor() {
      */
     fun headers(): Map<String, String?>? {
         val signature = sign()
-        return if (signature != null) {
+        return if (signature.isNotBlank()) {
             val header: MutableMap<String, String?> = mutableMapOf(*this.awsHeaders.map {
                 it.key.origin to it.value
             }.toTypedArray())
@@ -475,7 +475,7 @@ class AwsV4Signer private constructor() {
             hexChars[j * 2] = hexArray[v ushr 4]
             hexChars[j * 2 + 1] = hexArray[v and 0x0F]
         }
-        return String(hexChars).toLowerCase()
+        return String(hexChars).lowercase()
     }//server timezone
 
 
@@ -488,7 +488,7 @@ class AwsV4Signer private constructor() {
         return try {
             URLEncoder.encode(param, "UTF-8")
         } catch (e: Exception) {
-            URLEncoder.encode(param)
+            URLEncoder.encode(param, Charsets.UTF_8.name())
         }
     }
 

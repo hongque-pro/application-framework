@@ -1,6 +1,7 @@
 # Folder view configuration files
 .DS_Store
 Desktop.ini
+hs_err_*.log
 
 # Thumbnail cache files
 Thumbs.db

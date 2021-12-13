@@ -27,7 +27,7 @@ object IdentityUtils {
             this.passwordHash = passwordHash
             this.accessFailedCount = 0
             this.concurrencyStamp = ShortId.newId()
-            this.email = "${userName.toLowerCase()}@null.null"
+            this.email = "${userName.lowercase()}@null.null"
             this.emailConfirmed = false
             this.lastClientVersion = "1.0"
             this.lastSignInArea = ""

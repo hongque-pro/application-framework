@@ -1,14 +1,10 @@
 package com.labijie.application.crypto
 
-import okhttp3.internal.and
 import org.apache.commons.codec.binary.Hex
 import org.apache.commons.codec.digest.DigestUtils
 import java.security.MessageDigest
 import java.util.*
-import java.util.*
-import javax.crypto.KeyGenerator
 import javax.crypto.Mac
-import javax.crypto.SecretKey
 import javax.crypto.spec.SecretKeySpec
 
 
@@ -20,7 +16,7 @@ object HashUtils {
     }
 
     fun genMD5Key(): String {
-        return UUID.randomUUID().toString().replace("-",  "").toLowerCase()
+        return UUID.randomUUID().toString().replace("-",  "").lowercase()
     }
 
     fun signHmacSha256(params: Map<String, String>, key: String): String {
@@ -33,7 +29,7 @@ object HashUtils {
             val content = getSignContent(params).plus("&key=$key")
             val rawHmac = mac.doFinal(content.toByteArray())
             val hexBytes = Hex().encode(rawHmac)
-            String(hexBytes, Charsets.UTF_8).toUpperCase()
+            String(hexBytes, Charsets.UTF_8).lowercase()
         } catch (e: Exception) {
             throw RuntimeException()
         }
@@ -58,7 +54,7 @@ object HashUtils {
 
     fun signMD5(params: Map<String, String>, key: String): String {
         val content = getSignContent(params).plus("&key=$key")
-        return DigestUtils.md5Hex(content).toUpperCase()
+        return DigestUtils.md5Hex(content).lowercase()
     }
 
     fun verifyMD5(params: Map<String, String>, sign: String, key: String): Boolean {
@@ -87,7 +83,7 @@ object HashUtils {
     private fun byte2Hex(bytes: ByteArray): String {
         val stringBuffer = StringBuffer()
         for (i in bytes.indices) {
-            val temp = Integer.toHexString(bytes[i] and  0xFF)
+            val temp = Integer.toHexString(bytes[i].toInt() and 0xFF)
             if (temp.length == 1) {
                 //1得到一位的进行补0操作
                 stringBuffer.append("0")

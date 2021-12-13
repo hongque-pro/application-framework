@@ -6,7 +6,7 @@ import com.labijie.application.web.client.MultiRestTemplates
 import com.labijie.infra.commons.snowflake.ISlotProvider
 import com.labijie.infra.commons.snowflake.ISlotProviderFactory
 import com.labijie.infra.commons.snowflake.SnowflakeIdGenerator
-import com.labijie.infra.commons.snowflake.configuration.SnowflakeConfig
+import com.labijie.infra.commons.snowflake.configuration.SnowflakeProperties
 import com.labijie.infra.commons.snowflake.providers.StaticSlotProvider
 import com.labijie.infra.json.JacksonHelper
 import com.labijie.infra.spring.configuration.NetworkConfig
@@ -66,7 +66,7 @@ abstract class AbstractPaymentProviderTester<T : IPaymentProvider> {
                 return StaticSlotProvider()
             }
         }
-        val sc = SnowflakeConfig().apply {
+        val sc = SnowflakeProperties().apply {
             this.provider = "static"
         }
         idGenerator = SnowflakeIdGenerator(sc, fact)

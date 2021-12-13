@@ -116,7 +116,7 @@ fun <T : Throwable> Throwable.getCauseFromChain(clazz: KClass<T>): T? {
 fun String.toKebabCase(): String {
     val regex = Regex("([a-z])([A-Z])")
     return this.replace(regex) {
-        "${it.groupValues[1]}-${it.groupValues[2].toLowerCase()}"
+        "${it.groupValues[1]}-${it.groupValues[2].lowercase()}"
     }
 }
 

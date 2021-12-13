@@ -23,7 +23,7 @@ object AlipayUtilities {
 
     fun signature(params: Map<String, String>, privateKey:String, signType: String = SIGN_TYPE_RSA2): String {
         val type = signType.ifNullOrBlank { SIGN_TYPE_RSA2 }
-        return when(type.toUpperCase()){
+        return when(type.lowercase()){
             SIGN_TYPE_RSA-> RsaUtils.rsaSignSHA1(params, privateKey)
             SIGN_TYPE_RSA2-> RsaUtils.rsaSignSHA256(params, privateKey)
             else-> {
@@ -37,7 +37,7 @@ object AlipayUtilities {
 
     fun verifySignature(sign: String, publicKey:String, params: Map<String, String>, signType: String): Boolean {
         val type = signType.ifNullOrBlank { SIGN_TYPE_RSA2 }
-        return when(type.toUpperCase()){
+        return when(type.lowercase()){
             SIGN_TYPE_RSA2-> RsaUtils.verifySHA256(params, sign, publicKey)
             SIGN_TYPE_RSA -> RsaUtils.verifySHA1(params, sign, publicKey)
             else-> {
@@ -134,7 +134,7 @@ object AlipayUtilities {
         //参考：https://docs.open.alipay.com/200/106120
         val type = signType.ifNullOrBlank { SIGN_TYPE_RSA2 }
         //同步签名串没有经过 BASE 64 编码
-        return when(type.toUpperCase()){
+        return when(type.lowercase()){
             SIGN_TYPE_RSA2-> RsaUtils.verifySHA256(responseData, sign, publicKey) || RsaUtils.verifySHA256(responseData.replace("/", "\\/"), sign, publicKey)
             SIGN_TYPE_RSA -> RsaUtils.verifySHA1(responseData, sign, publicKey) || RsaUtils.verifySHA1(responseData.replace("/", "\\/"), sign, publicKey)
             else-> {

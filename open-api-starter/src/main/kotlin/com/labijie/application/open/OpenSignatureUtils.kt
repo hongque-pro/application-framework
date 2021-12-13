@@ -13,7 +13,7 @@ object OpenSignatureUtils {
     const val AppIdField = "appid"
 
     fun generateKey(algorithm: String= "sha256"): String {
-        return when (algorithm.toLowerCase()) {
+        return when (algorithm.lowercase()) {
             "sha256" -> HashUtils.genHmacSha256Key()
             "md5" -> HashUtils.genMD5Key()
             else -> throw UnsupportedSignAlgorithmException("Unsupported algorithm for open api signature.")
@@ -23,7 +23,7 @@ object OpenSignatureUtils {
     fun verifySign(request: OpenApiRequest, key: String, algorithm: String = "sha256") {
         val (sign, data) = request.signAndData
         validateParameters(data)
-        val valid = when (algorithm.toLowerCase()) {
+        val valid = when (algorithm.lowercase()) {
             "sha256" -> HashUtils.verifyHmacSha256(data, sign, key)
             "md5" -> HashUtils.verifyMD5(data, sign, key)
             else -> throw UnsupportedSignAlgorithmException("Unsupported algorithm for open api signature.")
@@ -36,7 +36,7 @@ object OpenSignatureUtils {
     fun sign(request: OpenApiRequest, key: String, algorithm: String = "sha256"): String {
         val (_, data) = request.signAndData
         validateParameters(data)
-        return when (algorithm.toLowerCase()) {
+        return when (algorithm.lowercase()) {
             "sha256" -> HashUtils.signHmacSha256(data, key)
             "md5" -> HashUtils.signMD5(data, key)
             else -> throw RuntimeException("Unsupported algorithm for open api signature.")

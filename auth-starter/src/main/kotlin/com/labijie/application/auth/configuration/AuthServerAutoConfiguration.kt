@@ -1,20 +1,25 @@
 package com.labijie.application.auth.configuration
 
 import com.labijie.application.auth.AuthErrorsRegistration
+import com.labijie.application.auth.component.DefaultClientRepository
 import com.labijie.application.auth.component.DefaultIdentityService
 import com.labijie.application.auth.component.DefaultSignInPlatformDetection
 import com.labijie.application.auth.component.ISignInPlatformDetection
 import com.labijie.application.auth.event.UserSignInEventListener
 import com.labijie.application.identity.configuration.IdentityAutoConfiguration
+import com.labijie.application.identity.service.IOAuth2ClientService
 import com.labijie.application.identity.service.IUserService
 import com.labijie.infra.oauth2.IIdentityService
+import com.labijie.infra.oauth2.configuration.OAuth2DependenciesAutoConfiguration
 import com.labijie.infra.oauth2.resource.IResourceAuthorizationConfigurer
 import org.springframework.boot.autoconfigure.AutoConfigureAfter
+import org.springframework.boot.autoconfigure.AutoConfigureBefore
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configurers.ExpressionUrlAuthorizationConfigurer
+import org.springframework.security.oauth2.server.authorization.client.RegisteredClientRepository
 
 /**
  * Created with IntelliJ IDEA.
@@ -24,6 +29,7 @@ import org.springframework.security.config.annotation.web.configurers.Expression
 @Suppress("SpringJavaInjectionPointsAutowiringInspection")
 @Configuration(proxyBeanMethods = false)
 @AutoConfigureAfter(IdentityAutoConfiguration::class)
+@AutoConfigureBefore(OAuth2DependenciesAutoConfiguration::class)
 class AuthServerAutoConfiguration : IResourceAuthorizationConfigurer {
 
     override fun configure(registry: ExpressionUrlAuthorizationConfigurer<HttpSecurity>.ExpressionInterceptUrlRegistry) {
@@ -32,7 +38,12 @@ class AuthServerAutoConfiguration : IResourceAuthorizationConfigurer {
             "/account/verify",
             "/account/set-password",
         ).permitAll()
-            .antMatchers("/user/current").authenticated()
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(RegisteredClientRepository::class)
+    fun defaultClientRepository(clientService: IOAuth2ClientService): DefaultClientRepository {
+        return DefaultClientRepository(clientService)
     }
 
 

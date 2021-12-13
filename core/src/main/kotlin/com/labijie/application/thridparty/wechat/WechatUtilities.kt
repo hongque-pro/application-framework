@@ -33,27 +33,28 @@ object WechatUtilities {
     const val DATETIME_FORMAT_PATTERN = "yyyyMMddHHmmss"
     val DATETIME_FORMAT = DateTimeFormatter.ofPattern(DATETIME_FORMAT_PATTERN)
 
-    const val PLATFORM_NAME ="wechat"
+    const val PLATFORM_NAME = "wechat"
 
     val xmlMapper by lazy {
-        XmlMapper().apply {
-            this.configure(com.fasterxml.jackson.databind.DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+        XmlMapper.builder()
+            .configure(com.fasterxml.jackson.databind.DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
             //序列化时指定根元素，true，则以类名为根元素
-            this.configure(SerializationFeature.WRAP_ROOT_VALUE, false)
+            .configure(SerializationFeature.WRAP_ROOT_VALUE, false)
             //忽略空属性
-            this.setSerializationInclusion(JsonInclude.Include.NON_NULL)
+            .serializationInclusion(JsonInclude.Include.NON_NULL)
+            .propertyNamingStrategy(PropertyNamingStrategies.LOWER_CAMEL_CASE)
             //ML标签名:使用骆驼命名的属性名
-            this.propertyNamingStrategy = PropertyNamingStrategies.LOWER_CAMEL_CASE
             //设置转换模式
-            this.enable(MapperFeature.USE_ANNOTATIONS)
-            this.enable(SerializationFeature.INDENT_OUTPUT)
-        }
+            .enable(MapperFeature.USE_ANNOTATIONS)
+            .enable(SerializationFeature.INDENT_OUTPUT)
+            .build()
+
     }
 
     private fun XMLStreamWriter.closeIgnoreException() {
         try {
             this.close()
-        } catch (e: XMLStreamException) {
+        } catch (_: XMLStreamException) {
 
         }
     }
@@ -61,11 +62,11 @@ object WechatUtilities {
     const val SIGN_TYPE_HMAC_SHA256 = "HMAC-SHA256";
     const val SIGN_TYPE_MD5 = "MD5"
 
-    fun signature(params: Map<String, String>, key:String, signType: String? = null): String {
+    fun signature(params: Map<String, String>, key: String, signType: String? = null): String {
         val type = signType.ifNullOrBlank { SIGN_TYPE_HMAC_SHA256 }
-        return when (type.toUpperCase()) {
+        return when (type.lowercase()) {
             SIGN_TYPE_MD5 -> HashUtils.signMD5(params, key)
-            SIGN_TYPE_HMAC_SHA256->HashUtils.signHmacSha256(params, key)
+            SIGN_TYPE_HMAC_SHA256 -> HashUtils.signHmacSha256(params, key)
             else -> {
                 logger.warn("Wechat signature algorithm \"$signType\" was not supported, HMAC-SHA256 has been used.")
                 HashUtils.signHmacSha256(params, key)
@@ -73,9 +74,9 @@ object WechatUtilities {
         }
     }
 
-    fun verifySignature(sign: String, key:String, params: Map<String, String>, signType: String? = null): Boolean {
+    fun verifySignature(sign: String, key: String, params: Map<String, String>, signType: String? = null): Boolean {
         val type = signType.ifNullOrBlank { SIGN_TYPE_HMAC_SHA256 }
-        return when (type.toUpperCase()) {
+        return when (type.lowercase()) {
             SIGN_TYPE_MD5 -> HashUtils.verifyMD5(params, sign, key)
             SIGN_TYPE_HMAC_SHA256 -> HashUtils.verifyHmacSha256(params, sign, key)
             else -> {
@@ -88,7 +89,7 @@ object WechatUtilities {
     /**
      * 创建微信特有格式的 XML
      */
-    fun buildXmlBody(parameter: Map<String, String>, useCDataContent:Boolean = true): String {
+    fun buildXmlBody(parameter: Map<String, String>, useCDataContent: Boolean = true): String {
         val xmlOutputFactory = XMLOutputFactory.newFactory()
         return try {
             StringWriter().use { out ->
@@ -98,7 +99,7 @@ object WechatUtilities {
                     sw.writeStartElement("xml")
                     parameter.forEach { (key, value) ->
                         sw.writeStartElement(key)
-                        if(useCDataContent) sw.writeCData(value) else sw.writeCharacters(value)
+                        if (useCDataContent) sw.writeCData(value) else sw.writeCharacters(value)
                         sw.writeEndElement()
                     }
                     sw.writeEndElement()
@@ -124,7 +125,7 @@ object WechatUtilities {
         url: String,
         params: MutableMap<String, String>,
         responseType: KClass<T>,
-        signKeyForVerify:String? = null
+        signKeyForVerify: String? = null
     ): T {
         val headers = HttpHeaders().apply {
             this.accept = listOf(MediaType.APPLICATION_XML, MediaType.TEXT_XML, MediaType.TEXT_PLAIN)
@@ -142,18 +143,18 @@ object WechatUtilities {
                 respData = xmlMapper.convertValue(tree, responseType.java)
 
                 //验签
-                if(!signKeyForVerify.isNullOrBlank()) {
+                if (!signKeyForVerify.isNullOrBlank()) {
                     val sign = respData.sign
                     val data = JacksonHelper.defaultObjectMapper.convertValue<MutableMap<String, String>>(
                         tree,
                         object : TypeReference<MutableMap<String, String>>() {})
                     data.remove("sign")
-                    if(!sign.isNullOrBlank() && !verifySignature(
+                    if (!sign.isNullOrBlank() && !verifySignature(
                             sign,
                             signKeyForVerify,
                             data
                         )
-                    ){
+                    ) {
                         throw BadSignatureException(platform = PLATFORM_NAME)
                     }
                 }
@@ -176,7 +177,7 @@ object WechatUtilities {
 
             throw ThirdPartyExchangeException(
                 PLATFORM_NAME,
-                if(SpringContext.isDevelopment || SpringContext.isTest) error else "Invoke ${PLATFORM_NAME} api fault",
+                if (SpringContext.isDevelopment || SpringContext.isTest) error else "Invoke ${PLATFORM_NAME} api fault",
                 platformErrorCode = respData?.errorCode
             )
         } catch (e: Throwable) {
@@ -191,7 +192,7 @@ object WechatUtilities {
                         e
                     )
                 }
-                is ThirdPartyExchangeException-> throw e
+                is ThirdPartyExchangeException -> throw e
                 else -> {
                     e.throwIfNecessary()
                     throw ThirdPartyExchangeException(
@@ -202,7 +203,6 @@ object WechatUtilities {
             }
         }
     }
-
 
 
 }

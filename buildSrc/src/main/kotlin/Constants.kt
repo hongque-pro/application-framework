@@ -8,9 +8,9 @@ object Versions {
     const val kotlin = "1.6.0"
     const val springBoot = "2.6.1"
     const val mybatisSpringBootTest = "2.2.0"
-    const val hibernateValidator = "7.0.1.Final"
     const val antisamy="1.6.4"
     const val springfox="3.0.0"
+    const val springDoc="1.6.0"
     const val apachePOI = "5.1.0"
     const val uberH3 = "3.7.1"
 
@@ -18,15 +18,18 @@ object Versions {
 
     const val infraBom = "2.6.3"
     const val infraOrm = "1.0.1"
-    const val infraPlugin = "1.0.7"
+    const val infraPlugin = "1.0.8"
     const val infraCommons = "2.2.1"
     const val infraCaching = "1.3.3"
-    const val infraOAuth2 = "1.2.1"
+    const val infraOAuth2 = "1.2.2"
+    const val infraCloudStream = "1.2.1"
+
 
     const val gitPropertiesPlugin = "2.3.2"
     const val bouncyCastle = "1.70"
 
     const val minio = "8.3.4"
+
 }
 
 object AliyunSDKVersions {

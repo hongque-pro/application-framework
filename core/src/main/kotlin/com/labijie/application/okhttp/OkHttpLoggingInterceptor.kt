@@ -7,10 +7,7 @@ import okhttp3.Interceptor
 import okhttp3.MediaType
 import okhttp3.RequestBody
 import okhttp3.Response
-import okio.Buffer
-import okio.GzipSource
-import okio.buffer
-import okio.sink
+import okio.*
 import org.slf4j.LoggerFactory
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
@@ -32,8 +29,8 @@ class OkHttpLoggingInterceptor(private val forceTrace: Boolean = false) : Interc
                 return "<duplex content>"
             } else {
                 ByteArrayOutputStream().use {
-
-                    it.sink().buffer().use { buffer ->
+                    val sink = Okio.sink(it)
+                    Okio.buffer(sink).use { buffer ->
                         this.writeTo(buffer)
                     }
                     val data = it.toByteArray()

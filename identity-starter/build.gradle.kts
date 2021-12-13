@@ -7,4 +7,6 @@ processResources {
 
 dependencies {
     api(project(":core"))
+
+    testImplementation("com.h2database:h2")
 }

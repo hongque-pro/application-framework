@@ -25,7 +25,7 @@ class CoreServiceController(
     @PostMapping("/touch-file")
     fun saveTempFile(@RequestBody file: TempFileRequest): TempFileResult {
         val id = UUID.randomUUID().toString()
-        val fileName = "${file.folder.trim().trim('/')}/$id.${file.fileExtensions.trim().trimStart('.').toLowerCase()}"
+        val fileName = "${file.folder.trim().trim('/')}/$id.${file.fileExtensions.trim().trimStart('.').lowercase()}"
         val success = tempFileService.saveTempFile(fileName, file.fileType)
         return TempFileResult(success, fileName)
     }

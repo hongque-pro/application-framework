@@ -1,7 +1,14 @@
 package com.labijie.application.auth
 
-import com.labijie.infra.oauth2.Constants
-import org.springframework.security.oauth2.config.annotation.builders.ClientDetailsServiceBuilder
+import com.labijie.application.identity.data.UserRecord
+import com.labijie.application.identity.data.mapper.UserDynamicSqlSupport
+import com.labijie.application.identity.model.UserAndRoles
+import com.labijie.infra.oauth2.ITwoFactorUserDetails
+import com.labijie.infra.oauth2.SimpleTwoFactorUserDetails
+import org.springframework.security.core.authority.SimpleGrantedAuthority
+import org.springframework.security.oauth2.core.AuthorizationGrantType
+import org.springframework.security.oauth2.server.authorization.client.RegisteredClient
+import org.springframework.security.oauth2.server.authorization.config.TokenSettings
 import java.time.Duration
 
 /**
@@ -9,23 +16,49 @@ import java.time.Duration
  * @author Anders Xiao
  * @date 2019-12-12
  */
-fun ClientDetailsServiceBuilder<*>.addClient(
+fun RegisteredClient.Builder.default(
     clientId: String,
     secret: String
-): ClientDetailsServiceBuilder<*>.ClientBuilder {
+): RegisteredClient.Builder {
 
-    return this.withClient(clientId)
-        .authorizedGrantTypes(
-            Constants.GRANT_TYPE_PASSWORD,
-            Constants.GRANT_TYPE_AUTHORIZATION_CODE,
-            Constants.GRANT_TYPE_CLIENT_CREDENTIALS,
-            Constants.GRANT_TYPE_IMPLICIT,
-            Constants.GRANT_TYPE_REFRESH_TOKEN
-        )
-        .accessTokenValiditySeconds(Duration.ofMinutes(30).seconds.toInt())
-        .refreshTokenValiditySeconds(Duration.ofDays(2).seconds.toInt())
-        .autoApprove(true)
-        .autoApprove("read", "write")
-        .resourceIds()
-        .secret(secret)
+    val tokenSettings = TokenSettings.builder()
+        .accessTokenTimeToLive(Duration.ofHours(1))
+        .refreshTokenTimeToLive(Duration.ofHours(24))
+        .reuseRefreshTokens(true)
+        .build()
+
+
+    return this.clientId(clientId)
+        .clientSecret(secret)
+        .clientName(clientId)
+        .authorizationGrantTypes {
+            it.add(AuthorizationGrantType.PASSWORD)
+            it.add(AuthorizationGrantType.AUTHORIZATION_CODE)
+            it.add(AuthorizationGrantType.CLIENT_CREDENTIALS)
+            it.add(AuthorizationGrantType.JWT_BEARER)
+            it.add(AuthorizationGrantType.REFRESH_TOKEN)
+        }
+        .tokenSettings(tokenSettings)
+}
+
+
+fun <T : UserAndRoles> T.toPrincipal(configure: (T.() -> Map<String, String>)? = null): ITwoFactorUserDetails {
+    val user = this.user
+    val roles = this.roles.map {
+        SimpleGrantedAuthority(it.name)
+    }
+    return SimpleTwoFactorUserDetails(
+        user.id!!.toString(),
+        user.userName?.toString().orEmpty(),
+        true,
+        true,
+        user.passwordHash.orEmpty(),
+        true,
+        !(user.lockoutEnabled ?: false),
+        user.twoFactorEnabled ?: false,
+        ArrayList(
+            roles
+        ),
+        if(configure != null) configure() else mapOf()
+    )
 }

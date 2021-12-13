@@ -25,7 +25,7 @@ class AlipayMiniOptions : SocialAuthOptions() {
     }
 
     override val isSandbox: Boolean
-        get() = this.exchageUrl.toLowerCase() == "https://openapi.alipaydev.com/gateway.do"
+        get() = this.exchageUrl.lowercase() == "https://openapi.alipaydev.com/gateway.do"
 
     var alipayPubKey: String = ""
     var aesKey: String = ""

@@ -21,4 +21,11 @@ include("huawei-starter")
 include("minio-starter")
 
 
-//include("dummy-server")
+include("dummy-server")
+
+pluginManagement {
+    repositories {
+        mavenLocal()
+        gradlePluginPortal()
+    }
+}

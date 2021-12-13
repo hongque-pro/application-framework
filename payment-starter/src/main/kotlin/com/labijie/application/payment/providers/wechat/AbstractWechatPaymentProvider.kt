@@ -399,7 +399,7 @@ abstract class AbstractWechatPaymentProvider(
 
     override fun parserRefundCallbackRequest(callbackPayload: Map<String, String>): RefundResult {
         //退款通知参考 ： https://pay.weixin.qq.com/wiki/doc/api/jsapi_sl.php?chapter=9_16
-        val key = DigestUtils.md5Hex(this.options.merchantKey).toLowerCase().toByteArray(Charsets.UTF_8)
+        val key = DigestUtils.md5Hex(this.options.merchantKey).lowercase().toByteArray(Charsets.UTF_8)
         val content = Base64.getDecoder().decode(callbackPayload["req_info"])
 
         val xml = AesUtils.ecbPKCS7Padding.decrypt(content, key)

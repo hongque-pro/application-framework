@@ -1,6 +1,7 @@
 package com.labijie.application.auth.controller
 
 import com.labijie.application.auth.model.*
+import com.labijie.application.auth.toPrincipal
 import com.labijie.application.component.IMessageSender
 import com.labijie.application.crypto.DesUtils
 import com.labijie.application.exception.UserNotFoundException
@@ -14,15 +15,14 @@ import com.labijie.application.model.CaptchaValidationRequest
 import com.labijie.application.model.SimpleValue
 import com.labijie.application.model.UpdateResult
 import com.labijie.application.verifyCaptcha
-import com.labijie.application.web.roleAuthority
 import com.labijie.infra.oauth2.OAuth2Utils
 import com.labijie.infra.oauth2.TwoFactorPrincipal
 import com.labijie.infra.oauth2.TwoFactorSignInHelper
 import com.labijie.infra.oauth2.filter.ClientRequired
 import com.labijie.infra.utils.logger
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.security.oauth2.common.OAuth2AccessToken
-import org.springframework.security.oauth2.provider.ClientDetails
+import org.springframework.security.oauth2.server.authorization.authentication.OAuth2AccessTokenAuthenticationToken
+import org.springframework.security.oauth2.server.authorization.client.RegisteredClient
 import org.springframework.validation.annotation.Validated
 import org.springframework.web.bind.annotation.*
 import java.time.Duration
@@ -50,18 +50,13 @@ class AccountController @Autowired constructor(
 
     @ClientRequired
     @RequestMapping("/register", method = [RequestMethod.POST])
-    fun register(@Valid @RequestBody info: RegisterInfo, client: ClientDetails): OAuth2AccessToken {
+    fun register(@Valid @RequestBody info: RegisterInfo, client: RegisteredClient): OAuth2AccessTokenAuthenticationToken {
         val userAndRoles = userService.registerUser(info)
 
-        val roles = userAndRoles.roles.map {
-            roleAuthority(it.name.orEmpty())
-        }
-
         return signInHelper.signIn(
-            client.clientId,
-            userAndRoles.user.id.toString(),
-            userAndRoles.user.userName.orEmpty(),
-            authorities = roles
+            client,
+            userAndRoles.toPrincipal(),
+            false
         )
     }
 

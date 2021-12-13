@@ -4,14 +4,14 @@ import com.labijie.application.auth.social.OAuth2SocialConstants
 import com.labijie.application.auth.social.exception.BadSocialCredentialsException
 import com.labijie.application.auth.social.exception.SocialUserLockedException
 import com.labijie.application.auth.social.model.SocialLoginInfo
+import com.labijie.application.auth.toPrincipal
 import com.labijie.application.identity.model.SocialRegisterInfo
 import com.labijie.application.identity.model.SocialUserAndRoles
 import com.labijie.application.identity.service.ISocialUserService
-import com.labijie.application.web.roleAuthority
 import com.labijie.infra.oauth2.TwoFactorSignInHelper
 import com.labijie.infra.oauth2.filter.ClientRequired
-import org.springframework.security.oauth2.common.OAuth2AccessToken
-import org.springframework.security.oauth2.provider.ClientDetails
+import org.springframework.security.oauth2.server.authorization.authentication.OAuth2AccessTokenAuthenticationToken
+import org.springframework.security.oauth2.server.authorization.client.RegisteredClient
 import org.springframework.validation.annotation.Validated
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
@@ -28,51 +28,52 @@ import javax.validation.Valid
 @RestController
 @RequestMapping("/oauth/social")
 class AccountSocialController(
-        private val userService: ISocialUserService,
-        private val signInHelper: TwoFactorSignInHelper
+    private val userService: ISocialUserService,
+    private val signInHelper: TwoFactorSignInHelper
 ) {
 
     @PostMapping("/register")
     @ClientRequired
-    fun register(@RequestBody @Valid info: SocialRegisterInfo, clientDetails: ClientDetails): OAuth2AccessToken {
+    fun register(
+        @RequestBody @Valid info: SocialRegisterInfo,
+        clientDetails: RegisteredClient
+    ): OAuth2AccessTokenAuthenticationToken {
         val userRoles = userService.registerSocialUser(info)
         return signInUser(userRoles, clientDetails)
     }
 
     @PostMapping("/login")
     @ClientRequired
-    fun login(@RequestBody @Valid info: SocialLoginInfo, clientDetails: ClientDetails): OAuth2AccessToken {
+    fun login(
+        @RequestBody @Valid info: SocialLoginInfo,
+        clientDetails: RegisteredClient
+    ): OAuth2AccessTokenAuthenticationToken {
         val userRoles =
             userService.signInSocialUser(info.provider, info.code) ?: throw BadSocialCredentialsException(info.provider)
         return signInUser(userRoles, clientDetails)
     }
 
     private fun signInUser(
-            userRoles: SocialUserAndRoles,
-            clientDetails: ClientDetails
-    ): OAuth2AccessToken {
+        userRoles: SocialUserAndRoles,
+        clientDetails: RegisteredClient
+    ): OAuth2AccessTokenAuthenticationToken {
         val u = userRoles.user
-        val roles = userRoles.roles.map {
-            roleAuthority(it.name.orEmpty())
-        }
 
         //账号是否锁定
         val userLocked = (u.lockoutEnabled ?: false && (u.lockoutEnd ?: 0) > System.currentTimeMillis())
         if (userLocked) throw SocialUserLockedException(userRoles.loginProvider)
 
+        val principal = userRoles.toPrincipal {
+            mapOf(
+                OAuth2SocialConstants.LoginProviderFieldName to this.loginProvider,
+                OAuth2SocialConstants.LoginProviderKeyFieldName to this.loginProviderKey
+            )
+        }
+
         return signInHelper.signIn(
-            clientDetails.clientId,
-            u.id!!.toString(),
-            u.userName!!,
-            authorities = roles,
-            twoFactorEnabled= u.twoFactorEnabled?:false,
-            scope=clientDetails.scope,
-            attachedFields = if (userRoles.loginProvider.isNotBlank()) {
-                mapOf(
-                    OAuth2SocialConstants.LoginProviderFieldName to userRoles.loginProvider,
-                    OAuth2SocialConstants.LoginProviderKeyFieldName to userRoles.loginProviderKey
-                )
-            } else mapOf()
+            clientDetails,
+            principal,
+            false
         )
     }
 }

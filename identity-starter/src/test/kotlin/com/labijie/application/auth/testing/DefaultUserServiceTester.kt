@@ -12,7 +12,7 @@ import com.labijie.infra.IIdGenerator
 import com.labijie.infra.commons.snowflake.ISlotProvider
 import com.labijie.infra.commons.snowflake.ISlotProviderFactory
 import com.labijie.infra.commons.snowflake.SnowflakeIdGenerator
-import com.labijie.infra.commons.snowflake.configuration.SnowflakeConfig
+import com.labijie.infra.commons.snowflake.configuration.SnowflakeProperties
 import com.labijie.infra.commons.snowflake.providers.StaticSlotProvider
 import org.junit.jupiter.api.extension.ExtendWith
 import org.mybatis.spring.boot.test.autoconfigure.MybatisTest
@@ -21,6 +21,7 @@ import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabas
 import org.springframework.test.context.ContextConfiguration
 import org.springframework.test.context.jdbc.Sql
 import org.springframework.test.context.junit.jupiter.SpringExtension
+import org.springframework.transaction.annotation.EnableTransactionManagement
 import org.springframework.transaction.support.TransactionTemplate
 import kotlin.test.Test
 
@@ -33,7 +34,9 @@ import kotlin.test.Test
 
 @ExtendWith(SpringExtension::class)
 @MybatisTest
+@EnableTransactionManagement
 @ContextConfiguration(classes = [UnitTestConfiguration::class])
+//@AutoConfigureTestDatabase
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @Sql("classpath:auth.sql")
 class DefaultUserServiceTester {
@@ -65,7 +68,7 @@ class DefaultUserServiceTester {
 
 
     val snowflakeIdGenerator: IIdGenerator by lazy {
-        val config = SnowflakeConfig().apply {
+        val config = SnowflakeProperties().apply {
             this.provider = "static"
             this.static.slot = 1
         }

@@ -24,6 +24,10 @@ abstract class ComputeSqlColumn<T>(
         return if(alias.isBlank()) Optional.empty() else Optional.ofNullable(alias)
     }
 
+    override fun orderByName(): String? {
+        return alias().orElse("")
+    }
+
     override fun `as`(alias: String): BindableColumn<T> {
         val newThing = copy()
         newThing.alias = alias
@@ -48,7 +52,4 @@ abstract class ComputeSqlColumn<T>(
         return this.descending
     }
 
-    override fun aliasOrName(): String {
-        return alias().orElse("")
-    }
 }

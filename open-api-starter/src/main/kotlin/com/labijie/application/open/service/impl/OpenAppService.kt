@@ -108,7 +108,7 @@ class OpenAppService(
 
     override fun renewSecret(appId: Long, signAlgorithm: String): String? {
         val key = OpenSignatureUtils.generateKey(signAlgorithm)
-        val updating = OpenAppRecord(appId = appId, appSecret = key, signAlgorithm = signAlgorithm.toLowerCase())
+        val updating = OpenAppRecord(appId = appId, appSecret = key, signAlgorithm = signAlgorithm.lowercase())
         val count = this.transactionTemplate.execute {
             appMapper.updateByPrimaryKeySelective(updating)
         }

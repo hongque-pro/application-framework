@@ -1,6 +1,5 @@
 org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
   com.labijie.application.configuration.ApplicationCoreAutoConfiguration,\
-  com.labijie.application.configuration.JdbcSnowflakeAutoConfiguration,\
   com.labijie.application.configuration.DefaultsAutoConfiguration
 org.springframework.boot.env.EnvironmentPostProcessor=\
   com.labijie.application.configuration.DefaultConfigurationProcessor

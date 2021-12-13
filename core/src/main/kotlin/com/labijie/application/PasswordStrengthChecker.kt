@@ -102,13 +102,13 @@ object PasswordStrengthChecker {
      * @return
      */
     private fun checkCharacterType(c: Char): Int {
-        if (c.toInt() in 48..57) {
+        if (c.code in 48..57) {
             return NUM
         }
-        if (c.toInt() in 65..90) {
+        if (c.code in 65..90) {
             return CAPITAL_LETTER
         }
-        return if (c.toInt() in 97..122) {
+        return if (c.code in 97..122) {
             SMALL_LETTER
         } else OTHER_CHAR
     }

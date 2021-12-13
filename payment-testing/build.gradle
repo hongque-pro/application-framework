@@ -1,7 +1,0 @@
-
-
-dependencies {
-    compile group: 'org.jetbrains.kotlin', name: 'kotlin-test-junit5', version: kotlin_version
-    compile project(":core-web")
-    compile project(":payment-starter")
-}

@@ -1,9 +1,9 @@
 processResources {
     from(rootProject.getRootDir().toString() + "/sql-scripts") {
-        include "auth.sql"
+        include("open.sql")
     }
 }
+
 dependencies {
-    compile project(":core")
-//    compile project(":commons-data")
+    api(project(":auth-starter"))
 }

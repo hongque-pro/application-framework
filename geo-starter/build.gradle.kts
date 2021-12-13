@@ -1,9 +1,10 @@
 processResources {
     from(rootProject.getRootDir().toString() + "/sql-scripts") {
-        include "open.sql"
+        include("geo.sql")
     }
 }
 
 dependencies {
-    compile project(":auth-starter")
+    api(project(":core"))
+    api("com.uber:h3:${Versions.uberH3}")
 }

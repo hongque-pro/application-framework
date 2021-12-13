@@ -28,10 +28,11 @@ class OkHttpLoggingInterceptor(private val forceTrace: Boolean = false) : Interc
 
         @JvmStatic
         fun RequestBody.toBodyString(): String {
-            if (this.isDuplex()) {
+            if (this.isDuplex) {
                 return "<duplex content>"
             } else {
                 ByteArrayOutputStream().use {
+
                     it.sink().buffer().use { buffer ->
                         this.writeTo(buffer)
                     }
@@ -46,11 +47,11 @@ class OkHttpLoggingInterceptor(private val forceTrace: Boolean = false) : Interc
             }
         }
 
-        private fun formatJson(bytes: ByteArray) : String {
+        private fun formatJson(bytes: ByteArray): String {
             return try {
                 val node = JacksonHelper.defaultObjectMapper.readTree(bytes)
                 JacksonHelper.defaultObjectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(node)
-            }catch (e: Exception) {
+            } catch (e: Exception) {
                 e.throwIfNecessary()
                 bytes.toString(Charsets.UTF_8)
             }
@@ -58,11 +59,9 @@ class OkHttpLoggingInterceptor(private val forceTrace: Boolean = false) : Interc
 
         private fun formatXml(bytes: ByteArray): String {
             return try {
-                ByteArrayInputStream(bytes).use {
-                    bytesStream->
+                ByteArrayInputStream(bytes).use { bytesStream ->
                     val xmlInput = StreamSource(bytesStream)
-                    StringWriter().use {
-                        stringWriter->
+                    StringWriter().use { stringWriter ->
                         val xmlOutput = StreamResult(stringWriter)
                         val transformerFactory = TransformerFactory.newInstance()
                         transformerFactory.setAttribute("indent-number", 2)
@@ -82,18 +81,18 @@ class OkHttpLoggingInterceptor(private val forceTrace: Boolean = false) : Interc
         @JvmStatic
         private val MediaType?.isText: Boolean
             get() {
-                val contentType =this?.toString()
+                val contentType = this?.toString()
                 return (!contentType.isNullOrBlank() && contentType.startsWith("text/", ignoreCase = true))
             }
 
         @JvmStatic
         private val MediaType?.isXml: Boolean
-        get() {
-            val contentType =this?.toString()
-            return (!contentType.isNullOrBlank() && contentType.startsWith("application/xml", ignoreCase = true) ||
-                    contentType.equals("application/xml", ignoreCase = true) ||
-                    contentType.equals("text/xml", ignoreCase = true))
-        }
+            get() {
+                val contentType = this?.toString()
+                return (!contentType.isNullOrBlank() && contentType.startsWith("application/xml", ignoreCase = true) ||
+                        contentType.equals("application/xml", ignoreCase = true) ||
+                        contentType.equals("text/xml", ignoreCase = true))
+            }
 
         @JvmStatic
         private val MediaType?.isJson: Boolean
@@ -116,13 +115,13 @@ class OkHttpLoggingInterceptor(private val forceTrace: Boolean = false) : Interc
         }
 
         private fun Response.readBodyAsString(): String {
-            val responseBody = this.body
-            if(responseBody != null) {
+            val responseBody = this.body()
+            if (responseBody != null) {
                 val source = responseBody.source()
                 source.request(Long.MAX_VALUE) // Buffer the entire body.
                 var buffer = source.buffer
 
-                if ("gzip".equals(this.headers["Content-Encoding"], ignoreCase = true)) {
+                if ("gzip".equals(this.headers().get("Content-Encoding"), ignoreCase = true)) {
                     //val gzippedLength = buffer.size
                     GzipSource(buffer.clone()).use { gzippedResponseBody ->
                         buffer = Buffer()
@@ -131,7 +130,7 @@ class OkHttpLoggingInterceptor(private val forceTrace: Boolean = false) : Interc
                 }
 
                 val contentType = responseBody.contentType()
-                if(responseBody.contentLength() > 0L || responseBody.contentLength() < 0) {
+                if (responseBody.contentLength() > 0L || responseBody.contentLength() < 0) {
                     val charset = contentType?.charset(Charsets.UTF_8) ?: Charsets.UTF_8
                     return if (contentType.couldBeRead()) {
                         val bytes = buffer.clone().readByteArray()
@@ -140,7 +139,7 @@ class OkHttpLoggingInterceptor(private val forceTrace: Boolean = false) : Interc
                             contentType.isJson -> formatJson(bytes)
                             else -> bytes.toString(charset)
                         }
-                    }else{
+                    } else {
                         "<unreadable content>"
                     }
                 }
@@ -150,11 +149,9 @@ class OkHttpLoggingInterceptor(private val forceTrace: Boolean = false) : Interc
     }
 
 
-
-
     override fun intercept(chain: Interceptor.Chain): Response {
         val request = chain.request()
-        val body = request.body
+        val body = request.body()
 
         if (log.isDebugEnabled) {
             val stringBuilder = StringBuilder()
@@ -165,13 +162,14 @@ class OkHttpLoggingInterceptor(private val forceTrace: Boolean = false) : Interc
             stringBuilder.appendLine("   Connect Timeout: ${chain.connectTimeoutMillis()}")
             stringBuilder.appendLine("   Read Timeout: ${chain.readTimeoutMillis() / 1000}s")
             stringBuilder.appendLine("   Write Timeout: ${chain.writeTimeoutMillis() / 1000}ms")
-            stringBuilder.appendLine("URL: ${request.url}")
-            stringBuilder.appendLine("Method: ${request.method}")
+            stringBuilder.appendLine("URL: ${request.url()}")
+            stringBuilder.appendLine("Method: ${request.method()}")
             stringBuilder.appendLine("Headers: ")
-            request.headers.forEach {
-                stringBuilder.appendLine("  ${it.first}: ${it.second}")
+            request.headers().names().forEach {
+                val v = request.headers().get(it).ifNullOrBlank { "<empty>" }
+                stringBuilder.appendLine("  ${it}: $v")
             }
-            if (body != null && !request.method.equals("get", ignoreCase = true)) {
+            if (body != null && !request.method().equals("get", ignoreCase = true)) {
                 stringBuilder.appendLine("Body:")
                 stringBuilder.appendLine(body.toBodyString().ifNullOrBlank { "<null>" })
             }
@@ -180,20 +178,21 @@ class OkHttpLoggingInterceptor(private val forceTrace: Boolean = false) : Interc
                 val response = chain.proceed(request)
 
                 stringBuilder.appendLine("---------------- Response ----------------")
-                stringBuilder.appendLine("Http Status: ${response.code}")
+                stringBuilder.appendLine("Http Status: ${response.code()}")
                 stringBuilder.appendLine("Redirect: ${response.isRedirect}")
-                stringBuilder.appendLine("Version: ${response.protocol}")
+                stringBuilder.appendLine("Version: ${response.protocol()}")
                 stringBuilder.appendLine("Headers: ")
-                response.headers.forEach {
-                    stringBuilder.appendLine("  ${it.first}: ${it.second}")
+                response.headers().names().forEach {
+                    val v = request.headers().get(it).ifNullOrBlank { "<empty>" }
+                    stringBuilder.appendLine("  ${it}: $v")
                 }
 
-                val responseBody = response.body
+                val responseBody = response.body()
 
                 stringBuilder.appendLine("Body: ")
                 if (responseBody != null && responseBody.contentType().couldBeRead()) {
                     stringBuilder.appendLine(response.readBodyAsString().ifNullOrBlank { "<null>" })
-                }else{
+                } else {
                     stringBuilder.appendLine("<unreadable content>")
                 }
 
@@ -205,7 +204,7 @@ class OkHttpLoggingInterceptor(private val forceTrace: Boolean = false) : Interc
             } finally {
                 val message = stringBuilder.toString()
                 log.debug(message)
-                if(forceTrace){
+                if (forceTrace) {
                     println(message)
                 }
             }

@@ -1,7 +1,5 @@
 package com.labijie.application
 
-import io.netty.buffer.ByteBufUtil
-import io.netty.util.internal.ObjectUtil
 import java.net.URI
 import java.net.URISyntaxException
 import java.nio.charset.Charset
@@ -29,11 +27,7 @@ class QueryStringEncoder @JvmOverloads constructor(uri: String?, private val cha
     }
 
     private fun encodeComponent(s: CharSequence) {
-        if (charset == null) {
-            encodeUtf8Component(s)
-        } else {
-            encodeNonUtf8Component(s)
-        }
+        encodeNonUtf8Component(s)
     }
 
     /**

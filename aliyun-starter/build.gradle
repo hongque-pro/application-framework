@@ -1,4 +1,0 @@
-dependencies{
-    compile project(":core-aliyun")
-    compile project(":core-web")
-}

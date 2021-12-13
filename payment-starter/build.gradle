@@ -1,8 +1,0 @@
-dependencies {
-    compile project(":core")
-    compileOnly project(":core-web")
-    compile "io.netty:netty-codec-http:$netty_version"
-
-
-    testCompile project(":payment-testing")
-}

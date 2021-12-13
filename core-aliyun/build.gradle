@@ -1,9 +1,0 @@
-dependencies {
-    compile project(":core")
-    compile group: 'com.aliyun', name: 'aliyun-java-sdk-core', version: aliyun_sdk_version
-    compile group: 'com.aliyun', name: 'aliyun-java-sdk-sts', version: aliyun_sdk_sts_version
-    compile group: 'com.aliyun.oss', name: 'aliyun-sdk-oss', version: aliyun_sdk_oss_version
-
-    compile "com.labijie.infra:commons-core-starter:$infra_commons_version"
-    compileOnly "org.springframework.boot:spring-boot-starter-web"
-}

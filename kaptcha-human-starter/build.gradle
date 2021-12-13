@@ -1,4 +1,4 @@
 dependencies {
-    compile project(":core-web")
-    compile "com.github.penggle:kaptcha:$kaptcha_version"
+    api(project(":core-web"))
+    api("com.github.penggle:kaptcha:${Versions.kaptcha}")
 }

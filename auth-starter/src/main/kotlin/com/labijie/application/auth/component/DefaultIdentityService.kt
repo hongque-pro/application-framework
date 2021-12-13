@@ -26,13 +26,6 @@ open class DefaultIdentityService constructor(
         }
     }
 
-    override fun authenticationChecks(authenticationCheckingContext: AuthenticationCheckingContext): SignInResult {
-
-        return SignInResult(
-                type = SignInResultType.Success,
-                user = authenticationCheckingContext.userDetails
-        )
-    }
 
     override fun getUserByName(userName: String): ITwoFactorUserDetails {
         val user = getUser(userName)

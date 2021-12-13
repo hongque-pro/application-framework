@@ -1,4 +1,0 @@
-dependencies {
-    compile project(":core-web")
-    compile project(":identity-starter")
-}

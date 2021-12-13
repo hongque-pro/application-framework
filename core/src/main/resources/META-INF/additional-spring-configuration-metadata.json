@@ -1,14 +1,6 @@
 {
   "hints": [
     {
-      "name": "infra.snowflake.provider",
-      "values": [
-        {
-          "value": "jdbc"
-        }
-      ]
-    },
-    {
       "name": "spring.cloud.stream.bindings.keys",
       "values": [
         {

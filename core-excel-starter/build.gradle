@@ -1,4 +1,4 @@
 dependencies {
-    compile project(":core")
-    compile "org.apache.poi:poi-ooxml:$apache_poi_version"
+    api(project(":core"))
+    api("org.apache.poi:poi-ooxml:${Versions.apachePOI}")
 }

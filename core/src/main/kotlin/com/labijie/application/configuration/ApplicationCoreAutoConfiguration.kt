@@ -140,8 +140,8 @@ class ApplicationCoreAutoConfiguration {
 
     @PreDestroy
     fun destroy() {
-      okHttpClient?.dispatcher?.executorService?.shutdown()
-      okHttpClient?.connectionPool?.evictAll()
+      okHttpClient?.dispatcher()?.executorService()?.shutdown()
+      okHttpClient?.connectionPool()?.evictAll()
     }
 
     @Configuration(proxyBeanMethods = false)

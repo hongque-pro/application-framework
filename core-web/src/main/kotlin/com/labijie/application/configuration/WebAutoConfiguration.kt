@@ -13,6 +13,7 @@ import com.labijie.infra.json.JacksonHelper
 import com.labijie.infra.spring.configuration.isProduction
 import org.hibernate.validator.HibernateValidator
 import org.hibernate.validator.HibernateValidatorConfiguration
+import org.springdoc.webmvc.core.SpringDocWebMvcConfiguration
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.autoconfigure.AutoConfigureAfter
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
@@ -28,6 +29,7 @@ import org.springframework.http.converter.HttpMessageConverter
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter
 import org.springframework.validation.beanvalidation.MethodValidationPostProcessor
 import org.springframework.web.method.support.HandlerMethodArgumentResolver
+import org.springframework.web.method.support.HandlerMethodReturnValueHandler
 import org.springframework.web.servlet.config.annotation.*
 import javax.validation.Validation
 import javax.validation.Validator
@@ -38,8 +40,9 @@ import javax.validation.Validator
  * @author Anders Xiao
  * @date 2019-09-05
  */
+@EnableWebMvc
 @Configuration(proxyBeanMethods = false)
-@Import(DefaultResourceSecurityConfiguration::class, ErrorDescriptionController::class, SwaggerAutoConfiguration::class)
+@Import(DefaultResourceSecurityConfiguration::class, ErrorDescriptionController::class, SpringDocAutoConfiguration::class)
 @AutoConfigureAfter(Environment::class)
 @ConditionalOnWebApplication
 @Order(1000)
@@ -68,10 +71,19 @@ class WebAutoConfiguration : WebMvcConfigurer {
         resolvers.add(PrincipalArgumentResolver())
     }
 
-    override fun configureMessageConverters(converters: MutableList<HttpMessageConverter<*>>) {
-        converters.add(0, MappingJackson2HttpMessageConverter(JacksonHelper.webCompatibilityMapper))
-        super.configureMessageConverters(converters)
+    override fun extendMessageConverters(converters: MutableList<HttpMessageConverter<*>>) {
+        val index = converters.indexOfFirst {
+            it is MappingJackson2HttpMessageConverter
+        }
+        if(index >= 0) {
+            converters.removeAt(index)
+            converters.add(index, MappingJackson2HttpMessageConverter(JacksonHelper.webCompatibilityMapper))
+        }else {
+            converters.add(0, MappingJackson2HttpMessageConverter(JacksonHelper.webCompatibilityMapper))
+            super.configureMessageConverters(converters)
+        }
     }
+
 
     override fun configureContentNegotiation(configurer: ContentNegotiationConfigurer) {
         super.configureContentNegotiation(configurer)
@@ -90,7 +102,7 @@ class WebAutoConfiguration : WebMvcConfigurer {
     override fun addViewControllers(registry: ViewControllerRegistry) {
         super.addViewControllers(registry)
         if(!environment.isProduction) {
-            registry.addRedirectViewController("/swagger", "/swagger-ui/index.html")
+            registry.addRedirectViewController("/swagger", "/swagger-ui.html")
         }
     }
 

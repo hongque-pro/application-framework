@@ -9,6 +9,7 @@ dependencies {
 
     api("org.springframework.cloud:spring-cloud-stream")
     api("org.springframework.cloud:spring-cloud-commons")
+    api("com.labijie.infra:spring-cloud-stream-binder-core:${Versions.infraCloudStream}")
 
     api("com.labijie:caching-kotlin-core-starter:${Versions.infraCaching}")
     api("org.hibernate.validator:hibernate-validator")

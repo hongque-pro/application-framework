@@ -8,6 +8,5 @@ dependencies {
     implementation("com.h2database:h2")
     implementation(project(":core-web"))
     //implementation(project(":minio-starter"))
-    implementation("com.labijie.infra:spring-cloud-stream-binder-core:${Versions.infraCloudStream}")
     implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-xml")
 }

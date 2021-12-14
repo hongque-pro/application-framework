@@ -3,3 +3,6 @@ org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
   com.labijie.application.configuration.DefaultsAutoConfiguration
 org.springframework.boot.env.EnvironmentPostProcessor=\
   com.labijie.application.configuration.DefaultConfigurationProcessor
+
+org.springframework.context.ApplicationListener=\
+  com.labijie.application.env.InfraEnvironmentPreparedListener

@@ -20,6 +20,6 @@ class DefaultConfigurationProcessor : EnvironmentPostProcessor {
         val propertySource = MapPropertySource(
             "framework-default-configuration", config
         )
-        environment.propertySources.addLast(propertySource)
+        environment.propertySources.addFirst(propertySource)
     }
 }

@@ -15,7 +15,7 @@ import org.springframework.security.config.annotation.web.configurers.Expression
  */
 @ConditionalOnWebApplication
 @Configuration(proxyBeanMethods = false)
-class DefaultResourceSecurityConfiguration : IResourceAuthorizationConfigurer, Ordered {
+class DefaultResourceSecurityConfiguration : IResourceAuthorizationConfigurer {
     override fun getOrder(): Int = Int.MIN_VALUE
 
     override fun configure(registry: ExpressionUrlAuthorizationConfigurer<HttpSecurity>.ExpressionInterceptUrlRegistry) {
@@ -30,6 +30,7 @@ class DefaultResourceSecurityConfiguration : IResourceAuthorizationConfigurer, O
         )
 
         val swaggerPaths = listOf(
+            "/swagger-ui.html",
             "/swagger",
             "/v2/api-docs/**",
             "/v3/api-docs/**",
@@ -45,7 +46,7 @@ class DefaultResourceSecurityConfiguration : IResourceAuthorizationConfigurer, O
 
         paths.add("/application-errors")
 
-        registry.antMatchers(*paths.toTypedArray()).permitAll()
+        registry.mvcMatchers(*paths.toTypedArray()).permitAll()
     }
 
 

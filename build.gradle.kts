@@ -6,28 +6,38 @@ plugins {
 
 allprojects {
     group = "com.labijie.application"
-    version = "2.2.0"
+    version = "2.2.1"
+}
 
+allprojects {
     infra {
         useDefault {
             includeSource = true
             infraBomVersion = Versions.infraBom
             kotlinVersion = Versions.kotlin
-            useMavenProxy = false
+            useMavenProxy = true
+            addHongQueGitHubPackages()
         }
-
         useNexusPublish()
     }
 }
+
+
+
 subprojects {
     val mybatisConfigFile = File(this.projectDir, "mybatis-conf/config.xml")
 
     infra {
+
+
         if (!project.name.startsWith("dummy")) {
             usePublish {
                 description = "infrastructure for oauth2 library"
-                githubUrl("hongque-pro", "infra-oauth2")
+                githubUrl("hongque-pro", "application-framework")
+                artifactId { "framework-${it.name}" }
             }
+
+            useGitHubPackages("hongque-pro", "application-framework")
         }
         if(mybatisConfigFile.exists()){
             val propertiesFile = File(project.rootProject.projectDir, ("mybatis-conf/settings.properties").replace('/', File.separatorChar))
@@ -36,8 +46,8 @@ subprojects {
     }
 
     dependencies {
-        testImplementation("org.springframework.boot:spring-boot-starter-test")
-        testImplementation("org.mybatis.spring.boot:mybatis-spring-boot-starter-test:${Versions.mybatisSpringBootTest}")
+        add("testImplementation", "org.springframework.boot:spring-boot-starter-test")
+        add("testImplementation","org.mybatis.spring.boot:mybatis-spring-boot-starter-test:${Versions.mybatisSpringBootTest}")
     }
 }
 

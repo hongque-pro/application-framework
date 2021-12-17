@@ -42,7 +42,11 @@ import javax.validation.Validator
  */
 @EnableWebMvc
 @Configuration(proxyBeanMethods = false)
-@Import(DefaultResourceSecurityConfiguration::class, ErrorDescriptionController::class, SpringDocAutoConfiguration::class)
+@Import(
+    DefaultResourceSecurityConfiguration::class,
+    ErrorDescriptionController::class,
+    SpringDocAutoConfiguration::class
+)
 @AutoConfigureAfter(Environment::class)
 @ConditionalOnWebApplication
 @Order(1000)
@@ -52,14 +56,14 @@ class WebAutoConfiguration : WebMvcConfigurer {
     private var humanChecker: IHumanChecker? = null
 
     @Autowired
-    private lateinit var environment:Environment
+    private lateinit var environment: Environment
 
     override fun addCorsMappings(registry: CorsRegistry) {
         registry.addMapping("/**")
             .allowedOrigins("*")
             .allowedMethods("*")
             .maxAge(3600)
-            .allowedHeaders("*");
+            .allowedHeaders("*")
     }
 
 
@@ -75,10 +79,10 @@ class WebAutoConfiguration : WebMvcConfigurer {
         val index = converters.indexOfFirst {
             it is MappingJackson2HttpMessageConverter
         }
-        if(index >= 0) {
+        if (index >= 0) {
             converters.removeAt(index)
             converters.add(index, MappingJackson2HttpMessageConverter(JacksonHelper.webCompatibilityMapper))
-        }else {
+        } else {
             converters.add(0, MappingJackson2HttpMessageConverter(JacksonHelper.webCompatibilityMapper))
             super.configureMessageConverters(converters)
         }
@@ -92,20 +96,19 @@ class WebAutoConfiguration : WebMvcConfigurer {
 
     override fun addInterceptors(registry: InterceptorRegistry) {
         registry.addInterceptor(
-                HumanVerifyInterceptor(
-                        humanChecker ?: NoneHumanChecker()
-                )
+            HumanVerifyInterceptor(
+                humanChecker ?: NoneHumanChecker()
+            )
         )
         registry.addInterceptor(HttpCacheInterceptor)
     }
 
     override fun addViewControllers(registry: ViewControllerRegistry) {
         super.addViewControllers(registry)
-        if(!environment.isProduction) {
+        if (!environment.isProduction) {
             registry.addRedirectViewController("/swagger", "/swagger-ui.html")
         }
     }
-
 
 
     @Configuration(proxyBeanMethods = false)
@@ -115,9 +118,9 @@ class WebAutoConfiguration : WebMvcConfigurer {
         @ConditionalOnMissingBean(Validator::class)
         fun validator(): Validator {
             val validatorFactory = Validation.byProvider(HibernateValidator::class.java)
-                    .configure()
-                    .addProperty(HibernateValidatorConfiguration.FAIL_FAST, "true")
-                    .buildValidatorFactory()
+                .configure()
+                .addProperty(HibernateValidatorConfiguration.FAIL_FAST, "true")
+                .buildValidatorFactory()
             return validatorFactory.validator
         }
     }

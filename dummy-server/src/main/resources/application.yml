@@ -18,6 +18,10 @@ spring:
 
 infra:
   oauth2:
+    client-repository: memory
+    default-client:
+      client-id: app
+      secret: 1234567
     token:
       jwt:
         simpleKey:  aaa

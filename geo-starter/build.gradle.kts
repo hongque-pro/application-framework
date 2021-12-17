@@ -1,5 +1,5 @@
 processResources {
-    from(rootProject.getRootDir().toString() + "/sql-scripts") {
+    from(rootProject.rootDir.toString() + "/sql-scripts") {
         include("geo.sql")
     }
 }

@@ -32,7 +32,7 @@ subprojects {
 
         if (!project.name.startsWith("dummy")) {
             usePublish {
-                description = "infrastructure for oauth2 library"
+                description = "application framework package"
                 githubUrl("hongque-pro", "application-framework")
                 artifactId { "framework-${it.name}" }
             }

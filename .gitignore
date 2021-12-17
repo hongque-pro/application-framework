@@ -30,6 +30,7 @@ target/
 bin/
 out/
 gradle
+local.properties
 
 # Others
 hs_err_pid*

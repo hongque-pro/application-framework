@@ -18,7 +18,7 @@ class HuaweiMessageSender(environment: Environment,
         val param = templateParam as Map<String, Any>
         val config = huaweiMessageTemplates.getConfig(template)
         config ?: throw RuntimeException("未配置短信模板，请先配置")
-        var huaweiSmsTemplateParam = HuaweiSmsTemplateParam(config.params.map { param[it].toString() }.toTypedArray(), config.sender, config.signature)
+        val huaweiSmsTemplateParam = HuaweiSmsTemplateParam(config.params.map { param[it].toString() }.toTypedArray(), config.sender, config.signature)
         huaweiUtils.sendSmsMessage(phoneNumber, template, huaweiSmsTemplateParam)
     }
 }

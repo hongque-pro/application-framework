@@ -20,7 +20,7 @@ interface IOrderAdapter<T:Any> {
      * 适配器名称（只允许小写字母、下划线、减号和数字）
      */
     val orderTypeName:String
-    get() = this.orderType.java.simpleName.toLowerCase()
+    get() = this.orderType.java.simpleName.lowercase()
 
     fun getOrderById(orderId:Long) : T?
 

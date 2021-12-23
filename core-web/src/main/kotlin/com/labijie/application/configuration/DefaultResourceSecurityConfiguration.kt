@@ -3,8 +3,7 @@ package com.labijie.application.configuration
 import com.labijie.infra.oauth2.resource.IResourceAuthorizationConfigurer
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication
 import org.springframework.context.annotation.Configuration
-import org.springframework.core.Ordered
-import org.springframework.http.HttpMethod
+import org.springframework.context.annotation.Import
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configurers.ExpressionUrlAuthorizationConfigurer
 
@@ -14,14 +13,13 @@ import org.springframework.security.config.annotation.web.configurers.Expression
  * @date 2019-09-06
  */
 @ConditionalOnWebApplication
+@Import(AllowAllCorsAutoConfiguration::class)
 @Configuration(proxyBeanMethods = false)
 class DefaultResourceSecurityConfiguration : IResourceAuthorizationConfigurer {
     override fun getOrder(): Int = Int.MIN_VALUE
 
     override fun configure(registry: ExpressionUrlAuthorizationConfigurer<HttpSecurity>.ExpressionInterceptUrlRegistry) {
-        //TODO: wait resource server starter fix this bug
-        registry.and().cors()
-        registry.antMatchers(HttpMethod.OPTIONS).permitAll()
+
 
         val paths = mutableListOf(
             "/actuator/**",

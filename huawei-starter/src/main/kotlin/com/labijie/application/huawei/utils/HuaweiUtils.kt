@@ -3,16 +3,16 @@ package com.labijie.application.huawei.utils
 import com.labijie.application.BucketPolicy
 import com.labijie.application.crypto.HashUtils
 import com.labijie.application.exception.StoredObjectNotFoundException
+import com.labijie.application.formUrlEncode
 import com.labijie.application.huawei.model.HuaweiProperties
 import com.labijie.application.huawei.model.HuaweiSmsResponse
 import com.labijie.application.huawei.model.HuaweiSmsTemplateParam
+import com.labijie.infra.json.JacksonHelper
+import com.labijie.infra.utils.logger
 import com.obs.services.ObsClient
-import com.obs.services.model.AccessControlList
 import com.obs.services.model.HttpMethodEnum
 import com.obs.services.model.TemporarySignatureRequest
 import com.obs.services.model.TemporarySignatureResponse
-import com.labijie.infra.json.JacksonHelper
-import com.labijie.infra.utils.logger
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpMethod
 import org.springframework.http.HttpStatus
@@ -22,10 +22,8 @@ import org.springframework.web.client.HttpClientErrorException
 import org.springframework.web.client.RestTemplate
 import java.io.ByteArrayOutputStream
 import java.io.InputStream
-import java.lang.NullPointerException
 import java.net.URI
 import java.net.URL
-import java.net.URLEncoder
 import java.nio.charset.Charset
 import java.text.SimpleDateFormat
 import java.util.*
@@ -39,7 +37,10 @@ class HuaweiUtils(
     private fun wsse(): String {
         val nonce = UUID.randomUUID().toString()
         val created = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'").format(Date())
-        val passwordDigest = Base64.getEncoder().encodeToString(HashUtils.sha256("${nonce}${created}${huaweiProperties.smsSettings.appSecret}").toByteArray(Charset.defaultCharset()))
+        val passwordDigest = Base64.getEncoder().encodeToString(
+            HashUtils.sha256("${nonce}${created}${huaweiProperties.smsSettings.appSecret}")
+                .toByteArray(Charset.defaultCharset())
+        )
 
         val result = "UsernameToken Username=\"${huaweiProperties.smsSettings.appKey}\"," +
                 "PasswordDigest=\"${passwordDigest}\"," +
@@ -53,18 +54,26 @@ class HuaweiUtils(
 
         val url = "${huaweiProperties.smsSettings.apiServer}/sms/batchSendSms/v1"
         val headers = HttpHeaders()
-        val body = "from=${templateParam.sender}&to=${URLEncoder.encode(phoneNumber, "UTF-8")}" +
-                "&templateId=${template}${if(templateParam.templateParas != null) "&templateParas=${URLEncoder.encode(JacksonHelper.serializeAsString(templateParam.templateParas), "UTF-8")}" else ""}" +
-                "${if(templateParam.signature != null) "&signature=${URLEncoder.encode(templateParam.signature, "UTF-8")}" else ""}"
+        val body = mutableMapOf<String, String>().apply {
+            put("from", templateParam.sender)
+            put("to", phoneNumber)
+            put("templateId", template)
+            if (templateParam.templateParas.isNotEmpty()) {
+                put("templateParas", JacksonHelper.serializeAsString(templateParam.templateParas))
+            }
+            if (!templateParam.signature.isNullOrBlank()) {
+                put("signature", templateParam.signature.orEmpty())
+            }
+        }
 
         headers.add("Content-Type", "application/x-www-form-urlencoded")
         headers.add("Authorization", "WSSE realm=\"SDP\",profile=\"UsernameToken\",type=\"Appkey\"")
         headers.add("X-WSSE", wsse())
 
-        val request : RequestEntity<String> = RequestEntity(body, headers, HttpMethod.POST, URI(url))
+        val request: RequestEntity<String> = RequestEntity(body.formUrlEncode(true), headers, HttpMethod.POST, URI(url))
         try {
             val responseEntity = restTemplate.exchange(request, HuaweiSmsResponse::class.java)
-            if(responseEntity.statusCode != HttpStatus.OK) {
+            if (responseEntity.statusCode != HttpStatus.OK) {
                 logger.warn("发送短信失败: {}", JacksonHelper.serializeAsString(responseEntity.body ?: ""))
             }
         } catch (e: HttpClientErrorException.BadRequest) {
@@ -74,14 +83,18 @@ class HuaweiUtils(
 
 
     private fun getObsClient(): ObsClient {
-        return ObsClient(huaweiProperties.obsSettings.ak, huaweiProperties.obsSettings.sk, huaweiProperties.obsSettings.endPoint)
+        return ObsClient(
+            huaweiProperties.obsSettings.ak,
+            huaweiProperties.obsSettings.sk,
+            huaweiProperties.obsSettings.endPoint
+        )
     }
 
     fun existObject(key: String, throwIfNotExisted: Boolean, bucketPolicy: BucketPolicy): Boolean {
         val client = getObsClient()
         val result = client.doesObjectExist(huaweiProperties.obsSettings.bucketName, getRealKey(key, bucketPolicy))
 
-        if(throwIfNotExisted && !result) {
+        if (throwIfNotExisted && !result) {
             throw StoredObjectNotFoundException()
         }
 
@@ -90,7 +103,8 @@ class HuaweiUtils(
 
     fun deleteObject(key: String, bucketPolicy: BucketPolicy): Boolean {
         val client = getObsClient()
-        val deleteObjectResult = client.deleteObject(huaweiProperties.obsSettings.bucketName, getRealKey(key, bucketPolicy))
+        val deleteObjectResult =
+            client.deleteObject(huaweiProperties.obsSettings.bucketName, getRealKey(key, bucketPolicy))
 
         return deleteObjectResult.isDeleteMarker
     }
@@ -98,7 +112,7 @@ class HuaweiUtils(
     fun generateObjectUrl(key: String, bucketPolicy: BucketPolicy): URL {
         val client = getObsClient()
 
-        if(bucketPolicy == BucketPolicy.PRIVATE) {
+        if (bucketPolicy == BucketPolicy.PRIVATE) {
             val request = TemporarySignatureRequest(HttpMethodEnum.GET, huaweiProperties.obsSettings.expireSeconds)
             request.bucketName = huaweiProperties.obsSettings.bucketName
             request.objectKey = getRealKey(key, bucketPolicy)
@@ -110,10 +124,11 @@ class HuaweiUtils(
         }
     }
 
-    private fun getDir(bucketPolicy: BucketPolicy) = if(bucketPolicy == BucketPolicy.PUBLIC) huaweiProperties.obsSettings.publicDir else huaweiProperties.obsSettings.privateDir
+    private fun getDir(bucketPolicy: BucketPolicy) =
+        if (bucketPolicy == BucketPolicy.PUBLIC) huaweiProperties.obsSettings.publicDir else huaweiProperties.obsSettings.privateDir
 
     private fun getRealKey(key: String, bucketPolicy: BucketPolicy): String {
-        if(key.startsWith("/")) {
+        if (key.startsWith("/")) {
             return getDir(bucketPolicy) + key
         } else {
             return getDir(bucketPolicy) + "/" + key
@@ -132,17 +147,18 @@ class HuaweiUtils(
         val obsObject = client.getObject(huaweiProperties.obsSettings.bucketName, getRealKey(key, bucketPolicy))
         val stream = ByteArrayOutputStream()
         try {
-            if(obsObject == null || obsObject.objectContent == null) {
+            if (obsObject == null || obsObject.objectContent == null) {
                 return byteArrayOf()
             }
 
             StreamUtils.copy(obsObject.objectContent, stream)
 
-            return  stream.toByteArray()
+            return stream.toByteArray()
         } finally {
             try {
                 stream.close()
-            } catch (e: Exception){}
+            } catch (e: Exception) {
+            }
         }
     }
 }

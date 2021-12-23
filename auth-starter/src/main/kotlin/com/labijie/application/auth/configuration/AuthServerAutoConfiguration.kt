@@ -40,11 +40,11 @@ class AuthServerAutoConfiguration : IResourceAuthorizationConfigurer {
         ).permitAll()
     }
 
-    @Bean
-    @ConditionalOnMissingBean(RegisteredClientRepository::class)
-    fun defaultClientRepository(clientService: IOAuth2ClientService): DefaultClientRepository {
-        return DefaultClientRepository(clientService)
-    }
+//    @Bean
+//    @ConditionalOnMissingBean(RegisteredClientRepository::class)
+//    fun defaultClientRepository(clientService: IOAuth2ClientService): DefaultClientRepository {
+//        return DefaultClientRepository(clientService)
+//    }
 
 
     @Bean

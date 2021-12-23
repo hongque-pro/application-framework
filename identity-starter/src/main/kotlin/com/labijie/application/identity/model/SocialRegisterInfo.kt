@@ -17,7 +17,10 @@ class SocialRegisterInfo {
     @get:NotBlank
     var code:String = ""
 
-    var iv:String = ""
+    /**
+     * 用于解密手机号的 IV （如果为空，表示是明文手机号）
+     */
+    var iv:String? = null
 
     var addition: String = ""
 }

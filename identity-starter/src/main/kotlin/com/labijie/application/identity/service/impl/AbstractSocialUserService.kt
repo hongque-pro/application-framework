@@ -39,25 +39,25 @@ import java.util.regex.Pattern
  * @Description:
  */
 abstract class AbstractSocialUserService(
-        authServerProperties: IdentityProperties,
-        idGenerator: IIdGenerator,
-        messageSender: IMessageSender,
-        cacheManager: ICacheManager,
-        userMapper: UserMapper,
-        userRoleMapper: UserRoleMapper,
-        roleMapper: RoleMapper,
-        protected val userLoginMapper: UserLoginMapper,
-        protected val userOpenIdMapper: UserOpenIdMapper,
-        transactionTemplate: TransactionTemplate
+    authServerProperties: IdentityProperties,
+    idGenerator: IIdGenerator,
+    messageSender: IMessageSender,
+    cacheManager: ICacheManager,
+    userMapper: UserMapper,
+    userRoleMapper: UserRoleMapper,
+    roleMapper: RoleMapper,
+    protected val userLoginMapper: UserLoginMapper,
+    protected val userOpenIdMapper: UserOpenIdMapper,
+    transactionTemplate: TransactionTemplate
 ) : AbstractUserService(
-        authServerProperties,
-        idGenerator,
-        messageSender,
-        cacheManager,
-        userMapper,
-        userRoleMapper,
-        roleMapper,
-        transactionTemplate
+    authServerProperties,
+    idGenerator,
+    messageSender,
+    cacheManager,
+    userMapper,
+    userRoleMapper,
+    roleMapper,
+    transactionTemplate
 ), ISocialUserService {
 
 
@@ -67,7 +67,7 @@ abstract class AbstractSocialUserService(
         get() {
             if (generator == null) {
                 generator = this.context?.getBeansOfType(ISocialUserGenerator::class.java)?.values?.firstOrNull()
-                        ?: DefaultSocialUserGenerator()
+                    ?: DefaultSocialUserGenerator()
             }
             return generator!!
         }
@@ -91,7 +91,7 @@ abstract class AbstractSocialUserService(
         return this.transactionTemplate.execute {
             val record = userLoginMapper.selectOne {
                 where(UserLogin.loginProvider, SqlBuilder.isEqualTo(loginProvider))
-                        .and(UserLogin.providerKey, SqlBuilder.isEqualTo(providerKey))
+                    .and(UserLogin.providerKey, SqlBuilder.isEqualTo(providerKey))
             }
             record?.userId
         }
@@ -118,14 +118,14 @@ abstract class AbstractSocialUserService(
     private data class ExchangeResult(val token: PlatformAccessToken, val userId: Long?, val provider: ILoginProvider)
 
     private fun fetchUserFromSocialCode(
-            loginProvider: String,
-            authorizationCode: String
+        loginProvider: String,
+        authorizationCode: String
     ): ExchangeResult {
         if (loginProvider.isBlank() || authorizationCode.isBlank()) {
             throw IllegalArgumentException("loginProvider or authorizationCode can not be null")
         }
         val mp = getLoginProvider(loginProvider)
-                ?: throw UnsupportedLoginProviderException(loginProvider)
+            ?: throw UnsupportedLoginProviderException(loginProvider)
         val token = mp.exchangeToken(authorizationCode)
         val userId = this.getUserId(loginProvider, token.userKey)
         return ExchangeResult(token, userId, mp)
@@ -135,10 +135,10 @@ abstract class AbstractSocialUserService(
         try {
             this.transactionTemplate.configure(propagation = Propagation.REQUIRES_NEW).execute {
 
-                val openId = userOpenIdMapper.selectOne{
+                val openId = userOpenIdMapper.selectOne {
                     where(UserOpenId.appId, SqlBuilder.isEqualTo(token.appId))
-                            .and(UserOpenId.loginProvider, SqlBuilder.isEqualTo(provider))
-                            .and(UserOpenId.userId, SqlBuilder.isEqualTo(userId))
+                        .and(UserOpenId.loginProvider, SqlBuilder.isEqualTo(provider))
+                        .and(UserOpenId.userId, SqlBuilder.isEqualTo(userId))
                 }
                 if (openId == null) {
                     val userOpenId = UserOpenIdRecord().apply {
@@ -178,8 +178,8 @@ abstract class AbstractSocialUserService(
 
 
     override fun registerSocialUser(
-            socialRegisterInfo: SocialRegisterInfo,
-            throwIfExisted: Boolean
+        socialRegisterInfo: SocialRegisterInfo,
+        throwIfExisted: Boolean
     ): SocialUserAndRoles {
         val loginProvider = socialRegisterInfo.provider
         val r = fetchUserFromSocialCode(socialRegisterInfo.provider, socialRegisterInfo.code)
@@ -187,13 +187,16 @@ abstract class AbstractSocialUserService(
             throw UserAlreadyExistedException("user with login provider '${socialRegisterInfo.provider}' already existed")
         }
         val miniProvider = r.provider as? ILoginProviderPhoneNumberSupport
+        var phoneNumber = socialRegisterInfo.phoneNumber
 
-        val phoneNumber =
-                miniProvider?.decryptPhoneNumber(socialRegisterInfo.phoneNumber, r.token, socialRegisterInfo.iv)
-                        ?: socialRegisterInfo.phoneNumber
+        //解密用的向量为空，认为电话号码为明文
+        val iv = socialRegisterInfo.iv ?: ""
+        if (miniProvider != null && iv.isNotBlank()) {
+            phoneNumber = miniProvider.decryptPhoneNumber(socialRegisterInfo.phoneNumber, r.token, iv)
+        }
 
         val valid =
-                Pattern.matches(this.validationConfiguration.regex[ValidationConfiguration.PHONE_NUMBER]!!, phoneNumber)
+            Pattern.matches(this.validationConfiguration.regex[ValidationConfiguration.PHONE_NUMBER]!!, phoneNumber)
         if (!valid) {
             throw InvalidPhoneNumberException()
         }
@@ -237,28 +240,33 @@ abstract class AbstractSocialUserService(
         return if (provider.isMultiOpenId) {
             val d = userOpenIdMapper.selectOne {
                 where(UserOpenId.userId, SqlBuilder.isEqualTo(userId))
-                        .and(UserOpenId.appId, SqlBuilder.isEqualTo(appId))
-                        .and(UserOpenId.loginProvider, SqlBuilder.isEqualTo(loginProvider))
+                    .and(UserOpenId.appId, SqlBuilder.isEqualTo(appId))
+                    .and(UserOpenId.loginProvider, SqlBuilder.isEqualTo(loginProvider))
             }
             d?.openId
         } else {
             userLoginMapper.selectOne {
                 where(UserLogin.userId, SqlBuilder.isEqualTo(userId))
-                        .and(UserLogin.loginProvider, SqlBuilder.isEqualTo(loginProvider))
+                    .and(UserLogin.loginProvider, SqlBuilder.isEqualTo(loginProvider))
             }?.providerKey
         }
     }
 
     private fun createNewSocialUserOrLogin(
-            socialRegisterInfo: SocialRegisterInfo,
-            phoneNumber: String,
-            provider: ILoginProvider,
-            token: PlatformAccessToken
+        socialRegisterInfo: SocialRegisterInfo,
+        phoneNumber: String,
+        provider: ILoginProvider,
+        token: PlatformAccessToken
     ): Pair<SocialUserAndRoles, SocialUserRegistrationContext?> {
         val loginProvider = provider.name
 
         //不存在第三方绑定，考虑手机号可能存在
-        val user = if (phoneNumber.isBlank()) null else userMapper.selectOne { where(User.phoneNumber, SqlBuilder.isEqualTo(phoneNumber.trim())) }
+        val user = if (phoneNumber.isBlank()) null else userMapper.selectOne {
+            where(
+                User.phoneNumber,
+                SqlBuilder.isEqualTo(phoneNumber.trim())
+            )
+        }
         if (user != null) {
             this.addUserLogin(user.id!!, loginProvider, token)
             val roles = this.getUserRoles(user.id!!)
@@ -266,7 +274,7 @@ abstract class AbstractSocialUserService(
         } else {
             try {
                 val context =
-                        UserGenerationContext(this.passwordEncoder, idGenerator, loginProvider, phoneNumber, token)
+                    UserGenerationContext(this.passwordEncoder, idGenerator, loginProvider, phoneNumber, token)
                 val u = socialSocialUserGenerator.generate(context, this.getDefaultUserType())
                 val roles = this.getDefaultUserRoles()
                 val userAndRoles = this.createUser(u, *roles)

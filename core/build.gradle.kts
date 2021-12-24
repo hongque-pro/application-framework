@@ -27,4 +27,7 @@ dependencies {
     api("mysql:mysql-connector-java") {
         exclude(module= "protobuf-java")
     }
+
+
+    compileOnly("com.labijie.orm:exposed-core:${Versions.infraOrm}")
 }

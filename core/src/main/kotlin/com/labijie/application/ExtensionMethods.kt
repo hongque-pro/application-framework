@@ -7,9 +7,6 @@ import com.labijie.application.model.CaptchaValidationRequest
 import com.labijie.caching.ICacheManager
 import com.labijie.infra.SecondIntervalTimeoutTimer
 import com.labijie.infra.json.JacksonHelper
-import com.labijie.infra.scheduling.DelayIntervalTask
-import org.bouncycastle.pqc.math.linearalgebra.IntegerFunctions.order
-import org.springframework.boot.WebApplicationType
 import org.springframework.core.ParameterizedTypeReference
 import org.springframework.http.HttpEntity
 import org.springframework.http.HttpMethod
@@ -17,15 +14,15 @@ import org.springframework.http.ResponseEntity
 import org.springframework.transaction.TransactionDefinition
 import org.springframework.transaction.annotation.Isolation
 import org.springframework.transaction.annotation.Propagation
-import org.springframework.transaction.annotation.Transactional
-import org.springframework.transaction.support.*
-import org.springframework.util.ClassUtils
+import org.springframework.transaction.support.DefaultTransactionDefinition
+import org.springframework.transaction.support.TransactionSynchronization
+import org.springframework.transaction.support.TransactionSynchronizationManager
+import org.springframework.transaction.support.TransactionTemplate
 import org.springframework.web.client.RestTemplate
 import org.springframework.web.util.UriBuilder
 import java.math.BigDecimal
 import java.math.BigInteger
 import java.net.URLEncoder
-import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import java.time.Duration
 import java.time.LocalDateTime
@@ -168,6 +165,11 @@ inline fun <reified T : Enum<*>> Number.toEnum(): T {
     return getEnumFromNumber(T::class.java, this) as T
 }
 
+fun <T: Enum<*>> Number.toEnum(type: KClass<T>): T? {
+    @Suppress("UNCHECKED_CAST")
+    return getEnumFromNumber(type.java, this) as? T
+}
+
 inline fun <reified T : Enum<*>> String.toEnum(): T {
     return getEnumFromString(T::class.java, this) as T
 }
@@ -216,7 +218,6 @@ val NumericClasses = arrayOf(
     Short::class.java,
     Byte::class.java,
     Long::class.java,
-    BigInteger::class.java,
     BigInteger::class.java,
     Float::class.java,
     BigDecimal::class.java

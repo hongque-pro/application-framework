@@ -22,30 +22,31 @@ class DescribeEnumColumnType<E, V>(
 
     companion object {
         private val typeMappings = mapOf(
-            JAVA_LONG to currentDialect.dataTypeProvider.longType(),
-            JAVA_DOUBLE to currentDialect.dataTypeProvider.doubleType(),
-            JAVA_FLOAT to currentDialect.dataTypeProvider.floatType(),
-            JAVA_INT to currentDialect.dataTypeProvider.integerType(),
-            JAVA_SHORT to currentDialect.dataTypeProvider.shortType(),
-            JAVA_BYTE to currentDialect.dataTypeProvider.byteType(),
-            Int::class.java to currentDialect.dataTypeProvider.integerType(),
-            Short::class.java to currentDialect.dataTypeProvider.shortType(),
-            Byte::class.java to currentDialect.dataTypeProvider.byteType(),
-            Long::class.java to currentDialect.dataTypeProvider.longType(),
-            BigInteger::class.java to currentDialect.dataTypeProvider.longType(),
-            Float::class.java to currentDialect.dataTypeProvider.floatType(),
-            BigDecimal::class.java to DecimalColumnType(MathContext.DECIMAL64.precision, 20).sqlType()
+            JAVA_LONG to { currentDialect.dataTypeProvider.longType() },
+            JAVA_DOUBLE to { currentDialect.dataTypeProvider.doubleType() },
+            JAVA_FLOAT to { currentDialect.dataTypeProvider.floatType() },
+            JAVA_INT to { currentDialect.dataTypeProvider.integerType() },
+            JAVA_SHORT to { currentDialect.dataTypeProvider.shortType() },
+            JAVA_BYTE to { currentDialect.dataTypeProvider.byteType() },
+            Int::class.java to { currentDialect.dataTypeProvider.integerType() },
+            Short::class.java to { currentDialect.dataTypeProvider.shortType() },
+            Byte::class.java to { currentDialect.dataTypeProvider.byteType() },
+            Long::class.java to { currentDialect.dataTypeProvider.longType() },
+            BigInteger::class.java to { currentDialect.dataTypeProvider.longType() },
+            Float::class.java to { currentDialect.dataTypeProvider.floatType() },
+            BigDecimal::class.java to { DecimalColumnType(MathContext.DECIMAL64.precision, 20).sqlType() }
         )
     }
 
-    private val sqlTypeValue = typeMappings[valueClass.java] ?: error("${valueClass.qualifiedName} is not valid value type for enum ${enumClass.simpleName}")
+    private val sqlTypeValue by lazy {
+        typeMappings[valueClass.java]?.invoke()
+            ?: error("${valueClass.qualifiedName} is not valid value type for enum ${enumClass.simpleName}")
+    }
 
     override fun sqlType(): String = sqlTypeValue
 
-    @Suppress("UNCHECKED_CAST")
     override fun valueFromDB(value: Any): E = when (value) {
-        is Number -> value.toEnum(enumClass)
-            ?: error("$value of ${value::class.qualifiedName} is not valid for enum ${enumClass.simpleName}")
+        is Number -> value.toEnum(enumClass.java)
         else -> error("$value of ${value::class.qualifiedName} is not valid for enum ${enumClass.simpleName}")
     }
 

@@ -20,6 +20,7 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
 import org.springframework.transaction.support.TransactionTemplate
 import org.springframework.web.client.RestTemplate
 import org.springframework.web.util.UriBuilder
+import java.lang.IllegalArgumentException
 import java.math.BigDecimal
 import java.math.BigInteger
 import java.net.URLEncoder
@@ -31,6 +32,7 @@ import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 import java.time.format.DateTimeParseException
 import kotlin.reflect.KClass
+import kotlin.reflect.typeOf
 
 
 /**
@@ -162,26 +164,31 @@ fun <T : Any> T.propertiesFrom(source: Any): T {
 }
 
 inline fun <reified T : Enum<*>> Number.toEnum(): T {
-    return getEnumFromNumber(T::class.java, this) as T
+    return this.toEnum(T::class.java)
 }
 
-fun <T: Enum<*>> Number.toEnum(type: KClass<T>): T? {
+fun <T: Enum<*>> Number.toEnum(type: Class<T>): T {
+    val v = getEnumFromNumber(type, this) ?: throw IllegalStateException("$this (${this::class.java.simpleName}) is not a valid value type for enum ${type.simpleName}")
     @Suppress("UNCHECKED_CAST")
-    return getEnumFromNumber(type.java, this) as? T
+    return v as T
 }
 
 inline fun <reified T : Enum<*>> String.toEnum(): T {
     return getEnumFromString(T::class.java, this) as T
 }
 
-fun getEnumFromNumber(enumClass: Class<*>, value: Number): Enum<*>? {
+fun getEnumFromNumber(enumClass: Class<*>, value: Number, ignoreType:Boolean = true): Enum<*>? {
     val enumClz = enumClass.enumConstants.map {
         it as Enum<*>
     }
     return enumClz.firstOrNull {
         val desc = (it as? IDescribeEnum<*>)
         if (desc != null) {
-            it.code.toInt() == value.toInt()
+            if(ignoreType){
+                BigDecimal(it.code.toString()) == BigDecimal(value.toString())
+            }else{
+                it.code == value && it.code::class.java == value::class.java
+            }
         } else {
             it.ordinal == value.toInt()
         }

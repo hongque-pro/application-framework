@@ -21,7 +21,7 @@ object Versions {
     const val infraPlugin = "1.0.12"
     const val infraCommons = "2.2.1"
     const val infraCaching = "1.3.3"
-    const val infraOAuth2 = "1.2.4"
+    const val infraOAuth2 = "1.2.5"
     const val infraCloudStream = "1.2.1"
 
 

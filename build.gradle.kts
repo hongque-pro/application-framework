@@ -45,6 +45,7 @@ subprojects {
         }
     }
 
+
     dependencies {
         add("testImplementation", "org.springframework.boot:spring-boot-starter-test")
         add("testImplementation","org.mybatis.spring.boot:mybatis-spring-boot-starter-test:${Versions.mybatisSpringBootTest}")

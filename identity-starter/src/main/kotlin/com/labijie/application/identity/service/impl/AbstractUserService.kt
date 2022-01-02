@@ -60,6 +60,7 @@ abstract class AbstractUserService constructor(
     protected val transactionTemplate: TransactionTemplate
 ) : IUserService, ApplicationContextAware {
 
+
     protected var context: ApplicationContext? = null
         private set
 

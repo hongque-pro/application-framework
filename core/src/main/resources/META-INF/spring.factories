@@ -1,6 +1,7 @@
 org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
   com.labijie.application.configuration.ApplicationCoreAutoConfiguration,\
-  com.labijie.application.configuration.DefaultsAutoConfiguration
+  com.labijie.application.configuration.DefaultsAutoConfiguration,
+  com.labijie.application.configuration.DatabaseAutoConfiguration,
 org.springframework.boot.env.EnvironmentPostProcessor=\
   com.labijie.application.configuration.DefaultConfigurationProcessor
 

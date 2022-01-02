@@ -15,7 +15,6 @@ import org.springframework.beans.factory.ObjectProvider
 import org.springframework.boot.autoconfigure.AutoConfigureBefore
 import org.springframework.boot.autoconfigure.condition.*
 import org.springframework.boot.autoconfigure.web.client.RestTemplateAutoConfiguration
-import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.boot.web.client.RestTemplateBuilder
 import org.springframework.boot.web.client.RestTemplateCustomizer
@@ -33,12 +32,12 @@ import org.springframework.http.converter.AbstractHttpMessageConverter
 import org.springframework.http.converter.ByteArrayHttpMessageConverter
 import org.springframework.http.converter.StringHttpMessageConverter
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter
-import org.springframework.scheduling.annotation.EnableAsync
 import org.springframework.web.client.RestTemplate
 import java.util.concurrent.TimeUnit
 import java.util.function.Consumer
 import java.util.stream.Collectors
 import javax.annotation.PreDestroy
+
 
 /**
  * Created with IntelliJ IDEA.

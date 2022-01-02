@@ -17,7 +17,7 @@ object Versions {
     const val kaptcha = "2.3.2"
 
     const val infraBom = "2.6.5"
-    const val infraOrm = "1.0.3"
+    const val infraOrm = "1.0.8"
     const val infraPlugin = "1.0.12"
     const val infraCommons = "2.2.1"
     const val infraCaching = "1.3.3"

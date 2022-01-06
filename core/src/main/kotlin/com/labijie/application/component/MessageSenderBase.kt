@@ -16,13 +16,11 @@ import com.labijie.infra.security.Rfc6238TokenService
 import com.labijie.infra.spring.configuration.isDevelopment
 import com.labijie.infra.utils.logger
 import org.springframework.beans.factory.NoSuchBeanDefinitionException
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.cloud.stream.function.StreamBridge
 import org.springframework.context.ApplicationContext
 import org.springframework.context.ApplicationContextAware
 import org.springframework.core.env.Environment
 import org.springframework.messaging.support.GenericMessage
-import java.time.Duration
 
 /**
  * Created with IntelliJ IDEA.
@@ -173,7 +171,7 @@ abstract class MessageSenderBase constructor(
 
     protected abstract fun sendSmsGeneralTemplate(phoneNumber: String, template: String, templateParam: Any?)
 
-    override fun verifySmsCaptcha(code: String, stamp: String, modifier: String, throwIfMissMatched: Boolean): Boolean {
+    override fun verifySmsCaptcha(code: String, stamp: String, modifier: String?, throwIfMissMatched: Boolean): Boolean {
         val result = this.rfc6238TokenService.validateCodeString(code, stamp, modifier)
         if (throwIfMissMatched && !result) {
             throw InvalidCaptchaException()

@@ -10,7 +10,6 @@ import com.labijie.application.web.annotation.HumanVerify
 import com.labijie.application.web.annotation.ResponseWrapped
 import com.labijie.infra.oauth2.OAuth2Utils
 import com.labijie.infra.utils.ShortId
-import com.labijie.infra.utils.ifNullOrBlank
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.security.authentication.BadCredentialsException
@@ -55,10 +54,9 @@ class SmsController {
             number = user.phoneNumber!!
             userId = user.id.toString()
         }
-        //支持传入 modifier ，如果不存在优先用户 id, 最其次使用手机号
-        val m = modifier.ifNullOrBlank(numberOrUserId).ifNullOrBlank(userId).ifNullOrBlank { number }
+
         val stamp = ShortId.newId()
-        val param = SendSmsCaptchaParam(number, m, captchaType ?: CaptchaType.General, stamp);
+        val param = SendSmsCaptchaParam(number, modifier, captchaType ?: CaptchaType.General, stamp);
         messageSender.sendSmsCaptcha(param, true)
         return SimpleValue(stamp)
     }
@@ -68,12 +66,7 @@ class SmsController {
         @RequestParam("m") modifier: String? = null,
         @RequestBody request: CaptchaValidationRequest
     ): SimpleValue<Boolean> {
-        val m = if(modifier.isNullOrBlank()) {
-            OAuth2Utils.currentTwoFactorPrincipal().userId
-        } else {
-            modifier
-        }
-        val valid = messageSender.verifySmsCaptcha(request.captcha, request.stamp, m, true)
+        val valid = messageSender.verifySmsCaptcha(request.captcha, request.stamp, modifier, true)
         return SimpleValue(valid)
     }
 }

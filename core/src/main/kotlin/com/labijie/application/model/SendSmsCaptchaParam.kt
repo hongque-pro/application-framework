@@ -7,7 +7,7 @@ package com.labijie.application.model
  */
 data class SendSmsCaptchaParam(
     var phoneNumber: String = "",
-    var modifier:String = "",
+    var modifier:String? = null,
     var captchaType: CaptchaType = CaptchaType.General,
     var stamp: String = ""
 )

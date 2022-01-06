@@ -377,6 +377,15 @@ abstract class AbstractUserService constructor(
 
 
     private fun getUserByPrimaryField(usr: String): UserRecord? {
+        val id = usr.toLongOrNull()
+        if(id != null){
+            return userMapper.selectOne {
+                where(User.id, isEqualTo(id))
+                    .or(User.phoneNumber, isEqualTo(usr))
+                    .or(User.email, isEqualTo(usr))
+                    .or(User.userName, isEqualTo(usr))
+            }
+        }
         return userMapper.selectOne {
             where(User.phoneNumber, isEqualTo(usr))
                 .or(User.email, isEqualTo(usr))

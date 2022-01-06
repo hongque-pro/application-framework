@@ -33,9 +33,6 @@ class SmsController {
     @Autowired
     private lateinit var userService: IUserService
 
-    companion object {
-        val phoneNumberMissedTypes = arrayOf(CaptchaType.ChangePhone)
-    }
 
     @HumanVerify
     @PostMapping("/captcha")
@@ -51,8 +48,8 @@ class SmsController {
                 ?: throw BadCredentialsException("User missed.")
             number = user.phoneNumber!!
             userId = user.id.toString()
-        } else if (captchaType in phoneNumberMissedTypes) {
-            //除了修改手机号是面向用户 id 来操作，大多数啊情况不需要传入用户 id.
+        } else if (captchaType != CaptchaType.Register) {
+            //除了注册，必须验证用户
             val user = userService.getUserById(numberOrUserId!!.toLongOrNull() ?: -1)
                 ?: throw BadCredentialsException("User missed.")
             number = user.phoneNumber!!

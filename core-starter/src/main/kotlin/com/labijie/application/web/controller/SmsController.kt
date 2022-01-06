@@ -50,13 +50,13 @@ class SmsController {
             userId = user.id.toString()
         } else if (captchaType != CaptchaType.Register) {
             //除了注册，必须验证用户
-            val user = userService.getUserById(numberOrUserId!!.toLongOrNull() ?: -1)
+            val user = userService.getUser(numberOrUserId.orEmpty())
                 ?: throw BadCredentialsException("User missed.")
             number = user.phoneNumber!!
             userId = user.id.toString()
         }
         //支持传入 modifier ，如果不存在优先用户 id, 最其次使用手机号
-        val m = modifier.ifNullOrBlank(userId).ifNullOrBlank { number }
+        val m = modifier.ifNullOrBlank(numberOrUserId).ifNullOrBlank(userId).ifNullOrBlank { number }
         val stamp = ShortId.newId()
         val param = SendSmsCaptchaParam(number, m, captchaType ?: CaptchaType.General, stamp);
         messageSender.sendSmsCaptcha(param, true)

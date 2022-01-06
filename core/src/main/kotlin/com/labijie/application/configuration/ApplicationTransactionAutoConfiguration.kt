@@ -9,7 +9,7 @@ import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.transaction.PlatformTransactionManager
 import org.springframework.transaction.annotation.Isolation
-import org.springframework.transaction.interceptor.NoRollbackRuleAttribute
+import org.springframework.transaction.interceptor.RollbackRuleAttribute
 import org.springframework.transaction.interceptor.RuleBasedTransactionAttribute
 import org.springframework.transaction.support.TransactionOperations
 import org.springframework.transaction.support.TransactionTemplate
@@ -29,8 +29,9 @@ class ApplicationTransactionAutoConfiguration {
     @ConditionalOnMissingBean(TransactionOperations::class)
     fun transactionTemplate(transactionManager: PlatformTransactionManager): TransactionTemplate {
         val rules = RuleBasedTransactionAttribute()
-        rules.isolationLevel = Isolation.READ_COMMITTED.value()
-        rules.rollbackRules.add(NoRollbackRuleAttribute(Throwable::class.java))
+        rules.isolationLevel = Isolation.DEFAULT.value()
+        rules.rollbackRules.add(RollbackRuleAttribute(Throwable::class.java))
+        rules.isReadOnly = false
 
         logger.info("TransactionTemplate set to rollback for Throwable.")
 

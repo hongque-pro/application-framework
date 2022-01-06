@@ -381,15 +381,15 @@ abstract class AbstractUserService constructor(
         if(id != null){
             return userMapper.selectOne {
                 where(User.id, isEqualTo(id))
+                    .or(User.userName, isEqualTo(usr))
                     .or(User.phoneNumber, isEqualTo(usr))
                     .or(User.email, isEqualTo(usr))
-                    .or(User.userName, isEqualTo(usr))
             }
         }
         return userMapper.selectOne {
             where(User.phoneNumber, isEqualTo(usr))
-                .or(User.email, isEqualTo(usr))
                 .or(User.userName, isEqualTo(usr))
+                .or(User.email, isEqualTo(usr))
         }
     }
 

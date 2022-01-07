@@ -23,7 +23,6 @@ import org.springframework.web.bind.annotation.*
  */
 @RestController
 @ResponseWrapped
-@Validated
 @RequestMapping("/sms")
 @ConditionalOnProperty(value=["application.sms.controller-enabled"], matchIfMissing = true)
 class SmsController {
@@ -34,6 +33,7 @@ class SmsController {
 
 
     @HumanVerify
+    @Validated
     @PostMapping("/captcha")
     fun sendSmsCaptcha(
         @RequestParam("p", required = false) numberOrUserId: String? = null,
@@ -63,8 +63,8 @@ class SmsController {
 
     @PostMapping("/validate")
     fun validateCaptcha(
-        @RequestParam("m") modifier: String? = null,
-        @RequestBody request: CaptchaValidationRequest
+        @RequestParam("m", required = false) modifier: String? = null,
+        @RequestBody @Validated request: CaptchaValidationRequest
     ): SimpleValue<Boolean> {
         val valid = messageSender.verifySmsCaptcha(request.captcha, request.stamp, modifier, true)
         return SimpleValue(valid)

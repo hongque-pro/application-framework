@@ -26,7 +26,6 @@ import org.springframework.security.oauth2.server.authorization.client.Registere
 import org.springframework.validation.annotation.Validated
 import org.springframework.web.bind.annotation.*
 import java.time.Duration
-import javax.validation.Valid
 import com.labijie.application.identity.data.UserRecord as User
 
 /**
@@ -37,7 +36,6 @@ import com.labijie.application.identity.data.UserRecord as User
 
 @RestController
 @RequestMapping("/account")
-@Validated
 class AccountController @Autowired constructor(
         private val userService: IUserService,
         private val messageSender: IMessageSender,
@@ -50,7 +48,7 @@ class AccountController @Autowired constructor(
 
     @ClientRequired
     @RequestMapping("/register", method = [RequestMethod.POST])
-    fun register(@Valid @RequestBody info: RegisterInfo, client: RegisteredClient): OAuth2AccessTokenAuthenticationToken {
+    fun register(@RequestBody @Validated info: RegisterInfo, client: RegisteredClient): OAuth2AccessTokenAuthenticationToken {
         val userAndRoles = userService.registerUser(info)
 
         return signInHelper.signIn(
@@ -83,7 +81,7 @@ class AccountController @Autowired constructor(
      * 找回密码（需要验证短信验证码）
      */
     @PostMapping("/set-password")
-    fun setPassword(@RequestBody request: SetPasswordRequest){
+    fun setPassword(@RequestBody @Validated request: SetPasswordRequest){
          messageSender.verifySmsCaptcha(request.captcha, request.stamp, request.userId.toString(), true)
         userService.resetPassword(request.userId, request.password)
     }
@@ -111,7 +109,7 @@ class AccountController @Autowired constructor(
      * 变更手机号，验证身份（需要使用旧的手机号验证短信验证码）
      */
     @PostMapping("/change-phone-verify")
-    fun  getChangePhoneToken(@RequestBody request: CaptchaValidationRequest): SimpleValue<String> {
+    fun  getChangePhoneToken(@RequestBody @Validated request: CaptchaValidationRequest): SimpleValue<String> {
         val userId = OAuth2Utils.currentTwoFactorPrincipal().userId
         messageSender.verifySmsCaptcha(request.captcha, request.stamp,  userId, true)
         val token = DesUtils.generateToken(userId, Duration.ofMinutes(10))
@@ -122,7 +120,7 @@ class AccountController @Autowired constructor(
      * 变更新手机号，需要上一步的 token
      */
     @PostMapping("/change-phone")
-    fun changePhoneNumber(@RequestBody request: ChangePhoneRequest): UpdateResult<String> {
+    fun changePhoneNumber(@RequestBody @Validated request: ChangePhoneRequest): UpdateResult<String> {
         messageSender.verifyCaptcha(request, request.phoneNumber, true)
         val userId = OAuth2Utils.currentTwoFactorPrincipal().userId.toLong()
         DesUtils.verifyToken(request.token, userId.toString(),  throwIfInvalid = true)
@@ -134,7 +132,7 @@ class AccountController @Autowired constructor(
      * 修改密码
      */
     @PostMapping("/password")
-    fun changePassword(@RequestBody request:ChangePasswordRequest): SimpleValue<Boolean> {
+    fun changePassword(@RequestBody @Validated request:ChangePasswordRequest): SimpleValue<Boolean> {
         val userId = OAuth2Utils.currentTwoFactorPrincipal().userId.toLong()
         val result = userService.changePassword(userId, request.oldPassword, request.newPassword)
         return SimpleValue(result)

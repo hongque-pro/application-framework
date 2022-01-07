@@ -6,6 +6,7 @@ import com.labijie.caching.memory.MemoryCacheManager
 import com.labijie.infra.json.JacksonHelper
 import com.labijie.infra.security.Rfc6238TokenService
 import org.springframework.core.env.Environment
+import java.lang.StringBuilder
 
 /**
  * Created with IntelliJ IDEA.
@@ -23,7 +24,11 @@ open class NoneMessageSender(
     override val frequencyLimited: Boolean = false
 
     override fun sendSmsGeneralTemplate(phoneNumber: String, template: String, templateParam: Any?) {
-        println("${System.lineSeparator()}>>> Captcha has been sent: ${if (templateParam == null) null else JacksonHelper.serializeAsString(templateParam)}${System.lineSeparator()}" +
-                ">>> phone: $phoneNumber")
+       val msg = StringBuilder().appendLine()
+            .appendLine("None Message Sender:")
+            .appendLine(">>> Captcha has been sent: ${if (templateParam == null) null else JacksonHelper.serializeAsString(templateParam)}${System.lineSeparator()}")
+            .appendLine(">>> phone: $phoneNumber")
+            .toString()
+        println(msg)
     }
 }

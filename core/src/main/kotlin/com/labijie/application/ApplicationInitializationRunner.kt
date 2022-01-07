@@ -1,5 +1,8 @@
 package com.labijie.application
 
+import com.labijie.application.component.IHumanChecker
+import com.labijie.application.component.IMessageSender
+import com.labijie.application.component.IObjectStorage
 import com.labijie.application.jackson.DescribeEnumDeserializer
 import com.labijie.application.jackson.DescribeEnumSerializer
 import com.labijie.infra.json.JacksonHelper
@@ -20,8 +23,8 @@ import org.springframework.context.ConfigurableApplicationContext
 import org.springframework.context.event.EventListener
 import org.springframework.core.Ordered
 import org.springframework.core.env.Environment
+import org.springframework.util.ClassUtils
 import org.springframework.web.context.WebApplicationContext
-import java.lang.StringBuilder
 import java.lang.reflect.Method
 import java.lang.reflect.ParameterizedType
 import kotlin.concurrent.thread
@@ -144,16 +147,29 @@ class ApplicationInitializationRunner<T : ConfigurableApplicationContext>(
         webServer = event.webServer
     }
 
-    private fun reportApplicationStatus(modules: List<Class<*>>) {
+    private fun printComponentImplements(vararg beanTypes: KClass<*>): String{
+        if(beanTypes.isNotEmpty()) {
+            return StringBuilder().apply {
+                appendLine("framework components: ")
+                beanTypes.forEach {
+                    val bean = applicationContext.getBean(it.java)
+                    appendLine(" ${it.java.simpleName}: ${ClassUtils.getShortName(bean::class.java)}")
+                }
+            }.toString()
+        }
+        return ""
+    }
 
+    private fun reportApplicationStatus(modules: List<Class<*>>) {
         val moduleList = modules.joinToString { it.simpleName.substringBefore("ModuleInitializer") }
         println(
             """
 [${this.applicationName}] has been started !! 
-framework ver: ${gitProperties.get("build.version")}        
+framework ver: ${gitProperties.get("build.version")}   
 framework commit: ${gitProperties.commitTime.toLocalDateTime().toLocalDate()}  
-current profiles: $profiles
+${printComponentImplements(IHumanChecker::class, IObjectStorage::class, IMessageSender::class)}
 module loaded:  ${moduleList.ifNullOrBlank("none module")}
+current profiles: $profiles
 --------------------------------------------------------------------
 ${if (isWebEnvironment) this.buildWebServerInfo() else "Command line application"}
 --------------------------------------------------------------------

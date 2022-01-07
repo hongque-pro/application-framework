@@ -1,6 +1,7 @@
 package com.labijie.application.component
 
 import com.labijie.application.async.handler.MessageHandler
+import com.labijie.application.component.impl.NoneMessageSender
 import com.labijie.application.configuration.SmsBaseSettings
 import com.labijie.application.configuration.SmsTemplates
 import com.labijie.application.exception.InvalidCaptchaException
@@ -126,7 +127,7 @@ abstract class MessageSenderBase constructor(
     }
 
     private fun sendSmsCore(param: SendSmsTemplateParam, async: Boolean) {
-        if (async && asyncSource != null) {
+        if (async && asyncSource != null && this !is NoneMessageSender) {
             asyncSource?.send(MessageHandler.STREAM_SMS_OUT, GenericMessage(param))
         } else {
             this.sendSmsGeneralTemplate(param.phoneNumber, param.template, param.templateParam)

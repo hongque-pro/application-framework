@@ -9,8 +9,7 @@ object Versions {
     const val springBoot = "2.6.2"
     const val mybatisSpringBootTest = "2.2.0"
     const val antisamy="1.6.4"
-    const val springfox="3.0.0"
-    const val springDoc="1.6.0"
+    const val springDoc="1.6.4"
     const val apachePOI = "5.1.0"
     const val uberH3 = "3.7.1"
 

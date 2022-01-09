@@ -11,10 +11,10 @@ import com.labijie.application.identity.data.UserRecord as User
  * @date 2019-12-11
  */
 open class DefaultSocialUserGenerator : ISocialUserGenerator {
-    override fun generate(context: UserGenerationContext, userType: Byte, userName:String?): User {
+    override fun generate(context: UserGenerationContext, userType: Byte, userName:String?, password:String?): User {
         val id = context.idGenerator.newId()
         val username = userName.ifNullOrBlank {  id.toString() }
-        val pwd = context.passwordEncoder.encode(ShortId.newId())
+        val pwd = password.ifNullOrBlank { context.passwordEncoder.encode(ShortId.newId()) }
         return IdentityUtils.createUser(id, username, context.phoneNumber, pwd, userType)
     }
 }

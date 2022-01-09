@@ -13,6 +13,9 @@ class SocialRegisterInfo {
     var username: String? = null
 
     @get:NotBlank
+    var password: String = ""
+
+    @get:NotBlank
     @get:Max(32)
     var provider:String = ""
 

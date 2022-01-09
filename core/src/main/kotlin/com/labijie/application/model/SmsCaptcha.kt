@@ -7,9 +7,12 @@ import javax.validation.constraints.NotBlank
  * @author Anders Xiao
  * @date 2019-10-19
  */
-open class CaptchaValidationRequest {
+open class SmsCaptcha {
+    var modifier: String? = null
+
     @get:NotBlank
-    var stamp:String = ""
+    var stamp: String = ""
+
     @get:NotBlank
-    var captcha:String = ""
+    var captcha: String = ""
 }

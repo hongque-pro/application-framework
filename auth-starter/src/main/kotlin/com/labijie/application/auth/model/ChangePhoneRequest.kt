@@ -1,6 +1,6 @@
 package com.labijie.application.auth.model
 
-import com.labijie.application.model.CaptchaValidationRequest
+import com.labijie.application.model.SmsCaptcha
 import com.labijie.application.validation.ConfigurablePattern
 import javax.validation.constraints.NotBlank
 
@@ -20,4 +20,4 @@ class ChangePhoneRequest (
      */
     @get:NotBlank(message="手机号不能为空")
     @get:ConfigurablePattern("phone-number", message = "不是有效的手机号")
-    var phoneNumber:String = "") :  CaptchaValidationRequest()
+    var phoneNumber:String = ""): SmsCaptcha()

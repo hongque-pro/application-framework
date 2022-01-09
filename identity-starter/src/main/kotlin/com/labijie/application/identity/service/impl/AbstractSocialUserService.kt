@@ -209,7 +209,7 @@ abstract class AbstractSocialUserService(
                     getUserAndRoles(r.userId, loginProvider)
                 } else {
                     //不存在创建绑定或者创建账号
-                    val (u, context) = createNewSocialUserOrLogin(socialRegisterInfo, phoneNumber, r.provider, r.token)
+                    val (u, context) = createNewSocialUserOrLogin(socialRegisterInfo, phoneNumber, r.provider, r.token, socialRegisterInfo.username)
                     registrationContext = context
                     u
                 }
@@ -256,7 +256,8 @@ abstract class AbstractSocialUserService(
         socialRegisterInfo: SocialRegisterInfo,
         phoneNumber: String,
         provider: ILoginProvider,
-        token: PlatformAccessToken
+        token: PlatformAccessToken,
+        userName: String?
     ): Pair<SocialUserAndRoles, SocialUserRegistrationContext?> {
         val loginProvider = provider.name
 
@@ -275,7 +276,7 @@ abstract class AbstractSocialUserService(
             try {
                 val context =
                     UserGenerationContext(this.passwordEncoder, idGenerator, loginProvider, phoneNumber, token)
-                val u = socialSocialUserGenerator.generate(context, this.getDefaultUserType())
+                val u = socialSocialUserGenerator.generate(context, this.getDefaultUserType(), userName)
                 val roles = this.getDefaultUserRoles()
                 val userAndRoles = this.createUser(u, *roles)
                 this.addUserLogin(userAndRoles.user.id!!, loginProvider, token)

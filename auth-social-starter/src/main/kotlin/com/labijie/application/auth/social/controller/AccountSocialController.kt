@@ -8,6 +8,7 @@ import com.labijie.application.auth.toPrincipal
 import com.labijie.application.identity.model.SocialRegisterInfo
 import com.labijie.application.identity.model.SocialUserAndRoles
 import com.labijie.application.identity.service.ISocialUserService
+import com.labijie.application.web.annotation.HumanVerify
 import com.labijie.infra.oauth2.TwoFactorSignInHelper
 import com.labijie.infra.oauth2.filter.ClientRequired
 import org.springframework.security.oauth2.server.authorization.authentication.OAuth2AccessTokenAuthenticationToken
@@ -33,6 +34,7 @@ class AccountSocialController(
 ) {
 
     @PostMapping("/register")
+    @HumanVerify
     @ClientRequired
     fun register(
         @RequestBody @Valid info: SocialRegisterInfo,

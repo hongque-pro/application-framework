@@ -3,7 +3,7 @@ package com.labijie.application.web.controller
 import com.labijie.application.component.IMessageSender
 import com.labijie.application.identity.service.IUserService
 import com.labijie.application.model.CaptchaType
-import com.labijie.application.model.CaptchaValidationRequest
+import com.labijie.application.model.SmsCaptcha
 import com.labijie.application.model.SendSmsCaptchaParam
 import com.labijie.application.model.SimpleValue
 import com.labijie.application.web.annotation.HumanVerify
@@ -61,12 +61,11 @@ class SmsController {
         return SimpleValue(stamp)
     }
 
-    @PostMapping("/validate")
+    @PostMapping("/verify")
     fun validateCaptcha(
-        @RequestParam("m", required = false) modifier: String? = null,
-        @RequestBody @Validated request: CaptchaValidationRequest
+        @RequestBody @Validated captcha: SmsCaptcha
     ): SimpleValue<Boolean> {
-        val valid = messageSender.verifySmsCaptcha(request.captcha, request.stamp, modifier, true)
+        val valid = messageSender.verifySmsCaptcha(captcha.captcha, captcha.stamp, captcha.modifier, true)
         return SimpleValue(valid)
     }
 }

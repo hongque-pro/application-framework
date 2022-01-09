@@ -1,6 +1,6 @@
 package com.labijie.application.auth.model
 
-import com.labijie.application.model.CaptchaValidationRequest
+import com.labijie.application.model.SmsCaptcha
 import org.hibernate.validator.constraints.Length
 import org.hibernate.validator.constraints.Range
 import javax.validation.constraints.NotBlank
@@ -10,7 +10,8 @@ import javax.validation.constraints.NotBlank
  * @author Anders Xiao
  * @date 2019-10-24
  */
-class SetPasswordRequest : CaptchaValidationRequest() {
+class SetPasswordRequest: SmsCaptcha() {
+
     @get:Range(min = 1, message = "用户 id 不合法")
     var userId:Long = 0
 

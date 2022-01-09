@@ -11,10 +11,10 @@ import com.labijie.application.identity.service.IUserService
 import com.labijie.application.maskEmail
 import com.labijie.application.maskPhone
 import com.labijie.application.model.BindingStatus
-import com.labijie.application.model.CaptchaValidationRequest
+import com.labijie.application.model.SmsCaptcha
 import com.labijie.application.model.SimpleValue
 import com.labijie.application.model.UpdateResult
-import com.labijie.application.verifyCaptcha
+import com.labijie.application.verifySmsCaptcha
 import com.labijie.infra.oauth2.OAuth2Utils
 import com.labijie.infra.oauth2.TwoFactorPrincipal
 import com.labijie.infra.oauth2.TwoFactorSignInHelper
@@ -81,9 +81,10 @@ class AccountController @Autowired constructor(
      * 找回密码（需要验证短信验证码）
      */
     @PostMapping("/set-password")
-    fun setPassword(@RequestBody @Validated request: SetPasswordRequest){
-         messageSender.verifySmsCaptcha(request.captcha, request.stamp, request.userId.toString(), true)
-        userService.resetPassword(request.userId, request.password)
+    fun setPassword(@RequestBody @Validated request: SetPasswordRequest) : SimpleValue<Boolean>{
+         messageSender.verifySmsCaptcha(request, true)
+        val succeed = userService.resetPassword(request.userId, request.password)
+        return SimpleValue(succeed)
     }
 
     @GetMapping("/security")
@@ -109,7 +110,7 @@ class AccountController @Autowired constructor(
      * 变更手机号，验证身份（需要使用旧的手机号验证短信验证码）
      */
     @PostMapping("/change-phone-verify")
-    fun  getChangePhoneToken(@RequestBody @Validated request: CaptchaValidationRequest): SimpleValue<String> {
+    fun  getChangePhoneToken(@RequestBody @Validated request: SmsCaptcha): SimpleValue<String> {
         val userId = OAuth2Utils.currentTwoFactorPrincipal().userId
         messageSender.verifySmsCaptcha(request.captcha, request.stamp,  userId, true)
         val token = DesUtils.generateToken(userId, Duration.ofMinutes(10))
@@ -121,7 +122,7 @@ class AccountController @Autowired constructor(
      */
     @PostMapping("/change-phone")
     fun changePhoneNumber(@RequestBody @Validated request: ChangePhoneRequest): UpdateResult<String> {
-        messageSender.verifyCaptcha(request, request.phoneNumber, true)
+        messageSender.verifySmsCaptcha(request, true)
         val userId = OAuth2Utils.currentTwoFactorPrincipal().userId.toLong()
         DesUtils.verifyToken(request.token, userId.toString(),  throwIfInvalid = true)
         val success = userService.changePhone(userId, request.phoneNumber, true)

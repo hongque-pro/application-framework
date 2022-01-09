@@ -1,5 +1,6 @@
 package com.labijie.application.identity.model
 
+import javax.validation.constraints.Max
 import javax.validation.constraints.NotBlank
 
 /**
@@ -8,10 +9,15 @@ import javax.validation.constraints.NotBlank
  * @date 2019-12-11
  */
 class SocialRegisterInfo {
+    @get:Max(32)
+    var username: String? = null
+
     @get:NotBlank
+    @get:Max(32)
     var provider:String = ""
 
     @get:NotBlank
+    @get:Max(16)
     var phoneNumber:String = ""
 
     @get:NotBlank

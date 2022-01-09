@@ -3,7 +3,7 @@ package com.labijie.application
 import com.fasterxml.jackson.core.type.TypeReference
 import com.labijie.application.component.IMessageSender
 import com.labijie.application.copier.BeanCopierUtils
-import com.labijie.application.model.CaptchaValidationRequest
+import com.labijie.application.model.SmsCaptcha
 import com.labijie.caching.ICacheManager
 import com.labijie.infra.SecondIntervalTimeoutTimer
 import com.labijie.infra.json.JacksonHelper
@@ -20,7 +20,6 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
 import org.springframework.transaction.support.TransactionTemplate
 import org.springframework.web.client.RestTemplate
 import org.springframework.web.util.UriBuilder
-import java.lang.IllegalArgumentException
 import java.math.BigDecimal
 import java.math.BigInteger
 import java.net.URLEncoder
@@ -32,7 +31,6 @@ import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 import java.time.format.DateTimeParseException
 import kotlin.reflect.KClass
-import kotlin.reflect.typeOf
 
 
 /**
@@ -296,12 +294,11 @@ fun String.mask(maskLength: Int = 6, maskSymbol: String = "*"): String {
 
 }
 
-fun IMessageSender.verifyCaptcha(
-    request: CaptchaValidationRequest,
-    modifier: String,
+fun IMessageSender.verifySmsCaptcha(
+    captcha: SmsCaptcha,
     throwIfMissMatched: Boolean = false
 ): Boolean {
-    return this.verifySmsCaptcha(request.captcha, request.stamp, modifier, throwIfMissMatched)
+    return this.verifySmsCaptcha(captcha.captcha, captcha.stamp, captcha.modifier, throwIfMissMatched)
 }
 
 fun ByteArray?.toUTF8StringOrEmpty(): String {

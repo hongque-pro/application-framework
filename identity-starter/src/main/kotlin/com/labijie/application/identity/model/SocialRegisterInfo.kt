@@ -1,6 +1,8 @@
 package com.labijie.application.identity.model
 
-import javax.validation.constraints.Max
+import com.labijie.application.model.SmsCaptcha
+import org.hibernate.validator.constraints.Length
+import javax.validation.Valid
 import javax.validation.constraints.NotBlank
 
 /**
@@ -9,27 +11,30 @@ import javax.validation.constraints.NotBlank
  * @date 2019-12-11
  */
 class SocialRegisterInfo {
-    @get:Max(32)
+    @get:Length(max = 32)
     var username: String? = null
 
     @get:NotBlank
     var password: String = ""
 
     @get:NotBlank
-    @get:Max(32)
-    var provider:String = ""
+    @get:Length(max = 32)
+    var provider: String = ""
 
     @get:NotBlank
-    @get:Max(16)
-    var phoneNumber:String = ""
+    @get:Length(max = 16)
+    var phoneNumber: String = ""
 
     @get:NotBlank
-    var code:String = ""
+    var code: String = ""
+
+    @Valid
+    var captcha: SmsCaptcha? = null
 
     /**
      * 用于解密手机号的 IV （如果为空，表示是明文手机号）
      */
-    var iv:String? = null
+    var iv: String? = null
 
     var addition: String = ""
 }

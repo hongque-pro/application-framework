@@ -7,5 +7,5 @@ import com.labijie.application.identity.data.UserRecord as User
  * @date 2019-12-11
  */
 interface ISocialUserGenerator {
-    fun generate(context: UserGenerationContext, userType: Byte = 0, userName:String? = null, password:String? = null):User
+    fun generate(context: UserGenerationContext, userType: Byte = 0):User
 }

@@ -3,7 +3,6 @@ package com.labijie.application.identity.social
 import com.labijie.application.identity.IdentityUtils
 import com.labijie.infra.utils.ShortId
 import com.labijie.infra.utils.ifNullOrBlank
-import com.labijie.application.identity.data.UserRecord as User
 
 /**
  * Created with IntelliJ IDEA.
@@ -11,10 +10,13 @@ import com.labijie.application.identity.data.UserRecord as User
  * @date 2019-12-11
  */
 open class DefaultSocialUserGenerator : ISocialUserGenerator {
-    override fun generate(context: UserGenerationContext, userType: Byte, userName:String?, password:String?): User {
+    override fun generate(
+        context: UserGenerationContext,
+        userType: Byte
+    ): com.labijie.application.identity.data.UserRecord {
         val id = context.idGenerator.newId()
-        val username = userName.ifNullOrBlank {  id.toString() }
-        val pwd = password.ifNullOrBlank { context.passwordEncoder.encode(ShortId.newId()) }
-        return IdentityUtils.createUser(id, username, context.phoneNumber, pwd, userType)
+        val username = context.username.ifNullOrBlank { "u${id}" }
+        val passwordHash = (context.plainPassword ?: ShortId.newId()).let { context.passwordEncoder.encode(it) }
+        return IdentityUtils.createUser(id, username, context.phoneNumber, passwordHash, userType)
     }
 }

@@ -4,6 +4,7 @@ import com.labijie.application.ApplicationRuntimeException
 import com.labijie.application.component.IMessageSender
 import com.labijie.application.configuration.ValidationConfiguration
 import com.labijie.application.configure
+import com.labijie.application.exception.InvalidCaptchaException
 import com.labijie.application.exception.InvalidPhoneNumberException
 import com.labijie.application.identity.configuration.IdentityProperties
 import com.labijie.application.identity.data.UserLoginRecord
@@ -21,6 +22,7 @@ import com.labijie.application.identity.model.SocialRegisterInfo
 import com.labijie.application.identity.model.SocialUserAndRoles
 import com.labijie.application.identity.service.ISocialUserService
 import com.labijie.application.identity.social.*
+import com.labijie.application.verifySmsCaptcha
 import com.labijie.caching.ICacheManager
 import com.labijie.infra.IIdGenerator
 import com.labijie.infra.utils.logger
@@ -179,8 +181,21 @@ abstract class AbstractSocialUserService(
 
     override fun registerSocialUser(
         socialRegisterInfo: SocialRegisterInfo,
-        throwIfExisted: Boolean
+        throwIfExisted: Boolean,
+        validateSms: Boolean
     ): SocialUserAndRoles {
+        //解密用的向量为空，如果空认为电话号码为明文
+        val iv = socialRegisterInfo.iv ?: ""
+
+        if (validateSms && iv.isBlank()) { //不使用微信提供的电话需要先验证短信验证
+            val smsCaptcha = socialRegisterInfo.captcha
+            if (smsCaptcha == null) {
+                throw InvalidCaptchaException()
+            } else {
+                messageSender.verifySmsCaptcha(smsCaptcha, true)
+            }
+        }
+
         val loginProvider = socialRegisterInfo.provider
         val r = fetchUserFromSocialCode(socialRegisterInfo.provider, socialRegisterInfo.code)
         if (r.userId != null && throwIfExisted) {
@@ -189,8 +204,6 @@ abstract class AbstractSocialUserService(
         val miniProvider = r.provider as? ILoginProviderPhoneNumberSupport
         var phoneNumber = socialRegisterInfo.phoneNumber
 
-        //解密用的向量为空，认为电话号码为明文
-        val iv = socialRegisterInfo.iv ?: ""
         if (miniProvider != null && iv.isNotBlank()) {
             phoneNumber = miniProvider.decryptPhoneNumber(socialRegisterInfo.phoneNumber, r.token, iv)
         }
@@ -274,8 +287,17 @@ abstract class AbstractSocialUserService(
         } else {
             try {
                 val context =
-                    UserGenerationContext(this.passwordEncoder, idGenerator, loginProvider, phoneNumber, token)
-                val u = socialSocialUserGenerator.generate(context, this.getDefaultUserType(), socialRegisterInfo.username, socialRegisterInfo.password)
+                    UserGenerationContext(
+                        socialRegisterInfo.username,
+                        socialRegisterInfo.password,
+                        this.passwordEncoder,
+                        idGenerator,
+                        loginProvider,
+                        phoneNumber,
+                        token
+                    )
+                val u =
+                    socialSocialUserGenerator.generate(context, this.getDefaultUserType())
                 val roles = this.getDefaultUserRoles()
                 val userAndRoles = this.createUser(u, *roles)
                 this.addUserLogin(userAndRoles.user.id!!, loginProvider, token)

@@ -10,6 +10,8 @@ import org.springframework.security.crypto.password.PasswordEncoder
  * @date 2019-12-11
  */
 data class UserGenerationContext(
+    val username: String?,
+    val plainPassword: String?,
     val passwordEncoder: PasswordEncoder,
     val idGenerator: IIdGenerator,
     val loginProvider:String,

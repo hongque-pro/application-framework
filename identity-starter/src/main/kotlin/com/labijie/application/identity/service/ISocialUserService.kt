@@ -10,6 +10,6 @@ import com.labijie.application.identity.model.SocialUserAndRoles
  */
 interface ISocialUserService : IUserService {
     fun signInSocialUser(loginProvider: String, authorizationCode:String): SocialUserAndRoles?
-    fun registerSocialUser(socialRegisterInfo: SocialRegisterInfo, throwIfExisted:Boolean = false): SocialUserAndRoles
+    fun registerSocialUser(socialRegisterInfo: SocialRegisterInfo, throwIfExisted:Boolean = false, validateSms: Boolean = false): SocialUserAndRoles
     fun getOpenId(userId:Long, appId:String, loginProvider: String) : String?
 }

@@ -41,22 +41,19 @@ class SmsController {
         @RequestParam("m", required = false) modifier: String? = null
     ): SimpleValue<String> {
         var number: String? = numberOrUserId
-        var userId: String? = null
         if (number.isNullOrBlank()) {
             val user = userService.getUserById(OAuth2Utils.currentTwoFactorPrincipal().userId.toLong())
                 ?: throw BadCredentialsException("User missed.")
             number = user.phoneNumber!!
-            userId = user.id.toString()
         } else if (captchaType != CaptchaType.Register) {
             //除了注册，必须验证用户
             val user = userService.getUser(numberOrUserId.orEmpty())
                 ?: throw BadCredentialsException("User missed.")
             number = user.phoneNumber!!
-            userId = user.id.toString()
         }
 
         val stamp = ShortId.newId()
-        val param = SendSmsCaptchaParam(number, modifier, captchaType ?: CaptchaType.General, stamp);
+        val param = SendSmsCaptchaParam(number, modifier, captchaType ?: CaptchaType.General, stamp)
         messageSender.sendSmsCaptcha(param, true)
         return SimpleValue(stamp)
     }

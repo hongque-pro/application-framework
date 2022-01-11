@@ -49,7 +49,7 @@ class AccountSocialController(
         clientDetails: RegisteredClient
     ): OAuth2AccessTokenAuthenticationToken {
         val userRoles =
-            userService.signInSocialUser(info.provider, info.code) ?: throw BadSocialCredentialsException(info.provider)
+            userService.getSocialUser(info.provider, info.code) ?: throw BadSocialCredentialsException(info.provider)
         return signInUser(userRoles, clientDetails)
     }
 

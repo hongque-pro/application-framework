@@ -165,8 +165,9 @@ inline fun <reified T : Enum<*>> Number.toEnum(): T {
     return this.toEnum(T::class.java)
 }
 
-fun <T: Enum<*>> Number.toEnum(type: Class<T>): T {
-    val v = getEnumFromNumber(type, this) ?: throw IllegalStateException("$this (${this::class.java.simpleName}) is not a valid value type for enum ${type.simpleName}")
+fun <T : Enum<*>> Number.toEnum(type: Class<T>): T {
+    val v = getEnumFromNumber(type, this)
+        ?: throw IllegalStateException("$this (${this::class.java.simpleName}) is not a valid value type for enum ${type.simpleName}")
     @Suppress("UNCHECKED_CAST")
     return v as T
 }
@@ -175,16 +176,16 @@ inline fun <reified T : Enum<*>> String.toEnum(): T {
     return getEnumFromString(T::class.java, this) as T
 }
 
-fun getEnumFromNumber(enumClass: Class<*>, value: Number, ignoreType:Boolean = true): Enum<*>? {
+fun getEnumFromNumber(enumClass: Class<*>, value: Number, ignoreType: Boolean = true): Enum<*>? {
     val enumClz = enumClass.enumConstants.map {
         it as Enum<*>
     }
     return enumClz.firstOrNull {
         val desc = (it as? IDescribeEnum<*>)
         if (desc != null) {
-            if(ignoreType){
+            if (ignoreType) {
                 BigDecimal(it.code.toString()) == BigDecimal(value.toString())
-            }else{
+            } else {
                 it.code == value && it.code::class.java == value::class.java
             }
         } else {

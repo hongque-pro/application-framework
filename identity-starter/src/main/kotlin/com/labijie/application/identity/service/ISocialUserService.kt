@@ -9,7 +9,7 @@ import com.labijie.application.identity.model.SocialUserAndRoles
  * @date 2019-12-11
  */
 interface ISocialUserService : IUserService {
-    fun signInSocialUser(loginProvider: String, authorizationCode:String): SocialUserAndRoles?
+    fun getSocialUser(loginProvider: String, authorizationCode:String): SocialUserAndRoles?
     fun registerSocialUser(socialRegisterInfo: SocialRegisterInfo, throwIfExisted:Boolean = false, validateSms: Boolean = false): SocialUserAndRoles
     fun getOpenId(userId:Long, appId:String, loginProvider: String) : String?
 }

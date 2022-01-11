@@ -1,6 +1,5 @@
 package com.labijie.application.identity.service.impl
 
-import com.labijie.application.SpringContext
 import com.labijie.application.component.IMessageSender
 import com.labijie.application.configuration.ValidationConfiguration
 import com.labijie.application.configure
@@ -26,10 +25,12 @@ import com.labijie.application.identity.model.UserAndRoles
 import com.labijie.application.identity.service.IUserService
 import com.labijie.application.model.OrderBy
 import com.labijie.application.removeAfterTransactionCommit
+import com.labijie.application.verifySmsCaptcha
 import com.labijie.caching.ICacheManager
 import com.labijie.caching.getOrSet
 import com.labijie.infra.IIdGenerator
 import com.labijie.infra.utils.ShortId
+import com.labijie.infra.utils.ifNullOrBlank
 import org.mybatis.dynamic.sql.SqlBuilder.*
 import org.mybatis.dynamic.sql.util.kotlin.mybatis3.selectList
 import org.springframework.context.ApplicationContext
@@ -147,18 +148,15 @@ abstract class AbstractUserService constructor(
                 throw PhoneAlreadyExistedException()
             }
 
-            if (register.password != register.repeatPassword) {
-                throw InvalidRepeatPasswordException()
-            }
             messageSender.verifySmsCaptcha(
                 register.captcha,
-                register.captchaStamp,
-                register.phoneNumber,
-                throwIfMissMatched = !SpringContext.isDevelopment
+                throwIfMissMatched = true
             )
+            val id = idGenerator.newId()
+
             val user = IdentityUtils.createUser(
                 idGenerator.newId(),
-                register.userName,
+                register.username.ifNullOrBlank { "u${id}" },
                 register.phoneNumber,
                 passwordEncoder.encode(register.password),
                 getDefaultUserType()

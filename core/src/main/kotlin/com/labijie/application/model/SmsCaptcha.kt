@@ -10,9 +10,9 @@ import javax.validation.constraints.NotBlank
 open class SmsCaptcha {
     var modifier: String? = null
 
-    @get:NotBlank
+    @get:NotBlank(message = "验证码令牌不能空")
     var stamp: String = ""
 
-    @get:NotBlank
+    @get:NotBlank(message = "短信验证码不能为空")
     var captcha: String = ""
 }

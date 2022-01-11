@@ -99,7 +99,7 @@ abstract class AbstractSocialUserService(
         }
     }
 
-    override fun signInSocialUser(loginProvider: String, authorizationCode: String): SocialUserAndRoles? {
+    override fun getSocialUser(loginProvider: String, authorizationCode: String): SocialUserAndRoles? {
         val result = this.fetchUserFromSocialCode(loginProvider, authorizationCode)
         val userId = result.userId
         if (userId != null) {
@@ -242,9 +242,13 @@ abstract class AbstractSocialUserService(
         return SocialUserAndRoles(userAndRoles, loginProvider, r.token.userKey)
     }
 
-    protected open fun onRegisteringSocialUser(context: SocialUserRegistrationContext) {}
+    protected open fun onRegisteringSocialUser(context: SocialUserRegistrationContext) {
+        this.onRegisteringUser(context.user)
+    }
 
-    protected open fun onRegisteredSocialUser(context: SocialUserRegistrationContext) {}
+    protected open fun onRegisteredSocialUser(context: SocialUserRegistrationContext) {
+        this.onRegisteredUser(context.user)
+    }
 
     protected class DuplicateRegisteringException : ApplicationRuntimeException()
 

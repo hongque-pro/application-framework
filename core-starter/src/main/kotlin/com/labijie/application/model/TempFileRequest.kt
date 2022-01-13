@@ -8,7 +8,7 @@ import javax.validation.constraints.NotBlank
  * @date 2019-11-06
  */
 class TempFileRequest {
-    @get:NotBlank(message = "文件路径不能为空")
+    @get:NotBlank(message = "文件扩展名不能为空")
     var fileExtensions:String = ""
 
     @get:NotBlank(message = "文件夹路径不能为空")

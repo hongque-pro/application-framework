@@ -2,7 +2,7 @@ package com.labijie.application.web.controller
 
 import com.labijie.application.web.annotation.ResponseWrapped
 import com.labijie.application.service.ITempFileService
-import com.labijie.insurance.core.model.TempFileRequest
+import com.labijie.application.model.TempFileRequest
 import com.labijie.insurance.core.model.TempFileResult
 import org.springframework.validation.annotation.Validated
 import org.springframework.web.bind.annotation.PostMapping

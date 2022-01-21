@@ -135,9 +135,9 @@ abstract class AbstractUserService constructor(
         return count == 1
     }
 
-    protected open fun onRegisteringUser(user: UserAndRoles) {}
+    protected open fun onRegisteringUser(user: UserAndRoles, addition:String?) {}
 
-    protected open fun onRegisteredUser(user: UserAndRoles) {}
+    protected open fun onRegisteredUser(user: UserAndRoles,  addition:String?) {}
 
     override fun registerUser(register: RegisterInfo): UserAndRoles {
         val u = this.transactionTemplate.execute {
@@ -162,10 +162,10 @@ abstract class AbstractUserService constructor(
                 getDefaultUserType()
             )
             val userAndRoles = this.createUser(user, *this.getDefaultUserRoles())
-            this.onRegisteringUser(userAndRoles)
+            this.onRegisteringUser(userAndRoles, register.addition)
             userAndRoles
         }!!
-        this.onRegisteredUser(u)
+        this.onRegisteredUser(u, register.addition)
         return u
     }
 

@@ -1,4 +1,4 @@
-package com.labijie.insurance.core.model
+package com.labijie.application.model
 
 import javax.validation.constraints.NotBlank
 

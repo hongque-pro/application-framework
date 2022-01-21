@@ -26,5 +26,7 @@ data class RegisterInfo(
     var password: String,
 
     @Valid
-    var captcha: SmsCaptcha = SmsCaptcha()
+    var captcha: SmsCaptcha = SmsCaptcha(),
+
+    var addition: String? = null,
 )

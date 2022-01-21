@@ -243,11 +243,11 @@ abstract class AbstractSocialUserService(
     }
 
     protected open fun onRegisteringSocialUser(context: SocialUserRegistrationContext) {
-        this.onRegisteringUser(context.user)
+        this.onRegisteringUser(context.user, context.registerInfo.addition)
     }
 
     protected open fun onRegisteredSocialUser(context: SocialUserRegistrationContext) {
-        this.onRegisteredUser(context.user)
+        this.onRegisteredUser(context.user, context.registerInfo.addition)
     }
 
     protected class DuplicateRegisteringException : ApplicationRuntimeException()

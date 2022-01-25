@@ -6,10 +6,13 @@ import com.labijie.application.configuration.ValidationConfiguration
 import com.labijie.application.configure
 import com.labijie.application.exception.InvalidCaptchaException
 import com.labijie.application.exception.InvalidPhoneNumberException
+import com.labijie.application.exception.UserNotFoundException
 import com.labijie.application.identity.configuration.IdentityProperties
 import com.labijie.application.identity.data.UserLoginRecord
 import com.labijie.application.identity.data.UserOpenIdRecord
+import com.labijie.application.identity.data.extensions.deleteByPrimaryKey
 import com.labijie.application.identity.data.extensions.insert
+import com.labijie.application.identity.data.extensions.select
 import com.labijie.application.identity.data.extensions.selectOne
 import com.labijie.application.identity.data.mapper.*
 import com.labijie.application.identity.data.mapper.UserDynamicSqlSupport.User
@@ -117,6 +120,35 @@ abstract class AbstractSocialUserService(
         return null
     }
 
+    override fun addLoginProvider(userId: Long, loginProvider: String, authorizationCode: String) {
+        this.transactionTemplate.execute {
+            getUserById(userId) ?: throw UserNotFoundException()
+            val r = fetchUserFromSocialCode(loginProvider, authorizationCode)
+            this.addUserLogin(userId, loginProvider, r.token)
+        }
+    }
+
+    override fun removeLoginProvider(userId: Long, loginProvider: String, authorizationCode: String?): Int {
+        val token = authorizationCode?.let {
+            fetchUserFromSocialCode(loginProvider, authorizationCode)
+        }
+        return this.transactionTemplate.execute {
+            val list = userLoginMapper.select {
+                where(UserLogin.userId, SqlBuilder.isEqualTo(userId))
+                    .and(UserLogin.loginProvider, SqlBuilder.isEqualTo(loginProvider))
+                    .apply {
+                        token?.let {
+                            this.and(UserLogin.providerKey, SqlBuilder.isEqualTo(it.token.userKey))
+                        }
+                    }
+            }
+            list.forEach {
+                userLoginMapper.deleteByPrimaryKey(it.loginProvider!!, it.providerKey!!)
+            }
+            list.size
+        } ?: 0
+    }
+
     private data class ExchangeResult(val token: PlatformAccessToken, val userId: Long?, val provider: ILoginProvider)
 
     private fun fetchUserFromSocialCode(
@@ -198,10 +230,11 @@ abstract class AbstractSocialUserService(
 
         val loginProvider = socialRegisterInfo.provider
         val r = fetchUserFromSocialCode(socialRegisterInfo.provider, socialRegisterInfo.code)
+        val miniProvider = r.provider as? ILoginProviderPhoneNumberSupport
         if (r.userId != null && throwIfExisted) {
             throw UserAlreadyExistedException("user with login provider '${socialRegisterInfo.provider}' already existed")
         }
-        val miniProvider = r.provider as? ILoginProviderPhoneNumberSupport
+
         var phoneNumber = socialRegisterInfo.phoneNumber
 
         if (miniProvider != null && iv.isNotBlank()) {
@@ -213,6 +246,7 @@ abstract class AbstractSocialUserService(
         if (!valid) {
             throw InvalidPhoneNumberException()
         }
+
 
         val userAndRoles = try {
             var registrationContext: SocialUserRegistrationContext? = null

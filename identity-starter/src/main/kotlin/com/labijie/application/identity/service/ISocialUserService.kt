@@ -12,4 +12,6 @@ interface ISocialUserService : IUserService {
     fun getSocialUser(loginProvider: String, authorizationCode:String): SocialUserAndRoles?
     fun registerSocialUser(socialRegisterInfo: SocialRegisterInfo, throwIfExisted:Boolean = false, validateSms: Boolean = false): SocialUserAndRoles
     fun getOpenId(userId:Long, appId:String, loginProvider: String) : String?
+    fun addLoginProvider(userId: Long, loginProvider: String, authorizationCode:String)
+    fun removeLoginProvider(userId: Long, loginProvider: String, authorizationCode:String? = null): Int
 }

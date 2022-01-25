@@ -20,6 +20,7 @@ import com.labijie.application.identity.data.mapper.UserLoginDynamicSqlSupport.U
 import com.labijie.application.identity.data.mapper.UserOpenIdDynamicSqlSupport.UserOpenId
 import com.labijie.application.identity.exception.UnsupportedLoginProviderException
 import com.labijie.application.identity.exception.UserAlreadyExistedException
+import com.labijie.application.identity.exception.LoginProviderKeyAlreadyExistedException
 import com.labijie.application.identity.model.PlatformAccessToken
 import com.labijie.application.identity.model.SocialRegisterInfo
 import com.labijie.application.identity.model.SocialUserAndRoles
@@ -121,11 +122,15 @@ abstract class AbstractSocialUserService(
     }
 
     override fun addLoginProvider(userId: Long, loginProvider: String, authorizationCode: String): UserLoginRecord {
-        return this.transactionTemplate.execute {
-            getUserById(userId) ?: throw UserNotFoundException()
-            val r = fetchUserFromSocialCode(loginProvider, authorizationCode)
-            this.addUserLogin(userId, loginProvider, r.token)
-        }!!
+        try {
+            return this.transactionTemplate.execute {
+                getUserById(userId) ?: throw UserNotFoundException()
+                val r = fetchUserFromSocialCode(loginProvider, authorizationCode)
+                this.addUserLogin(userId, loginProvider, r.token)
+            }!!
+        }catch (_: DuplicateKeyException){
+            throw LoginProviderKeyAlreadyExistedException(loginProvider)
+        }
     }
 
     override fun removeLoginProvider(userId: Long, loginProvider: String, authorizationCode: String?): Int {

@@ -24,6 +24,9 @@ object IdentityErrors {
     @ErrorDescription("账号已锁定")
     const val ACCOUNT_LOCKED = "account_locked"
 
+    @ErrorDescription("平台账号已经绑定过该用户")
+    const val LOGIN_PROVIDER_KEY_ALREADY_EXISTED = "login_provider_key_already_existed"
+
 
     //不支持登录该平台（服务器可能关闭了该平台的登录入口）
     @ErrorDescription("不支持该登录方式, 服务器可能关闭了该渠道的登录入口")

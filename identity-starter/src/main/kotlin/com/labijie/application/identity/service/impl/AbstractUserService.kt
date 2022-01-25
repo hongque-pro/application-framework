@@ -100,12 +100,12 @@ abstract class AbstractUserService constructor(
 
     protected fun getUserAndRoles(
         phoneNumber: String,
-        loginProvider: String
+        loginProvider: String? = null
     ): UserAndRoles {
         val user = userMapper.selectOne {
             where(User.phoneNumber, isEqualTo(phoneNumber))
         } ?: throw UserNotFoundException(
-            "$loginProvider user was not existed."
+            if(loginProvider.isNullOrBlank()) "User was not existed." else "User was not existed (provider: $loginProvider)."
         )
         val roles = this.getUserRoles(user.id ?: 0)
         return UserAndRoles(user, roles)
@@ -113,10 +113,10 @@ abstract class AbstractUserService constructor(
 
     protected fun getUserAndRoles(
         userId: Long,
-        loginProvider: String
+        loginProvider: String? = null
     ): UserAndRoles {
         val user = this.getUserById(userId) ?: throw UserNotFoundException(
-            "$loginProvider user was not existed."
+            if(loginProvider.isNullOrBlank()) "User was not existed." else "User was not existed (provider: $loginProvider)."
         )
         val roles = this.getUserRoles(userId)
         return UserAndRoles(user, roles)

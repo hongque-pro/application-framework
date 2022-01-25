@@ -120,12 +120,12 @@ abstract class AbstractSocialUserService(
         return null
     }
 
-    override fun addLoginProvider(userId: Long, loginProvider: String, authorizationCode: String) {
-        this.transactionTemplate.execute {
+    override fun addLoginProvider(userId: Long, loginProvider: String, authorizationCode: String): UserLoginRecord {
+        return this.transactionTemplate.execute {
             getUserById(userId) ?: throw UserNotFoundException()
             val r = fetchUserFromSocialCode(loginProvider, authorizationCode)
             this.addUserLogin(userId, loginProvider, r.token)
-        }
+        }!!
     }
 
     override fun removeLoginProvider(userId: Long, loginProvider: String, authorizationCode: String?): Int {
@@ -189,8 +189,8 @@ abstract class AbstractSocialUserService(
         }
     }
 
-    private fun addUserLogin(userId: Long, provider: String, token: PlatformAccessToken) {
-        this.transactionTemplate.execute {
+    private fun addUserLogin(userId: Long, provider: String, token: PlatformAccessToken): UserLoginRecord {
+        return this.transactionTemplate.execute {
             val userLogin = UserLoginRecord().apply {
                 this.userId = userId
                 this.providerDisplayName = ""
@@ -207,7 +207,8 @@ abstract class AbstractSocialUserService(
             //this.userOpenIdMapper.insert(userOpenId)
 
             userLoginMapper.insert(userLogin)
-        }
+            userLogin
+        }!!
     }
 
 

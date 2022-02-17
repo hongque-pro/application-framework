@@ -1,6 +1,7 @@
 package com.labijie.application.auth.controller
 
 import com.labijie.application.auth.model.*
+import com.labijie.application.auth.toHttpResponse
 import com.labijie.application.auth.toPrincipal
 import com.labijie.application.component.IMessageSender
 import com.labijie.application.crypto.DesUtils
@@ -21,6 +22,8 @@ import com.labijie.infra.oauth2.TwoFactorSignInHelper
 import com.labijie.infra.oauth2.filter.ClientRequired
 import com.labijie.infra.utils.logger
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.messaging.handler.annotation.MessageMapping
+import org.springframework.security.oauth2.core.endpoint.OAuth2AccessTokenResponse
 import org.springframework.security.oauth2.server.authorization.authentication.OAuth2AccessTokenAuthenticationToken
 import org.springframework.security.oauth2.server.authorization.client.RegisteredClient
 import org.springframework.validation.annotation.Validated
@@ -48,14 +51,15 @@ class AccountController @Autowired constructor(
 
     @ClientRequired
     @RequestMapping("/register", method = [RequestMethod.POST])
-    fun register(@RequestBody @Validated info: RegisterInfo, client: RegisteredClient): OAuth2AccessTokenAuthenticationToken {
+    @MessageMapping
+    fun register(@RequestBody @Validated info: RegisterInfo, client: RegisteredClient): Map<String, Any> {
         val userAndRoles = userService.registerUser(info)
 
         return signInHelper.signIn(
             client,
             userAndRoles.toPrincipal(),
             false
-        )
+        ).toHttpResponse()
     }
 
     @GetMapping("/current")

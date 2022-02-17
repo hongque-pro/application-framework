@@ -4,12 +4,14 @@ import com.labijie.application.auth.social.OAuth2SocialConstants
 import com.labijie.application.auth.social.exception.BadSocialCredentialsException
 import com.labijie.application.auth.social.exception.SocialUserLockedException
 import com.labijie.application.auth.social.model.SocialLoginInfo
+import com.labijie.application.auth.toHttpResponse
 import com.labijie.application.auth.toPrincipal
 import com.labijie.application.identity.model.SocialRegisterInfo
 import com.labijie.application.identity.model.SocialUserAndRoles
 import com.labijie.application.identity.service.ISocialUserService
 import com.labijie.infra.oauth2.TwoFactorSignInHelper
 import com.labijie.infra.oauth2.filter.ClientRequired
+import org.springframework.security.oauth2.core.endpoint.OAuth2AccessTokenResponse
 import org.springframework.security.oauth2.server.authorization.authentication.OAuth2AccessTokenAuthenticationToken
 import org.springframework.security.oauth2.server.authorization.client.RegisteredClient
 import org.springframework.validation.annotation.Validated
@@ -37,7 +39,7 @@ class AccountSocialController(
     fun register(
         @RequestBody @Valid info: SocialRegisterInfo,
         clientDetails: RegisteredClient
-    ): OAuth2AccessTokenAuthenticationToken {
+    ): Map<String, Any> {
         val userRoles = userService.registerSocialUser(info, validateSms = true)
         return signInUser(userRoles, clientDetails)
     }
@@ -47,7 +49,7 @@ class AccountSocialController(
     fun login(
         @RequestBody @Valid info: SocialLoginInfo,
         clientDetails: RegisteredClient
-    ): OAuth2AccessTokenAuthenticationToken {
+    ): Map<String, Any> {
         val userRoles =
             userService.getSocialUser(info.provider, info.code) ?: throw BadSocialCredentialsException(info.provider)
         return signInUser(userRoles, clientDetails)
@@ -56,7 +58,7 @@ class AccountSocialController(
     private fun signInUser(
         userRoles: SocialUserAndRoles,
         clientDetails: RegisteredClient
-    ): OAuth2AccessTokenAuthenticationToken {
+    ): Map<String, Any> {
         val u = userRoles.user
 
         //账号是否锁定
@@ -74,6 +76,6 @@ class AccountSocialController(
             clientDetails,
             principal,
             false
-        )
+        ).toHttpResponse()
     }
 }

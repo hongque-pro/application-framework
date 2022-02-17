@@ -49,23 +49,6 @@ class CloudProviderController {
         return UrlResult(u)
     }
 
-    @GetMapping("/oss/cnf")
-    fun getOssConfig(): AliyunCnfResponse.OssConfig {
-        val private = BucketConfig(
-            config.oss.private.region,
-            config.oss.private.bucket,
-            config.oss.private.endpoint?.toString().orEmpty(),
-            config.oss.private.customDomain)
-
-        val public = BucketConfig(
-            config.oss.public.region,
-            config.oss.public.bucket,
-            config.oss.public.endpoint?.toString().orEmpty(),
-            config.oss.public.customDomain)
-
-        return AliyunCnfResponse.OssConfig(private , public)
-    }
-
     @GetMapping("/cnf")
     fun getConfiguration(): AliyunCnfResponse {
         val private = BucketConfig(

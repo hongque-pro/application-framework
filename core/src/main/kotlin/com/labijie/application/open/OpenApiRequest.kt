@@ -1,6 +1,7 @@
 package com.labijie.application.open
 
 import com.labijie.application.HttpFormUrlCodec
+import org.springframework.web.util.UriBuilder
 
 data class OpenApiRequest(
     val queryString: String,

@@ -15,6 +15,10 @@
     {
       "name": "application.sms.async",
       "type": "com.labijie.application.configuration.SmsAsyncSettings"
+    },
+    {
+      "name": "application.open-api.client",
+      "type": "com.labijie.application.configuration.OpenApiClientProperties"
     }
   ],
   "properties": [
@@ -88,6 +92,23 @@
       "type": "java.lang.Boolean",
       "sourceType": "com.labijie.application.configuration.OkHttpClientProperties",
       "defaultValue": true
+    },
+
+    {
+      "name": "application.open-api.client.appid",
+      "type": "java.lang.String",
+      "sourceType": "com.labijie.application.configuration.OpenApiClientProperties"
+    },
+    {
+      "name": "application.open-api.client.secret",
+      "type": "java.lang.String",
+      "sourceType": "com.labijie.application.configuration.OpenApiClientProperties"
+    },
+    {
+      "name": "application.open-api.client.algorithm",
+      "type": "java.lang.String",
+      "sourceType": "com.labijie.application.configuration.OpenApiClientProperties",
+      "defaultValue": "sha256"
     }
   ],
   "hints": [
@@ -107,6 +128,17 @@
       "providers": [
         {
           "name": "any"
+        }
+      ]
+    },
+    {
+      "name": "application.open-api.client.algorithm",
+      "values": [
+        {
+          "value": "sha256"
+        },
+        {
+          "value": "md5"
         }
       ]
     }

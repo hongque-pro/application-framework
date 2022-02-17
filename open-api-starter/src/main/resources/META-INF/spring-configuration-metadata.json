@@ -16,11 +16,6 @@
       "defaultValue": "/open-api/**"
     },
     {
-      "name": "application.open-api.js-api-cors.path-pattern",
-      "type": "java.lang.String",
-      "defaultValue": "/open-jsapi/**"
-    },
-    {
       "name": "application.open-api.js-api-cors.allowed-origins-policy",
       "type": "com.labijie.application.open.configuration.CorsPolicy",
       "defaultValue": "ALL"

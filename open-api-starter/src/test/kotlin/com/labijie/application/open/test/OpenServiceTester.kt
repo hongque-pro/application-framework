@@ -4,18 +4,14 @@ import com.labijie.application.open.model.OpenAppCreation
 import com.labijie.application.open.model.OpenPartnerCreation
 import com.labijie.application.open.service.IOpenAppService
 import com.labijie.application.open.service.IOpenPartnerService
-import com.labijie.infra.impl.DebugIdGenerator
 import org.junit.jupiter.api.Assertions
-import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.extension.ExtendWith
 import org.mybatis.spring.boot.test.autoconfigure.MybatisTest
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase
-import org.springframework.context.annotation.Import
 import org.springframework.test.context.ContextConfiguration
 import org.springframework.test.context.jdbc.Sql
 import org.springframework.test.context.junit.jupiter.SpringExtension
-import java.time.Duration
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 

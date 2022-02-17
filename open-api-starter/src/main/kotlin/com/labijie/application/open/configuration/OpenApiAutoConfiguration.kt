@@ -12,6 +12,7 @@ import com.labijie.application.open.service.impl.OpenAppService
 import com.labijie.application.open.service.impl.OpenPartnerService
 import com.labijie.infra.IIdGenerator
 import com.labijie.infra.oauth2.resource.IResourceAuthorizationConfigurer
+import com.labijie.infra.utils.logger
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication
 import org.springframework.boot.context.properties.EnableConfigurationProperties
@@ -31,6 +32,7 @@ import javax.servlet.Filter
 @Configuration(proxyBeanMethods = false)
 @EnableConfigurationProperties(OpenApiProperties::class)
 class OpenApiAutoConfiguration {
+
 
     @ConditionalOnMissingBean(IOpenAppService::class)
     @Bean
@@ -68,12 +70,19 @@ class OpenApiAutoConfiguration {
         private val apiSignatureMvcInterceptor: ApiSignatureMvcInterceptor,
         private val apiProperties:OpenApiProperties) : WebMvcConfigurer, IResourceAuthorizationConfigurer {
 
+        override fun configure(registry: ExpressionUrlAuthorizationConfigurer<HttpSecurity>.ExpressionInterceptUrlRegistry) {
+            if(apiProperties.pathPattern.isNotBlank()) {
+                registry.antMatchers(apiProperties.pathPattern).permitAll()
+            }else{
+                logger.warn("open api path pattern is blank, none api applied.")
+            }
+        }
+
         @Bean
         fun apiCorsFilter(openAppService: IOpenAppService): CorsFilter {
             val corsConfigurationSource = JdbcCorsConfigurationSource(apiProperties, openAppService)
             return CorsFilter(corsConfigurationSource)
         }
-
 
         @Bean
         fun apiPathFilterRegistrationBean(): FilterRegistrationBean<out Filter>? {
@@ -82,10 +91,6 @@ class OpenApiAutoConfiguration {
             bean.addUrlPatterns(apiProperties.pathPattern)
             bean.order = 100
             return bean
-        }
-
-        override fun configure(registry: ExpressionUrlAuthorizationConfigurer<HttpSecurity>.ExpressionInterceptUrlRegistry) {
-            registry.antMatchers(apiProperties.pathPattern, apiProperties.jsApiCors.pathPattern).permitAll()
         }
 
         override fun addInterceptors(registry: InterceptorRegistry) {
@@ -101,4 +106,5 @@ class OpenApiAutoConfiguration {
             }
         }
     }
+
 }

@@ -25,7 +25,7 @@ class JdbcCorsConfigurationSource(
 
     override fun getCorsConfiguration(request: HttpServletRequest): CorsConfiguration? {
         val path = pathHelper.getLookupPathForRequest(request)
-        if (pathMatcher.match(apiProperties.jsApiCors.pathPattern, path)) {
+        if (pathMatcher.match(apiProperties.pathPattern, path)) {
             when (apiProperties.jsApiCors.allowedOriginsPolicy) {
                 CorsPolicy.ALL -> defaultAllowAll
                 CorsPolicy.PARTNER -> {
@@ -36,12 +36,12 @@ class JdbcCorsConfigurationSource(
                         if (app != null && app.jsApiDomain.isNotBlank() && app.status == OpenAppStatus.NORMAL) {
                             return CorsConfiguration(this.defaultAllowAll).apply {
                                 if (app.jsApiDomain.startsWith("https//") || app.jsApiDomain.startsWith("http://")) {
-                                    this.allowedOrigins = listOf(app.jsApiDomain, "http://localhost:5500")
+                                    this.allowedOriginPatterns = listOf(app.jsApiDomain, "http://localhost:[*]")
                                 } else {
-                                    this.allowedOrigins = listOf(
+                                    this.allowedOriginPatterns = listOf(
                                         "http://${app.jsApiDomain}",
                                         "https://${app.jsApiDomain}",
-                                        "http://localhost:5500"
+                                        "http://localhost:[*]"
                                     )
                                 }
                             }

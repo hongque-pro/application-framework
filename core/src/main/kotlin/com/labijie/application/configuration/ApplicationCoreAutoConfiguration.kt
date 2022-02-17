@@ -46,7 +46,7 @@ import javax.annotation.PreDestroy
  */
 @Suppress("SpringJavaInjectionPointsAutowiringInspection")
 @Configuration(proxyBeanMethods = false)
-@EnableConfigurationProperties(ValidationConfiguration::class, SmsBaseSettings::class)
+@EnableConfigurationProperties(ValidationConfiguration::class, SmsBaseSettings::class, OpenApiClientProperties::class)
 @AutoConfigureBefore(RestTemplateAutoConfiguration::class)
 @Order(-1)
 class ApplicationCoreAutoConfiguration {

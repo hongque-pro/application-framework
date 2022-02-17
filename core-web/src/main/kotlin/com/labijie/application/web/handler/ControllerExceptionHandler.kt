@@ -42,7 +42,7 @@ class ControllerExceptionHandler : Ordered {
         if(e is OAuth2AuthenticationException){
             return ErrorResponse(e.error.errorCode, e.error.description ?: e.error.errorCode)
         }
-        return ErrorResponse(UnhandledError, OAuth2ErrorCodes.ACCESS_DENIED)
+        return ErrorResponse(OAuth2ErrorCodes.ACCESS_DENIED, e.message ?: "Access denied")
     }
 
     @ExceptionHandler(MethodArgumentNotValidException::class)

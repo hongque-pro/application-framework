@@ -8,6 +8,9 @@ import org.slf4j.LoggerFactory
 import org.springframework.core.Ordered
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
+import org.springframework.security.core.AuthenticationException
+import org.springframework.security.oauth2.core.OAuth2AuthenticationException
+import org.springframework.security.oauth2.core.OAuth2ErrorCodes
 import org.springframework.validation.FieldError
 import org.springframework.web.bind.MethodArgumentNotValidException
 import org.springframework.web.bind.MissingServletRequestParameterException
@@ -31,6 +34,16 @@ class ControllerExceptionHandler : Ordered {
     }
 
     private val logger = LoggerFactory.getLogger(ControllerExceptionHandler::class.java)
+
+
+    @ExceptionHandler(AuthenticationException::class)
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    fun handleAuthenticationException(request: HttpServletRequest, e: AuthenticationException): ErrorResponse {
+        if(e is OAuth2AuthenticationException){
+            return ErrorResponse(e.error.errorCode, e.error.description ?: e.error.errorCode)
+        }
+        return ErrorResponse(UnhandledError, OAuth2ErrorCodes.ACCESS_DENIED)
+    }
 
     @ExceptionHandler(MethodArgumentNotValidException::class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)

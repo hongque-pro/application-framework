@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.labijie.application.crypto.RsaUtils
 import com.labijie.application.exception.BadSignatureException
 import com.labijie.application.exception.ThirdPartyExchangeException
+import com.labijie.application.web.client.exchangeForString
 import com.labijie.infra.json.JacksonHelper
 import com.labijie.infra.utils.ifNullOrBlank
 import com.labijie.infra.utils.logger
@@ -68,7 +69,7 @@ object AlipayUtilities {
 
         try {
             //支付宝强制返回 text/html;charset=UTF-8 但是 body 是 json
-            val response = restTemplate.exchange(url, HttpMethod.POST, entity , String::class .java)
+            val response = restTemplate.exchangeForString(url, HttpMethod.POST, entity)
             val bodyString = response.body
             var respData:T? = null
             var jsonNode: JsonNode? = null

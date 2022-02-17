@@ -11,6 +11,7 @@ import com.labijie.application.crypto.RsaException
 import com.labijie.application.crypto.RsaUtils
 import com.labijie.application.exception.BadSignatureException
 import com.labijie.application.identity.model.PlatformAccessToken
+import com.labijie.application.web.client.exchangeForString
 import com.labijie.infra.json.JacksonHelper
 import com.labijie.infra.utils.ifNullOrBlank
 import com.labijie.infra.utils.logger
@@ -51,7 +52,7 @@ class AlipayMiniProgramProvider(
             this.accept = listOf(MediaType.APPLICATION_JSON)
         }
         val entity = HttpEntity(null, headers)
-        val response = restTemplate.exchange(uri, HttpMethod.GET, entity, String::class.java)
+        val response = restTemplate.exchangeForString(uri.toString(), HttpMethod.GET, entity)
         var respData: OAuthTokenResponse? = null
         if (response.statusCode == HttpStatus.OK) {
             respData = JacksonHelper.deserializeFromString(response.body.ifNullOrBlank { "{}" }, OAuthTokenResponse::class, true)

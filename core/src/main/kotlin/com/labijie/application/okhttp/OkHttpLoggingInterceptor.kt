@@ -180,7 +180,7 @@ class OkHttpLoggingInterceptor(private val forceTrace: Boolean = false) : Interc
                 stringBuilder.appendLine("Version: ${response.protocol()}")
                 stringBuilder.appendLine("Headers: ")
                 response.headers().names().forEach {
-                    val v = request.headers().get(it).ifNullOrBlank { "<empty>" }
+                    val v = response.headers().get(it).ifNullOrBlank { "<empty>" }
                     stringBuilder.appendLine("  ${it}: $v")
                 }
 

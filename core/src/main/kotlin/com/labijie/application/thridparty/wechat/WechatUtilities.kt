@@ -12,6 +12,7 @@ import com.labijie.application.SpringContext
 import com.labijie.application.crypto.HashUtils
 import com.labijie.application.exception.BadSignatureException
 import com.labijie.application.exception.ThirdPartyExchangeException
+import com.labijie.application.web.client.exchangeForString
 import com.labijie.infra.json.JacksonHelper
 import com.labijie.infra.utils.ifNullOrBlank
 import com.labijie.infra.utils.logger
@@ -135,7 +136,7 @@ object WechatUtilities {
         val entity = HttpEntity(body, headers)
 
         try {
-            val response = restTemplate.exchange(url, HttpMethod.POST, entity, String::class.java)
+            val response = restTemplate.exchangeForString(url, HttpMethod.POST, entity)
 
             var respData: T? = null
             if (response.statusCode == HttpStatus.OK) {
@@ -165,7 +166,7 @@ object WechatUtilities {
             }
 
             val error = """
-                Invoke ${PLATFORM_NAME} api fault.
+                Invoke $PLATFORM_NAME api fault.
                 Request URL: $url
                 HTTP STATUS: ${response.statusCodeValue}, 
                 Wechat Response: ${response.body.ifNullOrBlank { "<null>" }}

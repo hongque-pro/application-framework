@@ -8,6 +8,7 @@ import com.labijie.application.auth.social.providers.wechat.model.MobileResponse
 import com.labijie.application.exception.BadSignatureException
 import com.labijie.application.formUrlEncode
 import com.labijie.application.identity.model.PlatformAccessToken
+import com.labijie.application.web.client.exchangeForString
 import com.labijie.infra.json.JacksonHelper
 import com.labijie.infra.utils.ifNullOrBlank
 import com.labijie.infra.utils.logger
@@ -47,7 +48,7 @@ class WechatMiniProgramProvider(
             this.accept = listOf(MediaType.APPLICATION_JSON)
         }
         val entity = HttpEntity(null, headers)
-        val result = restTemplate.exchange(fullUrl, HttpMethod.GET, entity, String::class.java)
+        val result = restTemplate.exchangeForString(fullUrl, HttpMethod.GET, entity)
         val response = JacksonHelper.deserializeFromString(result.body ?: "{}", Code2SessionResponse::class, true)
         if (result.statusCodeValue == 200 && response.sessionKey.isNotBlank()) {
             return PlatformAccessToken(response.unionId.ifNullOrBlank { response.openId }, response.sessionKey, appId =  options.appId, appOpenId =  response.openId)

@@ -2,7 +2,6 @@ package com.labijie.application.open.internal
 
 import com.labijie.application.HttpFormUrlCodec
 import com.labijie.application.configuration.OpenApiClientProperties
-import com.labijie.application.open.OpenApiClient
 import com.labijie.application.open.OpenApiRequest
 import com.labijie.application.open.OpenSignatureUtils
 import com.labijie.infra.utils.ShortId
@@ -10,6 +9,7 @@ import org.springframework.http.HttpRequest
 import org.springframework.http.client.ClientHttpRequestExecution
 import org.springframework.http.client.ClientHttpRequestInterceptor
 import org.springframework.http.client.ClientHttpResponse
+import org.springframework.web.util.DefaultUriBuilderFactory
 
 /**
  *
@@ -17,7 +17,11 @@ import org.springframework.http.client.ClientHttpResponse
  * @Date: 2022/2/17
  * @Description:
  */
-class OpenApiClientHttpRequestInterceptor(private val clientProperties: OpenApiClientProperties): ClientHttpRequestInterceptor {
+class OpenApiClientHttpRequestInterceptor(
+    private val clientProperties: OpenApiClientProperties): ClientHttpRequestInterceptor {
+
+    private val uriBuilderFactory = DefaultUriBuilderFactory()
+
     override fun intercept(
         request: HttpRequest,
         body: ByteArray,
@@ -36,7 +40,7 @@ class OpenApiClientHttpRequestInterceptor(private val clientProperties: OpenApiC
         query["sign"] = OpenSignatureUtils.sign(req, clientProperties.secret, clientProperties.algorithm)
         val newQuery = HttpFormUrlCodec.encode(query, Charsets.UTF_8)
 
-        val builder = OpenApiClient.builderFactory.uriString(request.uri.toString())
+        val builder = uriBuilderFactory.uriString(request.uri.toString())
         builder.replaceQuery(newQuery)
         val uri = builder.build()
 

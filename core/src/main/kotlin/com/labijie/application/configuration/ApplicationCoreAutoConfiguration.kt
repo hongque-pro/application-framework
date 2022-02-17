@@ -1,6 +1,7 @@
 package com.labijie.application.configuration
 
 import com.labijie.application.ApplicationInitializationRunner
+import com.labijie.application.CoreErrorRegistration
 import com.labijie.application.ErrorRegistry
 import com.labijie.application.IErrorRegistry
 import com.labijie.application.component.IMessageSender
@@ -51,159 +52,164 @@ import javax.annotation.PreDestroy
 @Order(-1)
 class ApplicationCoreAutoConfiguration {
 
-  @Bean
-  @ConditionalOnNotWebApplication
-  fun applicationInitializationRunner(): ApplicationInitializationRunner<ConfigurableApplicationContext> {
-    return ApplicationInitializationRunner(ConfigurableApplicationContext::class)
-  }
-
-  @Bean
-  @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
-  fun webApplicationInitializationRunner(): ApplicationInitializationRunner<AnnotationConfigServletWebServerApplicationContext> {
-    return ApplicationInitializationRunner(AnnotationConfigServletWebServerApplicationContext::class)
-  }
-
-  @Bean
-  @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.REACTIVE)
-  fun reactWebApplicationInitializationRunner(): ApplicationInitializationRunner<AnnotationConfigReactiveWebServerApplicationContext> {
-    return ApplicationInitializationRunner(AnnotationConfigReactiveWebServerApplicationContext::class)
-  }
-
-  @Bean
-  @ConditionalOnMissingBean(IErrorRegistry::class)
-  fun errorRegistry(): IErrorRegistry {
-    return ErrorRegistry()
-  }
-
-
-
-  @Configuration(proxyBeanMethods = false)
-  @ConditionalOnBean(IMessageSender::class)
-  @ConditionalOnProperty(value = ["application.sms.async.sink-enabled"], matchIfMissing = true)
-  protected class MessageSinkConfiguration {
     @Bean
-    fun handleSms(messageSender: IMessageSender): Consumer<SendSmsTemplateParam> {
-      return Consumer {
-        messageSender.sendSmsTemplate(it, async = false, checkTimeout = true)
-      }
-    }
-  }
-
-  @Configuration(proxyBeanMethods = false)
-  @ConditionalOnProperty(value = ["application.okhttp.enabled"], matchIfMissing = true)
-  @EnableConfigurationProperties(OkHttpClientProperties::class)
-  @ConditionalOnMissingBean(OkHttpClient::class)
-  protected class OkHttpClientAutoConfiguration {
-
-    private var okHttpClient: OkHttpClient? = null
-
-    @Bean
-    @ConditionalOnMissingBean(ConnectionPool::class)
-    fun connectionPool(
-      okHttpClientProperties: OkHttpClientProperties,
-      connectionPoolFactory: OkHttpClientConnectionPoolFactory
-    ): ConnectionPool {
-      val maxTotalConnections: Int = okHttpClientProperties.maxConnections
-      val timeToLive: Long = okHttpClientProperties.timeToLive.toMillis()
-      return connectionPoolFactory.create(maxTotalConnections, timeToLive, TimeUnit.MILLISECONDS)
+    @ConditionalOnMissingBean(CoreErrorRegistration::class)
+    fun coreErrorRegistration(): CoreErrorRegistration {
+        return CoreErrorRegistration()
     }
 
     @Bean
-    fun okHttpClient(
-      customizers: ObjectProvider<IOkHttpClientCustomizer>,
-      httpClientFactory: OkHttpClientFactory,
-      connectionPool: ConnectionPool,
-      okHttpClientProperties: OkHttpClientProperties
-    ): OkHttpClient {
-      val disableSslValidation: Boolean = okHttpClientProperties.sslValidationDisabled
-      this.okHttpClient = httpClientFactory.createBuilder(disableSslValidation)
-        .connectTimeout(okHttpClientProperties.connectTimeout)
-        .readTimeout(okHttpClientProperties.readTimeout)
-        .writeTimeout(okHttpClientProperties.writeTimeout)
-        .followRedirects(okHttpClientProperties.followRedirects)
-        .connectionPool(connectionPool)
-        .addInterceptor(OkHttpLoggingInterceptor())
-        .apply {
-          customizers.orderedStream().forEach {
-            it.customize(this)
-          }
+    @ConditionalOnNotWebApplication
+    fun applicationInitializationRunner(): ApplicationInitializationRunner<ConfigurableApplicationContext> {
+        return ApplicationInitializationRunner(ConfigurableApplicationContext::class)
+    }
+
+    @Bean
+    @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
+    fun webApplicationInitializationRunner(): ApplicationInitializationRunner<AnnotationConfigServletWebServerApplicationContext> {
+        return ApplicationInitializationRunner(AnnotationConfigServletWebServerApplicationContext::class)
+    }
+
+    @Bean
+    @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.REACTIVE)
+    fun reactWebApplicationInitializationRunner(): ApplicationInitializationRunner<AnnotationConfigReactiveWebServerApplicationContext> {
+        return ApplicationInitializationRunner(AnnotationConfigReactiveWebServerApplicationContext::class)
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(IErrorRegistry::class)
+    fun errorRegistry(): IErrorRegistry {
+        return ErrorRegistry()
+    }
+
+
+    @Configuration(proxyBeanMethods = false)
+    @ConditionalOnBean(IMessageSender::class)
+    @ConditionalOnProperty(value = ["application.sms.async.sink-enabled"], matchIfMissing = true)
+    protected class MessageSinkConfiguration {
+        @Bean
+        fun handleSms(messageSender: IMessageSender): Consumer<SendSmsTemplateParam> {
+            return Consumer {
+                messageSender.sendSmsTemplate(it, async = false, checkTimeout = true)
+            }
         }
-        .build()
-
-      return this.okHttpClient!!
-    }
-
-    @PreDestroy
-    fun destroy() {
-      okHttpClient?.dispatcher()?.executorService()?.shutdown()
-      okHttpClient?.connectionPool()?.evictAll()
     }
 
     @Configuration(proxyBeanMethods = false)
-    protected class RestTemplateConfiguration {
+    @ConditionalOnProperty(value = ["application.okhttp.enabled"], matchIfMissing = true)
+    @EnableConfigurationProperties(OkHttpClientProperties::class)
+    @ConditionalOnMissingBean(OkHttpClient::class)
+    protected class OkHttpClientAutoConfiguration {
 
-      @Bean
-      fun okhttpCustomizer(
-        okHttpClient: OkHttpClient
-      ): RestTemplateCustomizer {
-        return RestTemplateCustomizer { rt ->
-          rt.requestFactory = OkHttp3ClientHttpRequestFactory(okHttpClient)
+        private var okHttpClient: OkHttpClient? = null
 
-          //替换默认的 json mapper 转换
-          rt.messageConverters.removeIf {
-            it is MappingJackson2HttpMessageConverter
-          }
+        @Bean
+        @ConditionalOnMissingBean(ConnectionPool::class)
+        fun connectionPool(
+            okHttpClientProperties: OkHttpClientProperties,
+            connectionPoolFactory: OkHttpClientConnectionPoolFactory
+        ): ConnectionPool {
+            val maxTotalConnections: Int = okHttpClientProperties.maxConnections
+            val timeToLive: Long = okHttpClientProperties.timeToLive.toMillis()
+            return connectionPoolFactory.create(maxTotalConnections, timeToLive, TimeUnit.MILLISECONDS)
+        }
 
-          rt.messageConverters.add(0, MappingJackson2HttpMessageConverter(JacksonHelper.defaultObjectMapper))
-
-          //修正 UTF-8 编码
-          rt.messageConverters.filterIsInstance<AbstractHttpMessageConverter<*>>().forEach {
-            when (it) {
-                is StringHttpMessageConverter -> {
-                  it.defaultCharset = Charsets.UTF_8
-                  it.setWriteAcceptCharset(false)
+        @Bean
+        fun okHttpClient(
+            customizers: ObjectProvider<IOkHttpClientCustomizer>,
+            httpClientFactory: OkHttpClientFactory,
+            connectionPool: ConnectionPool,
+            okHttpClientProperties: OkHttpClientProperties
+        ): OkHttpClient {
+            val disableSslValidation: Boolean = okHttpClientProperties.sslValidationDisabled
+            this.okHttpClient = httpClientFactory.createBuilder(disableSslValidation)
+                .connectTimeout(okHttpClientProperties.connectTimeout)
+                .readTimeout(okHttpClientProperties.readTimeout)
+                .writeTimeout(okHttpClientProperties.writeTimeout)
+                .followRedirects(okHttpClientProperties.followRedirects)
+                .connectionPool(connectionPool)
+                .addInterceptor(OkHttpLoggingInterceptor())
+                .apply {
+                    customizers.orderedStream().forEach {
+                        it.customize(this)
+                    }
                 }
-                !is ByteArrayHttpMessageConverter -> {
-                  it.defaultCharset = Charsets.UTF_8
+                .build()
+
+            return this.okHttpClient!!
+        }
+
+        @PreDestroy
+        fun destroy() {
+            okHttpClient?.dispatcher()?.executorService()?.shutdown()
+            okHttpClient?.connectionPool()?.evictAll()
+        }
+
+        @Configuration(proxyBeanMethods = false)
+        protected class RestTemplateConfiguration {
+
+            @Bean
+            fun okhttpCustomizer(
+                okHttpClient: OkHttpClient
+            ): RestTemplateCustomizer {
+                return RestTemplateCustomizer { rt ->
+                    rt.requestFactory = OkHttp3ClientHttpRequestFactory(okHttpClient)
+
+                    //替换默认的 json mapper 转换
+                    rt.messageConverters.removeIf {
+                        it is MappingJackson2HttpMessageConverter
+                    }
+
+                    rt.messageConverters.add(0, MappingJackson2HttpMessageConverter(JacksonHelper.defaultObjectMapper))
+
+                    //修正 UTF-8 编码
+                    rt.messageConverters.filterIsInstance<AbstractHttpMessageConverter<*>>().forEach {
+                        when (it) {
+                            is StringHttpMessageConverter -> {
+                                it.defaultCharset = Charsets.UTF_8
+                                it.setWriteAcceptCharset(false)
+                            }
+                            !is ByteArrayHttpMessageConverter -> {
+                                it.defaultCharset = Charsets.UTF_8
+                            }
+                        }
+                    }
                 }
             }
-          }
+
+            @Lazy
+            @ConditionalOnMissingBean(RestTemplate::class)
+            @Bean
+            fun restTemplate(builder: RestTemplateBuilder): RestTemplate {
+                return builder.build().apply {
+                    this.messageConverters.filterIsInstance<StringHttpMessageConverter>().forEach {
+                        it.setWriteAcceptCharset(false)
+                    }
+                }
+            }
+
+
+            @Bean
+            @ConditionalOnMissingBean(MultiRestTemplates::class)
+            fun multiRestTemplates(
+                customizers: ObjectProvider<IOkHttpClientCustomizer>,
+                httpClientFactory: OkHttpClientFactory,
+                okHttpClientProperties: OkHttpClientProperties,
+                poolFactory: OkHttpClientConnectionPoolFactory,
+                restTemplateBuilder: RestTemplateBuilder,
+                restTemplate: RestTemplate
+            ): MultiRestTemplates {
+                return MultiRestTemplates(
+                    httpClientFactory,
+                    restTemplateBuilder,
+                    okHttpClientProperties,
+                    poolFactory,
+                    customizers.orderedStream().collect(Collectors.toList()),
+                    restTemplate
+                )
+            }
         }
-      }
-
-      @Lazy
-      @ConditionalOnMissingBean(RestTemplate::class)
-      @Bean
-      fun restTemplate(builder: RestTemplateBuilder): RestTemplate {
-        return builder.build().apply {
-          this.messageConverters.filterIsInstance<StringHttpMessageConverter>().forEach {
-            it.setWriteAcceptCharset(false)
-          }
-        }
-      }
-
-
-      @Bean
-      @ConditionalOnMissingBean(MultiRestTemplates::class)
-      fun multiRestTemplates(
-        customizers: ObjectProvider<IOkHttpClientCustomizer>,
-        httpClientFactory: OkHttpClientFactory,
-        okHttpClientProperties: OkHttpClientProperties,
-        poolFactory: OkHttpClientConnectionPoolFactory,
-        restTemplateBuilder: RestTemplateBuilder,
-        restTemplate: RestTemplate
-      ): MultiRestTemplates {
-        return MultiRestTemplates(
-          httpClientFactory,
-          restTemplateBuilder,
-          okHttpClientProperties,
-          poolFactory,
-          customizers.orderedStream().collect(Collectors.toList()),
-          restTemplate
-        )
-      }
     }
-  }
 
 
 }

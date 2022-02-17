@@ -41,8 +41,8 @@ class OpenApiAutoConfiguration {
         transactionTemplate: TransactionTemplate,
         partnerMapper: OpenPartnerMapper,
         appMapper: OpenAppMapper
-    ) : IOpenAppService{
-         return OpenAppService(idGenerator, transactionTemplate, partnerMapper, appMapper)
+    ): IOpenAppService {
+        return OpenAppService(idGenerator, transactionTemplate, partnerMapper, appMapper)
     }
 
     @ConditionalOnMissingBean(IOpenPartnerService::class)
@@ -53,27 +53,28 @@ class OpenApiAutoConfiguration {
         partnerMapper: OpenPartnerMapper,
         partnerUserMapper: OpenPartnerUserMapper,
         userService: IUserService
-    ) : IOpenPartnerService{
+    ): IOpenPartnerService {
         return OpenPartnerService(idGenerator, transactionTemplate, partnerMapper, partnerUserMapper, userService)
     }
 
 
     @Bean
-    @ConditionalOnWebApplication(type= ConditionalOnWebApplication.Type.SERVLET)
+    @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
     fun apiSignatureMvcInterceptor(appService: IOpenAppService): ApiSignatureMvcInterceptor {
         return ApiSignatureMvcInterceptor(appService)
     }
 
     @Configuration(proxyBeanMethods = false)
-    @ConditionalOnWebApplication(type= ConditionalOnWebApplication.Type.SERVLET)
+    @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
     protected class WeMvcInterceptorConfiguration(
         private val apiSignatureMvcInterceptor: ApiSignatureMvcInterceptor,
-        private val apiProperties:OpenApiProperties) : WebMvcConfigurer, IResourceAuthorizationConfigurer {
+        private val apiProperties: OpenApiProperties
+    ) : WebMvcConfigurer, IResourceAuthorizationConfigurer {
 
         override fun configure(registry: ExpressionUrlAuthorizationConfigurer<HttpSecurity>.ExpressionInterceptUrlRegistry) {
-            if(apiProperties.pathPattern.isNotBlank()) {
+            if (apiProperties.pathPattern.isNotBlank()) {
                 registry.antMatchers(apiProperties.pathPattern).permitAll()
-            }else{
+            } else {
                 logger.warn("open api path pattern is blank, none api applied.")
             }
         }

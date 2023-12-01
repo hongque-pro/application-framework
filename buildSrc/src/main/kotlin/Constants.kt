@@ -25,8 +25,6 @@ object Versions {
     const val infraOAuth2 = "2.0.0"
     const val infraCloudStream = "1.2.1"
 
-
-    const val gitPropertiesPlugin = "2.4.1"
     const val bouncyCastle = "1.77"
 
     const val minio = "8.5.7"

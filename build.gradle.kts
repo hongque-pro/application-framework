@@ -1,7 +1,6 @@
 
 plugins {
     id("com.labijie.infra") version Versions.infraPlugin
-    id("com.gorylenko.gradle-git-properties") version Versions.gitPropertiesPlugin apply false
 }
 
 allprojects {
@@ -17,13 +16,13 @@ allprojects {
             infraBomVersion = Versions.infraBom
             kotlinVersion = Versions.kotlin
         }
-        //usePublishingPlugin()
     }
 }
 
 
 
 subprojects {
+
     infra {
         if (!project.name.startsWith("dummy")) {
             publishing {
@@ -32,14 +31,9 @@ subprojects {
                     githubUrl("hongque-pro", "application-framework")
                     artifactId { "framework-${it.name}" }
                 }
+                toGithubPackages("hongque-pro", "application-framework")
             }
-
-            //toGitHubPackages("hongque-pro", "application-framework")
         }
-//        if(mybatisConfigFile.exists()){
-//            val propertiesFile = File(project.rootProject.projectDir, ("mybatis-conf/settings.properties").replace('/', File.separatorChar))
-//            useMybatis(mybatisConfigFile.absolutePath, propertiesFile.absolutePath)
-//        }
     }
 
 

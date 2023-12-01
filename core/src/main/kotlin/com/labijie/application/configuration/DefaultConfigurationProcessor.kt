@@ -14,8 +14,8 @@ class DefaultConfigurationProcessor : EnvironmentPostProcessor {
     override fun postProcessEnvironment(environment: ConfigurableEnvironment, application: SpringApplication) {
         val config:Map<String, Any> = mapOf(
                 "spring.cloud.httpclientfactories.apache.enabled" to false,
-                "feign.okhttp.enabled" to true,
-                 "feign.httpclient.enabled" to false
+                "feign.okhttp.enabled" to false,
+                "feign.httpclient.enabled" to false
             )
         val propertySource = MapPropertySource(
             "framework-default-configuration", config

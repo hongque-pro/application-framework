@@ -1,26 +1,29 @@
 package com.labijie.application.identity.service.impl
 
 import com.labijie.application.ApplicationRuntimeException
-import com.labijie.application.component.IMessageSender
+import com.labijie.application.component.IMessageService
 import com.labijie.application.configuration.ValidationConfiguration
 import com.labijie.application.configure
 import com.labijie.application.exception.InvalidCaptchaException
 import com.labijie.application.exception.InvalidPhoneNumberException
+import com.labijie.application.exception.OperationConcurrencyException
 import com.labijie.application.exception.UserNotFoundException
+import com.labijie.application.executeReadOnly
 import com.labijie.application.identity.configuration.IdentityProperties
-import com.labijie.application.identity.data.UserLoginRecord
-import com.labijie.application.identity.data.UserOpenIdRecord
-import com.labijie.application.identity.data.extensions.deleteByPrimaryKey
-import com.labijie.application.identity.data.extensions.insert
-import com.labijie.application.identity.data.extensions.select
-import com.labijie.application.identity.data.extensions.selectOne
-import com.labijie.application.identity.data.mapper.*
-import com.labijie.application.identity.data.mapper.UserDynamicSqlSupport.User
-import com.labijie.application.identity.data.mapper.UserLoginDynamicSqlSupport.UserLogin
-import com.labijie.application.identity.data.mapper.UserOpenIdDynamicSqlSupport.UserOpenId
+import com.labijie.application.identity.data.UserLoginTable
+import com.labijie.application.identity.data.UserOpenIdTable
+import com.labijie.application.identity.data.UserTable
+import com.labijie.application.identity.data.pojo.UserLogin
+import com.labijie.application.identity.data.pojo.UserOpenId
+import com.labijie.application.identity.data.pojo.dsl.UserDSL.selectOne
+import com.labijie.application.identity.data.pojo.dsl.UserLoginDSL.insert
+import com.labijie.application.identity.data.pojo.dsl.UserLoginDSL.selectMany
+import com.labijie.application.identity.data.pojo.dsl.UserLoginDSL.selectOne
+import com.labijie.application.identity.data.pojo.dsl.UserOpenIdDSL.insert
+import com.labijie.application.identity.data.pojo.dsl.UserOpenIdDSL.selectOne
+import com.labijie.application.identity.exception.LoginProviderKeyAlreadyExistedException
 import com.labijie.application.identity.exception.UnsupportedLoginProviderException
 import com.labijie.application.identity.exception.UserAlreadyExistedException
-import com.labijie.application.identity.exception.LoginProviderKeyAlreadyExistedException
 import com.labijie.application.identity.model.PlatformAccessToken
 import com.labijie.application.identity.model.SocialRegisterInfo
 import com.labijie.application.identity.model.SocialUserAndRoles
@@ -30,9 +33,12 @@ import com.labijie.application.verifySmsCaptcha
 import com.labijie.caching.ICacheManager
 import com.labijie.infra.IIdGenerator
 import com.labijie.infra.utils.logger
-import org.mybatis.dynamic.sql.SqlBuilder
-import org.springframework.beans.factory.ObjectProvider
+import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
+import org.jetbrains.exposed.sql.and
+import org.jetbrains.exposed.sql.andWhere
+import org.jetbrains.exposed.sql.deleteWhere
 import org.springframework.dao.DuplicateKeyException
+import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.support.TransactionTemplate
 import java.util.regex.Pattern
@@ -46,24 +52,18 @@ import java.util.regex.Pattern
  */
 abstract class AbstractSocialUserService(
     authServerProperties: IdentityProperties,
+    passwordEncoder: PasswordEncoder,
     idGenerator: IIdGenerator,
-    messageSender: IMessageSender,
+    messageSender: IMessageService,
     cacheManager: ICacheManager,
-    userMapper: UserMapper,
-    userRoleMapper: UserRoleMapper,
-    roleMapper: RoleMapper,
-    protected val userLoginMapper: UserLoginMapper,
-    protected val userOpenIdMapper: UserOpenIdMapper,
     transactionTemplate: TransactionTemplate
 ) : AbstractUserService(
+    transactionTemplate,
     authServerProperties,
     idGenerator,
+    passwordEncoder,
     messageSender,
     cacheManager,
-    userMapper,
-    userRoleMapper,
-    roleMapper,
-    transactionTemplate
 ), ISocialUserService {
 
 
@@ -81,23 +81,23 @@ abstract class AbstractSocialUserService(
             generator = value
         }
 
-    protected var loginProviders: ObjectProvider<ILoginProvider>? = null
-        get() {
-            if (field == null) {
-                field = this.context?.getBeanProvider(ILoginProvider::class.java)
-            }
-            return field!!
-        }
+    protected val loginProviders: List<ILoginProvider> by lazy {
+        this.context?.getBeansOfType(ILoginProvider::class.java)?.map {
+            it.value
+        } ?: listOf()
+    }
 
     protected open fun getLoginProvider(loginProvider: String): ILoginProvider? {
-        return loginProviders?.firstOrNull { it.name.equals(loginProvider, true) }
+        return loginProviders.firstOrNull { it.name.equals(loginProvider, true) }
     }
 
     protected fun getUserId(loginProvider: String, providerKey: String): Long? {
-        return this.transactionTemplate.execute {
-            val record = userLoginMapper.selectOne {
-                where(UserLogin.loginProvider, SqlBuilder.isEqualTo(loginProvider))
-                    .and(UserLogin.providerKey, SqlBuilder.isEqualTo(providerKey))
+        return this.transactionTemplate.configure(isReadOnly = true).execute {
+            val record = UserLoginTable.selectOne() {
+                andWhere {
+                    UserLoginTable.loginProvider.eq(loginProvider) and
+                            UserLoginTable.providerKey.eq(providerKey)
+                }
             }
             record?.userId
         }
@@ -121,7 +121,7 @@ abstract class AbstractSocialUserService(
         return null
     }
 
-    override fun addLoginProvider(userId: Long, loginProvider: String, authorizationCode: String): UserLoginRecord {
+    override fun addLoginProvider(userId: Long, loginProvider: String, authorizationCode: String): UserLogin {
         try {
             return this.transactionTemplate.execute {
                 getUserById(userId) ?: throw UserNotFoundException()
@@ -138,17 +138,21 @@ abstract class AbstractSocialUserService(
             fetchUserFromSocialCode(loginProvider, authorizationCode)
         }
         return this.transactionTemplate.execute {
-            val list = userLoginMapper.select {
-                where(UserLogin.userId, SqlBuilder.isEqualTo(userId))
-                    .and(UserLogin.loginProvider, SqlBuilder.isEqualTo(loginProvider))
-                    .apply {
-                        token?.let {
-                            this.and(UserLogin.providerKey, SqlBuilder.isEqualTo(it.token.userKey))
-                        }
-                    }
+            val list = UserLoginTable.selectMany {
+                andWhere {
+                    UserLoginTable.userId.eq(userId) and
+                            UserLoginTable.loginProvider.eq(loginProvider)
+                }
+                token?.let {
+                    andWhere { UserLoginTable.providerKey eq it.token.userKey }
+                }
             }
             list.forEach {
-                userLoginMapper.deleteByPrimaryKey(it.loginProvider!!, it.providerKey!!)
+                login->
+                UserLoginTable.deleteWhere {
+                    UserLoginTable.loginProvider.eq(login.loginProvider) and
+                    UserLoginTable.providerKey.eq(login.providerKey)
+                }
             }
             list.size
         } ?: 0
@@ -173,20 +177,19 @@ abstract class AbstractSocialUserService(
     private fun addOpenIdIfNotExisted(userId: Long, provider: String, token: PlatformAccessToken) {
         try {
             this.transactionTemplate.configure(propagation = Propagation.REQUIRES_NEW).execute {
-
-                val openId = userOpenIdMapper.selectOne {
-                    where(UserOpenId.appId, SqlBuilder.isEqualTo(token.appId))
-                        .and(UserOpenId.loginProvider, SqlBuilder.isEqualTo(provider))
-                        .and(UserOpenId.userId, SqlBuilder.isEqualTo(userId))
+                val openId = UserOpenIdTable.selectOne {
+                    andWhere { UserOpenIdTable.appId eq token.appId }
+                    andWhere { UserOpenIdTable.loginProvider eq provider }
+                    andWhere { UserOpenIdTable.userId eq userId }
                 }
                 if (openId == null) {
-                    val userOpenId = UserOpenIdRecord().apply {
+                    val userOpenId = UserOpenId().apply {
                         this.openId = token.appOpenId
                         this.appId = token.appId
                         this.loginProvider = provider
                         this.userId = userId
                     }
-                    userOpenIdMapper.insert(userOpenId)
+                    UserOpenIdTable.insert(userOpenId)
                 }
             }
         } catch (e: DuplicateKeyException) {
@@ -194,9 +197,9 @@ abstract class AbstractSocialUserService(
         }
     }
 
-    private fun addUserLogin(userId: Long, provider: String, token: PlatformAccessToken): UserLoginRecord {
+    private fun addUserLogin(userId: Long, provider: String, token: PlatformAccessToken): UserLogin {
         return this.transactionTemplate.execute {
-            val userLogin = UserLoginRecord().apply {
+            val userLogin = UserLogin().apply {
                 this.userId = userId
                 this.providerDisplayName = ""
                 this.loginProvider = provider
@@ -211,7 +214,7 @@ abstract class AbstractSocialUserService(
 //            }
             //this.userOpenIdMapper.insert(userOpenId)
 
-            userLoginMapper.insert(userLogin)
+            UserLoginTable.insert(userLogin)
             userLogin
         }!!
     }
@@ -266,18 +269,18 @@ abstract class AbstractSocialUserService(
                     registrationContext = context
                     u
                 }
-            }
+            } ?: throw UserNotFoundException()
             val ctx = registrationContext
             if (ctx != null) {
                 this.onRegisteredSocialUser(ctx)
             }
             if (r.provider.isMultiOpenId) {
                 //对于多 open id 的提供程，例如微信，第三方账号可能存在，但是仍然可能存在第三方的不同的 APP OPEN ID 不存在的问题, 单独事务处理
-                addOpenIdIfNotExisted(userAndRoles!!.user.id!!, r.provider.name, r.token)
+                addOpenIdIfNotExisted(userAndRoles.user.id, r.provider.name, r.token)
             }
-            userAndRoles!!
+            userAndRoles
         } catch (e: DuplicateRegisteringException) { //并发问题
-            getUserAndRoles(phoneNumber, loginProvider)
+            throw OperationConcurrencyException()
         }
         return SocialUserAndRoles(userAndRoles, loginProvider, r.token.userKey)
     }
@@ -294,18 +297,20 @@ abstract class AbstractSocialUserService(
 
     override fun getOpenId(userId: Long, appId: String, loginProvider: String): String? {
         val provider = getLoginProvider(loginProvider) ?: throw UnsupportedLoginProviderException(loginProvider)
-        return if (provider.isMultiOpenId) {
-            val d = userOpenIdMapper.selectOne {
-                where(UserOpenId.userId, SqlBuilder.isEqualTo(userId))
-                    .and(UserOpenId.appId, SqlBuilder.isEqualTo(appId))
-                    .and(UserOpenId.loginProvider, SqlBuilder.isEqualTo(loginProvider))
+        return transactionTemplate.executeReadOnly {
+            if(provider.isMultiOpenId) {
+                val d = UserOpenIdTable.selectOne {
+                    andWhere { UserLoginTable.userId eq userId }
+                    andWhere{ UserOpenIdTable.appId eq  appId}
+                    andWhere { UserOpenIdTable.loginProvider eq loginProvider }
+                }
+                d?.openId
+            } else {
+                UserLoginTable.selectOne {
+                    andWhere { UserLoginTable.userId eq userId }
+                    andWhere { UserLoginTable.loginProvider eq loginProvider }
+                }?.providerKey
             }
-            d?.openId
-        } else {
-            userLoginMapper.selectOne {
-                where(UserLogin.userId, SqlBuilder.isEqualTo(userId))
-                    .and(UserLogin.loginProvider, SqlBuilder.isEqualTo(loginProvider))
-            }?.providerKey
         }
     }
 
@@ -318,23 +323,18 @@ abstract class AbstractSocialUserService(
         val loginProvider = provider.name
 
         //不存在第三方绑定，考虑手机号可能存在
-        val user = if (phoneNumber.isBlank()) null else userMapper.selectOne {
-            where(
-                User.phoneNumber,
-                SqlBuilder.isEqualTo(phoneNumber.trim())
-            )
+        val user = if (phoneNumber.isBlank()) null else UserTable.selectOne {
+            andWhere { UserTable.phoneNumber eq  phoneNumber.trim() }
         }
         if (user != null) {
-            this.addUserLogin(user.id!!, loginProvider, token)
-            val roles = this.getUserRoles(user.id!!)
+            this.addUserLogin(user.id, loginProvider, token)
+            val roles = this.getUserRoles(user.id)
             return Pair(SocialUserAndRoles(user, roles, provider.name, token.userKey), null)
         } else {
             try {
                 val context =
                     UserGenerationContext(
                         socialRegisterInfo.username,
-                        socialRegisterInfo.password,
-                        this.passwordEncoder,
                         idGenerator,
                         loginProvider,
                         phoneNumber,
@@ -343,8 +343,8 @@ abstract class AbstractSocialUserService(
                 val u =
                     socialSocialUserGenerator.generate(context, this.getDefaultUserType())
                 val roles = this.getDefaultUserRoles()
-                val userAndRoles = this.createUser(u, *roles)
-                this.addUserLogin(userAndRoles.user.id!!, loginProvider, token)
+                val userAndRoles = this.createUser(u, socialRegisterInfo.password, *roles)
+                this.addUserLogin(userAndRoles.user.id, loginProvider, token)
 
                 val reContext = SocialUserRegistrationContext(socialRegisterInfo, userAndRoles, provider, token)
                 this.onRegisteringSocialUser(reContext)

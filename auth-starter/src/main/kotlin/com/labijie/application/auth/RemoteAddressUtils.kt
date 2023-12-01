@@ -1,6 +1,6 @@
 package com.labijie.application.auth
 
-import javax.servlet.http.HttpServletRequest
+import jakarta.servlet.http.HttpServletRequest
 
 /**
  * @author <a href="http://github.com/saintdan">Liao Yifan</a>

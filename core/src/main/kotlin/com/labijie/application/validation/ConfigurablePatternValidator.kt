@@ -3,8 +3,8 @@ package com.labijie.application.validation
 import com.labijie.application.ApplicationRuntimeException
 import com.labijie.application.SpringContext
 import com.labijie.application.configuration.ValidationConfiguration
-import javax.validation.ConstraintValidator
-import javax.validation.ConstraintValidatorContext
+import jakarta.validation.ConstraintValidator
+import jakarta.validation.ConstraintValidatorContext
 
 /**
  * Created with IntelliJ IDEA.

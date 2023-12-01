@@ -2,12 +2,12 @@ package com.labijie.application.open.configuration
 
 import com.labijie.application.open.model.OpenAppStatus
 import com.labijie.application.open.service.IOpenAppService
+import jakarta.servlet.http.HttpServletRequest
 import org.springframework.util.AntPathMatcher
 import org.springframework.util.PathMatcher
 import org.springframework.web.cors.CorsConfiguration
 import org.springframework.web.cors.CorsConfigurationSource
 import org.springframework.web.util.UrlPathHelper
-import javax.servlet.http.HttpServletRequest
 
 class JdbcCorsConfigurationSource(
     private val apiProperties: OpenApiProperties,

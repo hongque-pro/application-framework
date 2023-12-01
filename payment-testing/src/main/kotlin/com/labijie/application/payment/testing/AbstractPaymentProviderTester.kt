@@ -1,21 +1,21 @@
 package com.labijie.application.payment.testing
 
+import com.labijie.application.configuration.HttpClientProperties
 import com.labijie.application.payment.*
 import com.labijie.application.payment.configuration.PaymentProperties
 import com.labijie.application.web.client.MultiRestTemplates
-import com.labijie.infra.commons.snowflake.ISlotProvider
-import com.labijie.infra.commons.snowflake.ISlotProviderFactory
-import com.labijie.infra.commons.snowflake.SnowflakeIdGenerator
-import com.labijie.infra.commons.snowflake.configuration.SnowflakeProperties
-import com.labijie.infra.commons.snowflake.providers.StaticSlotProvider
+import com.labijie.infra.IIdGenerator
+import com.labijie.infra.snowflake.ISlotProvider
+import com.labijie.infra.snowflake.ISlotProviderFactory
+import com.labijie.infra.snowflake.SnowflakeIdGenerator
+import com.labijie.infra.snowflake.SnowflakeProperties
+import com.labijie.infra.snowflake.providers.StaticSlotProvider
 import com.labijie.infra.json.JacksonHelper
-import com.labijie.infra.spring.configuration.NetworkConfig
+import com.labijie.infra.CommonsProperties
 import com.labijie.infra.utils.ifNullOrBlank
-import okhttp3.OkHttpClient
 import org.junit.jupiter.api.Assertions
 import org.springframework.boot.web.client.RestTemplateBuilder
 import org.springframework.boot.web.client.RestTemplateCustomizer
-import org.springframework.cloud.commons.httpclient.DefaultOkHttpClientFactory
 import org.springframework.http.converter.HttpMessageConverter
 import org.springframework.http.converter.StringHttpMessageConverter
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter
@@ -24,7 +24,7 @@ import java.math.BigDecimal
 abstract class AbstractPaymentProviderTester<T : IPaymentProvider> {
 
     protected val paymentProvider: T
-    protected val idGenerator: SnowflakeIdGenerator
+    protected val idGenerator: IIdGenerator
     protected val restTemplates: MultiRestTemplates
     protected val paymentProperties = PaymentProperties().apply {
         this.callbackBaseUrl = "http://alipay.zmkira.top:20001"
@@ -56,7 +56,7 @@ abstract class AbstractPaymentProviderTester<T : IPaymentProvider> {
      */
     protected open val testEnabled = true
 
-    protected val networkConfig = NetworkConfig(null).apply {
+    protected val networkConfig = CommonsProperties(null).apply {
         this.networks["default"] = networkIpMask
     }
 
@@ -77,8 +77,9 @@ abstract class AbstractPaymentProviderTester<T : IPaymentProvider> {
 
     private fun buildRestTemplate(): MultiRestTemplates {
 
-        val okHttpClientFactory = DefaultOkHttpClientFactory(OkHttpClient.Builder())
-
+        val properties = HttpClientProperties().apply {
+            loggerEnabled = true
+        }
 
         val customizer = RestTemplateCustomizer {
             it.messageConverters.add(
@@ -90,11 +91,11 @@ abstract class AbstractPaymentProviderTester<T : IPaymentProvider> {
 
         val builder = RestTemplateBuilder(customizer)
 
-        return MultiRestTemplates(okHttpClientFactory, builder)
+        return MultiRestTemplates(builder,properties)
     }
 
     protected abstract fun createPaymentProvider(
-        networkConfig: NetworkConfig,
+        networkConfig: CommonsProperties,
         properties: PaymentProperties,
         restTemplates: MultiRestTemplates
     ): T

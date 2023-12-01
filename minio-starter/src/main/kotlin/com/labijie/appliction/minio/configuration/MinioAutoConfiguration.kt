@@ -6,7 +6,7 @@ import com.labijie.appliction.minio.MinioInitializer
 import com.labijie.appliction.minio.MinioObjectStorage
 import com.labijie.appliction.minio.MinioUtils
 import com.labijie.appliction.minio.web.MinioStsController
-import com.labijie.infra.spring.configuration.getApplicationName
+import com.labijie.infra.getApplicationName
 import io.minio.MinioClient
 import okhttp3.OkHttpClient
 import org.springframework.beans.factory.annotation.Autowired

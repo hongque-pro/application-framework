@@ -1,6 +1,6 @@
 package com.labijie.application
 
-import com.labijie.infra.spring.configuration.isDevelopment
+import com.labijie.infra.isDevelopment
 import org.springframework.context.ApplicationContext
 
 /**

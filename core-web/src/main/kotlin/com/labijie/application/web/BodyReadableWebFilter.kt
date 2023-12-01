@@ -1,7 +1,7 @@
 package com.labijie.application.web
 
-import javax.servlet.*
-import javax.servlet.http.HttpServletRequest
+import jakarta.servlet.*
+import jakarta.servlet.http.HttpServletRequest
 
 /**
  * 通过缓存 body 解决 body 读两次的问题

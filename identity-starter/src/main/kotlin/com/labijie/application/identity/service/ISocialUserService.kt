@@ -1,6 +1,6 @@
 package com.labijie.application.identity.service
 
-import com.labijie.application.identity.data.UserLoginRecord
+import com.labijie.application.identity.data.pojo.UserLogin
 import com.labijie.application.identity.model.SocialRegisterInfo
 import com.labijie.application.identity.model.SocialUserAndRoles
 
@@ -13,6 +13,6 @@ interface ISocialUserService : IUserService {
     fun getSocialUser(loginProvider: String, authorizationCode:String): SocialUserAndRoles?
     fun registerSocialUser(socialRegisterInfo: SocialRegisterInfo, throwIfExisted:Boolean = false, validateSms: Boolean = false): SocialUserAndRoles
     fun getOpenId(userId:Long, appId:String, loginProvider: String) : String?
-    fun addLoginProvider(userId: Long, loginProvider: String, authorizationCode:String): UserLoginRecord
+    fun addLoginProvider(userId: Long, loginProvider: String, authorizationCode:String): UserLogin
     fun removeLoginProvider(userId: Long, loginProvider: String, authorizationCode:String? = null): Int
 }

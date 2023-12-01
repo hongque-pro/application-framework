@@ -3,3 +3,7 @@ spring:
     url: jdbc:h2:mem:testdb;mode=mysql
     username: sa
     driver-class-name: org.h2.Driver
+infra:
+  exposed:
+    generate-schema: true
+    show-sql: true

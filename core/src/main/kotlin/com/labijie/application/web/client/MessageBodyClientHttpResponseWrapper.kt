@@ -2,6 +2,7 @@ package com.labijie.application.web.client
 
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
+import org.springframework.http.HttpStatusCode
 import org.springframework.http.client.ClientHttpResponse
 import org.springframework.lang.Nullable
 import java.io.IOException
@@ -85,15 +86,17 @@ internal class MessageBodyClientHttpResponseWrapper(response: ClientHttpResponse
     }
 
     @Throws(IOException::class)
-    override fun getBody(): InputStream? {
-        return if (pushbackInputStream != null) pushbackInputStream else response.body
+    override fun getBody(): InputStream {
+        return pushbackInputStream ?: response.body
     }
 
+
     @Throws(IOException::class)
-    override fun getStatusCode(): HttpStatus {
+    override fun getStatusCode(): HttpStatusCode {
         return response.statusCode
     }
 
+    @Deprecated("Deprecated in Spring 6.0")
     @Throws(IOException::class)
     override fun getRawStatusCode(): Int {
         return response.rawStatusCode

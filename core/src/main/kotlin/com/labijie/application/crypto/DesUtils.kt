@@ -4,11 +4,10 @@ import com.labijie.application.exception.InvalidSecurityStampException
 import com.labijie.application.toUTF8StringOrEmpty
 import com.labijie.infra.utils.ifNullOrBlank
 import com.labijie.infra.utils.throwIfNecessary
-import org.apache.commons.codec.binary.Base64
 import java.lang.Exception
-import java.security.GeneralSecurityException
 import java.security.MessageDigest
 import java.time.Duration
+import java.util.*
 import javax.crypto.Cipher
 import javax.crypto.SecretKey
 import javax.crypto.spec.IvParameterSpec
@@ -68,7 +67,7 @@ object DesUtils {
             val iv = IvParameterSpec(ByteArray(8))
             cipher.init(Cipher.ENCRYPT_MODE, skey, iv) // 初始化为加密模式的密码器
             val result: ByteArray = cipher.doFinal(byteContent) // 加密
-            return Base64.encodeBase64String(result)
+            return Base64.getEncoder().encodeToString(result)
         }catch (e: Exception){
             e.throwIfNecessary()
             throw DesException( "AESContent = $content", e)
@@ -91,7 +90,7 @@ object DesUtils {
             val iv = IvParameterSpec(ByteArray(8))
             cipher.init(Cipher.DECRYPT_MODE, skey, iv)
             //执行操作
-            val result: ByteArray = cipher.doFinal(Base64.decodeBase64(content))
+            val result: ByteArray = cipher.doFinal(Base64.getDecoder().decode(content))
             result.toUTF8StringOrEmpty()
         }catch (e: Exception){
             if(throwIfBadData){

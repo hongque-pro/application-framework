@@ -1,23 +1,34 @@
 package com.labijie.application.open.service.impl
 
 import com.labijie.application.ForwardList
+import com.labijie.application.configure
 import com.labijie.application.crypto.HashUtils
-import com.labijie.application.mybatis.equalToColumnPlus
 import com.labijie.application.open.OpenSignatureUtils
-import com.labijie.application.open.data.OpenAppRecord
-import com.labijie.application.open.data.mapper.*
+import com.labijie.application.open.data.OpenAppTable
+import com.labijie.application.open.data.OpenPartnerTable
+import com.labijie.application.open.data.pojo.OpenApp
+import com.labijie.application.open.data.pojo.dsl.OpenAppDSL.insert
+import com.labijie.application.open.data.pojo.dsl.OpenAppDSL.selectByPrimaryKey
+import com.labijie.application.open.data.pojo.dsl.OpenAppDSL.selectMany
+import com.labijie.application.open.data.pojo.dsl.OpenAppDSL.selectOne
+import com.labijie.application.open.data.pojo.dsl.OpenAppDSL.toOpenAppList
+import com.labijie.application.open.data.pojo.dsl.OpenPartnerDSL.selectOne
 import com.labijie.application.open.exception.PartnerNotFoundException
-import com.labijie.application.open.model.*
+import com.labijie.application.open.model.AlgorithmAndKey
+import com.labijie.application.open.model.OpenAppCreation
+import com.labijie.application.open.model.OpenAppEntry
+import com.labijie.application.open.model.OpenAppStatus
 import com.labijie.application.open.service.IOpenAppService
 import com.labijie.application.orDefault
 import com.labijie.application.propertiesFrom
 import com.labijie.infra.IIdGenerator
 import com.labijie.infra.json.JacksonHelper
 import com.labijie.infra.utils.ShortId
-import com.labijie.infra.utils.deserializeMap
-import org.mybatis.dynamic.sql.SqlBuilder
-import org.mybatis.dynamic.sql.render.RenderingStrategies
-import org.mybatis.dynamic.sql.update.render.UpdateStatementProvider
+import org.jetbrains.exposed.sql.SortOrder
+import org.jetbrains.exposed.sql.SqlExpressionBuilder.plus
+import org.jetbrains.exposed.sql.andWhere
+import org.jetbrains.exposed.sql.selectAll
+import org.jetbrains.exposed.sql.update
 import org.springframework.transaction.support.TransactionTemplate
 import java.util.*
 
@@ -25,39 +36,20 @@ import java.util.*
 class OpenAppService(
     private val idGenerator: IIdGenerator,
     private val transactionTemplate: TransactionTemplate,
-    private val partnerMapper: OpenPartnerMapper,
-    private val appMapper: OpenAppMapper
 ) : IOpenAppService {
 
-    companion object {
-        fun OpenAppRecord.mapToOpenApp(): OpenApp {
-            return OpenApp().propertiesFrom(this).also {
-                val data = this.configuration!!.toByteArray(Charsets.UTF_8)
-                it.config = JacksonHelper.defaultObjectMapper.deserializeMap(data, String::class, String::class)
-            }
-        }
-
-        fun OpenApp.mapToRecord(): OpenAppRecord {
-            return OpenAppRecord().propertiesFrom(this).also {
-                it.configuration = JacksonHelper.serializeAsString(this.config)
-            }
-        }
-    }
 
     override fun createApp(creation: OpenAppCreation, partnerId: Long): OpenApp {
-        val selector = SqlBuilder.select(
-            OpenPartnerDynamicSqlSupport.OpenPartner.id
-        )
-            .from(OpenPartnerDynamicSqlSupport.OpenPartner)
-            .where().and(OpenPartnerDynamicSqlSupport.OpenPartner.id, SqlBuilder.isEqualTo(partnerId))
-            .build()
-            .render(RenderingStrategies.MYBATIS3)
 
-        partnerMapper.selectOne(selector) ?: throw PartnerNotFoundException()
+        transactionTemplate.configure(isReadOnly = true).execute {
+            OpenPartnerTable.selectOne(OpenPartnerTable.id) {
+                andWhere { OpenPartnerTable.id eq partnerId }
+            }
+        } ?: throw PartnerNotFoundException()
 
         val appId = idGenerator.newId()
-        val app = OpenAppRecord().propertiesFrom(creation).apply {
-            this.appId = appId
+        val app = OpenApp().propertiesFrom(creation).apply {
+            this.id = appId
             this.signAlgorithm = "sha256"
             this.appSecret = HashUtils.genHmacSha256Key()
             this.appType = 0
@@ -67,23 +59,18 @@ class OpenAppService(
             this.jsApiKey = UUID.randomUUID().toString().replace("-", "")
             this.logoUrl = ""
             this.partnerId = partnerId
-            this.status = OpenAppStatus.NORMAL.code
+            this.status = OpenAppStatus.NORMAL
             this.timeConfigUpdated = System.currentTimeMillis()
             this.timeCreated = System.currentTimeMillis()
         }
 
-        val appAccountColumn = OpenPartnerDynamicSqlSupport.OpenPartner.appCount
-        val partnerIdColumn = OpenPartnerDynamicSqlSupport.OpenPartner.id
-        val updateStatement: UpdateStatementProvider = SqlBuilder.update(OpenPartnerDynamicSqlSupport.OpenPartner)
-            .set(appAccountColumn).equalToColumnPlus(appAccountColumn, 1)
-            .where(partnerIdColumn, SqlBuilder.isEqualTo(partnerId))
-            .build()
-            .render(RenderingStrategies.MYBATIS3)
-
 
         transactionTemplate.execute {
-            appMapper.insertSelective(app)
-            partnerMapper.update(updateStatement)
+            OpenAppTable.insert(app)
+
+            OpenPartnerTable.update({ OpenPartnerTable.id eq partnerId }) {
+                it[appCount] = appCount + 1
+            }
         }
         return OpenApp().propertiesFrom(app)
     }
@@ -92,25 +79,26 @@ class OpenAppService(
         if (key.isBlank()) {
             return null
         }
-        val record = appMapper.selectOne {
-            where(OpenAppDynamicSqlSupport.OpenApp.appSecret, SqlBuilder.isEqualTo(key))
+        val record = OpenAppTable.selectOne {
+            andWhere { OpenAppTable.appSecret eq key }
         }
-        return record?.mapToOpenApp()
+        return record
     }
 
     override fun getByAppId(appId: Long): OpenApp? {
         if (appId <= 0) {
             return null
         }
-        val record = appMapper.selectByPrimaryKey(appId)
-        return record?.mapToOpenApp()
+        return OpenAppTable.selectByPrimaryKey(appId)
     }
 
     override fun renewSecret(appId: Long, signAlgorithm: String): String? {
         val key = OpenSignatureUtils.generateKey(signAlgorithm)
-        val updating = OpenAppRecord(appId = appId, appSecret = key, signAlgorithm = signAlgorithm.lowercase())
         val count = this.transactionTemplate.execute {
-            appMapper.updateByPrimaryKeySelective(updating)
+            OpenAppTable.update({ OpenPartnerTable.id eq appId }) {
+                it[appSecret] = key
+                it[OpenAppTable.signAlgorithm] = signAlgorithm.lowercase()
+            }
         }
         if (count.orDefault(0) <= 0) {
             return null
@@ -119,37 +107,25 @@ class OpenAppService(
     }
 
     override fun getSecret(appId: Long): AlgorithmAndKey? {
-        val select = SqlBuilder.select(
-            OpenAppDynamicSqlSupport.OpenApp.appSecret,
-            OpenAppDynamicSqlSupport.OpenApp.signAlgorithm
-        )
-            .from(OpenAppDynamicSqlSupport.OpenApp)
-            .where(OpenAppDynamicSqlSupport.OpenApp.appId, SqlBuilder.isEqualTo(appId))
-            .build()
-            .render(RenderingStrategies.MYBATIS3)
-
-        val app = appMapper.selectOne(select) ?: return null
-        return AlgorithmAndKey(app.signAlgorithm!!, app.appSecret!!)
+        val app = OpenAppTable.selectByPrimaryKey(appId, OpenAppTable.appSecret, OpenAppTable.signAlgorithm) ?: return null
+        return AlgorithmAndKey(app.signAlgorithm, app.appSecret)
     }
 
     override fun setAppStatus(appId: Long, status: OpenAppStatus): Boolean {
-        val updating = OpenAppRecord().apply {
-            this.appId = appId
-            this.status = status.code
-        }
         val count = transactionTemplate.execute {
-            appMapper.updateByPrimaryKeySelective(updating)
+            OpenAppTable.update({ OpenAppTable.id eq appId }) {
+                it[OpenAppTable.status] = status
+            }
         }
         return (count ?: 0) > 0
     }
 
     override fun setAppConfiguration(appId: Long, configuration: Map<String, String>): Boolean {
-        val updating = OpenAppRecord().apply {
-            this.appId = appId
-            this.configuration = JacksonHelper.serializeAsString(configuration)
-        }
+        val json = JacksonHelper.serializeAsString(configuration)
         val count = transactionTemplate.execute {
-            appMapper.updateByPrimaryKeySelective(updating)
+            OpenAppTable.update({ OpenAppTable.id eq appId }) {
+                it[OpenAppTable.configuration] = json
+            }
         }
         return (count ?: 0) > 0
     }
@@ -157,24 +133,23 @@ class OpenAppService(
     override fun listApps(pageSize: Int, forwardToken: String?): ForwardList<OpenAppEntry> {
         val size = pageSize.coerceAtMost(100)
         val offset = forwardToken?.toLongOrNull() ?: 0
-        val list = appMapper.select {
-            if(offset > 0){
-                this.where(OpenAppDynamicSqlSupport.OpenApp.appId, SqlBuilder.isLessThan(offset))
-            }
-            this.orderBy(OpenAppDynamicSqlSupport.OpenApp.appId.descending())
-            this.limit(size.toLong())
+        val query = OpenAppTable.selectAll()
+        if(offset > 0){
+            query.andWhere { OpenAppTable.id less offset }
         }
-        val data = list.map { OpenAppEntry().propertiesFrom(it) }
-        return ForwardList(data, list.lastOrNull()?.appId?.toString())
+        query.orderBy(OpenAppTable.id to SortOrder.DESC).limit(size)
+
+        val data = query.toOpenAppList()
+        return ForwardList(data.map { OpenAppEntry().propertiesFrom(it) }, data.lastOrNull()?.id?.toString())
     }
 
     override fun listApps(partnerId: Long): List<OpenAppEntry> {
-        if(partnerId <= 0){
+        if (partnerId <= 0) {
             return listOf()
         }
-        val list = appMapper.select {
-            where(OpenAppDynamicSqlSupport.OpenApp.partnerId, SqlBuilder.isEqualTo(partnerId))
-            orderBy(OpenAppDynamicSqlSupport.OpenApp.appId.descending())
+        val list = OpenAppTable.selectMany {
+            andWhere { OpenAppTable.partnerId eq partnerId }
+            orderBy(OpenAppTable.id to SortOrder.DESC)
         }
         return list.map { OpenAppEntry().propertiesFrom(it) }
     }

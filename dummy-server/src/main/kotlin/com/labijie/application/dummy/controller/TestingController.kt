@@ -1,6 +1,6 @@
 package com.labijie.application.dummy.controller
 
-import com.labijie.application.component.IMessageSender
+import com.labijie.application.component.IMessageService
 import com.labijie.application.model.CaptchaType
 import com.labijie.application.model.SendSmsCaptchaParam
 import com.labijie.infra.utils.ShortId
@@ -24,17 +24,16 @@ open class TestingController {
         logger.warn("${TestingController::class.simpleName} loaded")
     }
     @Autowired(required = false)
-    private lateinit var messageSender: IMessageSender
+    private lateinit var messageSvc: IMessageService
 
     @GetMapping("/sms")
     fun sms(){
         val param = SendSmsCaptchaParam().apply {
             this.captchaType = CaptchaType.Login
-            this.modifier = "ttt"
             this.phoneNumber = "13000000000"
-            this.stamp = ShortId.newId()
+            this.clientStamp = ShortId.newId()
         }
-        messageSender.sendSmsCaptcha(param)
+        messageSvc.sendSmsCaptcha(param)
     }
 
     @GetMapping("/array")

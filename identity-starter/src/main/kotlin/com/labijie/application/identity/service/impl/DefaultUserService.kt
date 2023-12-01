@@ -1,10 +1,10 @@
 package com.labijie.application.identity.service.impl
 
-import com.labijie.application.component.IMessageSender
+import com.labijie.application.component.IMessageService
 import com.labijie.application.identity.configuration.IdentityProperties
-import com.labijie.application.identity.data.mapper.*
 import com.labijie.caching.ICacheManager
 import com.labijie.infra.IIdGenerator
+import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.transaction.support.TransactionTemplate
 
 /**
@@ -13,27 +13,19 @@ import org.springframework.transaction.support.TransactionTemplate
  * @date 2019-12-09
  */
 open class DefaultUserService(
-        identityProperties: IdentityProperties,
-        idGenerator: IIdGenerator,
-        messageSender: IMessageSender,
-        cacheManager: ICacheManager,
-        userMapper: UserMapper,
-        userRoleMapper: UserRoleMapper,
-        roleMapper: RoleMapper,
-        userLoginMapper: UserLoginMapper,
-        userOpenIdMapper: UserOpenIdMapper,
-        transactionTemplate: TransactionTemplate
+    identityProperties: IdentityProperties,
+    idGenerator: IIdGenerator,
+    passwordEncoder: PasswordEncoder,
+    messageSender: IMessageService,
+    cacheManager: ICacheManager,
+    transactionTemplate: TransactionTemplate
 ) : AbstractSocialUserService(
-        identityProperties,
-        idGenerator,
-        messageSender,
-        cacheManager,
-        userMapper,
-        userRoleMapper,
-        roleMapper,
-        userLoginMapper,
-        userOpenIdMapper,
-        transactionTemplate
+    identityProperties,
+    passwordEncoder,
+    idGenerator,
+    messageSender,
+    cacheManager,
+    transactionTemplate
 ) {
     override fun getDefaultUserRoles(): Array<String> {
         return arrayOf("user")

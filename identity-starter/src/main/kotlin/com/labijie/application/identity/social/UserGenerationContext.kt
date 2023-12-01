@@ -11,8 +11,6 @@ import org.springframework.security.crypto.password.PasswordEncoder
  */
 data class UserGenerationContext(
     val username: String?,
-    val plainPassword: String?,
-    val passwordEncoder: PasswordEncoder,
     val idGenerator: IIdGenerator,
     val loginProvider:String,
     val phoneNumber: String,

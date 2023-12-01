@@ -1,7 +1,7 @@
 package com.labijie.application
 
 import com.fasterxml.jackson.core.type.TypeReference
-import com.labijie.application.component.IMessageSender
+import com.labijie.application.component.IMessageService
 import com.labijie.application.copier.BeanCopierUtils
 import com.labijie.application.model.SmsCaptcha
 import com.labijie.caching.ICacheManager
@@ -14,10 +14,7 @@ import org.springframework.http.ResponseEntity
 import org.springframework.transaction.TransactionDefinition
 import org.springframework.transaction.annotation.Isolation
 import org.springframework.transaction.annotation.Propagation
-import org.springframework.transaction.support.DefaultTransactionDefinition
-import org.springframework.transaction.support.TransactionSynchronization
-import org.springframework.transaction.support.TransactionSynchronizationManager
-import org.springframework.transaction.support.TransactionTemplate
+import org.springframework.transaction.support.*
 import org.springframework.web.client.RestTemplate
 import org.springframework.web.util.UriBuilder
 import java.math.BigDecimal
@@ -295,11 +292,11 @@ fun String.mask(maskLength: Int = 6, maskSymbol: String = "*"): String {
 
 }
 
-fun IMessageSender.verifySmsCaptcha(
+fun IMessageService.verifySmsCaptcha(
     captcha: SmsCaptcha,
     throwIfMissMatched: Boolean = false
 ): Boolean {
-    return this.verifySmsCaptcha(captcha.captcha, captcha.stamp, captcha.modifier, throwIfMissMatched)
+    return this.verifySmsCaptcha(captcha.code, captcha.clientStamp, captcha.phoneNumber, throwIfMissMatched)
 }
 
 fun ByteArray?.toUTF8StringOrEmpty(): String {
@@ -333,6 +330,22 @@ fun TransactionTemplate.configure(
         this.timeout = timeout
     }
     return TransactionTemplate(this.transactionManager!!, definition)
+}
+
+fun <T> TransactionTemplate.executeReadOnly(
+    propagation: Propagation = Propagation.REQUIRED,
+    isolationLevel: Isolation = Isolation.DEFAULT,
+    timeout: Int = TransactionDefinition.TIMEOUT_DEFAULT,
+    action: TransactionCallback<T>
+): T? {
+    val definition = DefaultTransactionDefinition().apply {
+        this.isReadOnly = true
+        this.isolationLevel = isolationLevel.value()
+        this.propagationBehavior = propagation.value()
+        this.timeout = timeout
+    }
+    val tm = this.transactionManager ?: throw IllegalStateException("Transaction manager was unavailable.")
+    return TransactionTemplate(tm, definition).execute(action)
 }
 
 inline fun <reified TKey : Any, reified TValue : Any> RestTemplate.exchangeForMap(
@@ -430,13 +443,6 @@ fun ByteArray?.isNullOrEmpty(): Boolean {
     return this == null || this.isEmpty()
 }
 
-fun <T> Collection<T>?.isNullOrEmpty(): Boolean {
-    return this == null || this.isEmpty()
-}
-
-fun <T> Array<T>?.isNullOrEmpty(): Boolean {
-    return this == null || this.isEmpty()
-}
 
 fun ICacheManager.removeAfterTransactionCommit(key: String, region: String = "", delay: Duration = Duration.ZERO) {
     val sync = CacheRemoveTransactionSynchronization(this, key, region, delay)

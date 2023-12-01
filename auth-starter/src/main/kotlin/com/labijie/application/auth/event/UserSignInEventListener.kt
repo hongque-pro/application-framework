@@ -2,7 +2,6 @@ package com.labijie.application.auth.event
 
 import com.labijie.application.auth.component.ISignInPlatformDetection
 import com.labijie.application.identity.service.IUserService
-import com.labijie.application.identity.data.UserRecord as User
 import com.labijie.application.web.getRealIp
 import com.labijie.infra.oauth2.events.UserSignedInEvent
 import com.labijie.infra.utils.logger
@@ -21,13 +20,8 @@ open class UserSignInEventListener(private val signInPlatformDetection: ISignInP
             val ipAddress = request?.getRealIp() ?: "0.0.0.0"
 
             val platform = if(request == null) "web" else  signInPlatformDetection.detect(request)
-            val param = User().apply {
-                this.lastSignInIp = ipAddress
-                this.lastSignInPlatform = platform
-                this.timeLastLogin = System.currentTimeMillis()
-            }
 
-            userService.updateUser(event.principle.userId.toLong(), param)
+            userService.updateUserLastLogin(event.principle.userId.toLong(), ipAddress, platform)
 
         } catch (e: Exception) {
             logger.warn("Record user login properties fault.", e)

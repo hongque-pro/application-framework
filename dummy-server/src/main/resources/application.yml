@@ -3,14 +3,6 @@ server:
 spring:
   application:
     name: framework-dummy
-  cloud:
-    stream:
-      default-binder: memory
-      bindings:
-        sms-input:
-          destination: sms
-        sms-output:
-          destination: sms
   datasource:
     url: jdbc:h2:mem:testdb;mode=mysql
     username: sa
@@ -22,22 +14,4 @@ infra:
     default-client:
       client-id: app
       secret: 1234567
-    token:
-      jwt:
-        simpleKey:  aaa
-  snowflake:
-    provider: static
-    static:
-      slot: 1
-
-application:
-  minio:
-    endpoint: http://47.100.188.60:9000
-    accessKey: stsadmin
-    secretKey: stsadmin-secret
-  sms:
-    controller-enabled: true
-  human-checker:
-    kaptcha:
-      enabled: true
 

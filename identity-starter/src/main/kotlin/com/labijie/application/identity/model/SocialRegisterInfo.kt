@@ -3,9 +3,9 @@ package com.labijie.application.identity.model
 import com.labijie.application.configuration.ValidationConfiguration
 import com.labijie.application.model.SmsCaptcha
 import com.labijie.application.validation.ConfigurablePattern
+import jakarta.validation.Valid
+import jakarta.validation.constraints.NotBlank
 import org.hibernate.validator.constraints.Length
-import javax.validation.Valid
-import javax.validation.constraints.NotBlank
 
 /**
  * Created with IntelliJ IDEA.

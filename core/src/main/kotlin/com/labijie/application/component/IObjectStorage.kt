@@ -12,9 +12,20 @@ import java.net.URL
  */
 interface IObjectStorage {
     @Throws(StoredObjectNotFoundException::class)
-    fun existObject(key:String, throwIfNotExisted:Boolean = false, bucketPolicy: BucketPolicy = BucketPolicy.PRIVATE) : Boolean
-    fun deleteObject(key:String, bucketPolicy: BucketPolicy = BucketPolicy.PRIVATE):Boolean
-    fun generateObjectUrl(key:String, bucketPolicy: BucketPolicy = BucketPolicy.PRIVATE):URL
-    fun uploadObject(key:String, stream: InputStream, bucketPolicy: BucketPolicy = BucketPolicy.PRIVATE, contentLength: Long? = null)
-    fun getObject(key:String, bucketPolicy: BucketPolicy = BucketPolicy.PRIVATE):ByteArray
+    fun existObject(
+        key: String,
+        throwIfNotExisted: Boolean = false,
+        bucketPolicy: BucketPolicy = BucketPolicy.PRIVATE
+    ): Boolean
+
+    fun deleteObject(key: String, bucketPolicy: BucketPolicy = BucketPolicy.PRIVATE): Boolean
+    fun generateObjectUrl(key: String, bucketPolicy: BucketPolicy = BucketPolicy.PRIVATE): URL
+    fun uploadObject(
+        key: String,
+        stream: InputStream,
+        bucketPolicy: BucketPolicy = BucketPolicy.PRIVATE,
+        contentLength: Long? = null
+    )
+
+    fun getObject(key: String, bucketPolicy: BucketPolicy = BucketPolicy.PRIVATE): ByteArray
 }

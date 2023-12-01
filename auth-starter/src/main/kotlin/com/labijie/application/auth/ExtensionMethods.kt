@@ -3,14 +3,14 @@ package com.labijie.application.auth
 import com.labijie.application.identity.model.UserAndRoles
 import com.labijie.application.web.roleAuthority
 import com.labijie.infra.oauth2.ITwoFactorUserDetails
+import com.labijie.infra.oauth2.OAuth2Utils
 import com.labijie.infra.oauth2.SimpleTwoFactorUserDetails
-import org.springframework.security.core.authority.SimpleGrantedAuthority
 import org.springframework.security.oauth2.core.AuthorizationGrantType
 import org.springframework.security.oauth2.core.OAuth2AccessToken
 import org.springframework.security.oauth2.core.endpoint.OAuth2ParameterNames
 import org.springframework.security.oauth2.server.authorization.authentication.OAuth2AccessTokenAuthenticationToken
 import org.springframework.security.oauth2.server.authorization.client.RegisteredClient
-import org.springframework.security.oauth2.server.authorization.config.TokenSettings
+import org.springframework.security.oauth2.server.authorization.settings.TokenSettings
 import org.springframework.util.CollectionUtils
 import org.springframework.util.StringUtils
 import java.time.Duration
@@ -38,7 +38,7 @@ fun RegisteredClient.Builder.default(
         .clientSecret(secret)
         .clientName(clientId)
         .authorizationGrantTypes {
-            it.add(AuthorizationGrantType.PASSWORD)
+            it.add(OAuth2Utils.PASSWORD_GRANT_TYPE)
             it.add(AuthorizationGrantType.AUTHORIZATION_CODE)
             it.add(AuthorizationGrantType.CLIENT_CREDENTIALS)
             it.add(AuthorizationGrantType.JWT_BEARER)
@@ -51,20 +51,20 @@ fun RegisteredClient.Builder.default(
 fun <T : UserAndRoles> T.toPrincipal(configure: (T.() -> Map<String, String>)? = null): ITwoFactorUserDetails {
     val user = this.user
     val roles = this.roles.map {
-        roleAuthority(it.name!!)
+        roleAuthority(it.name)
     }
 
-    val enabled = !(this.user.lockoutEnabled ?: false) || (this.user.lockoutEnd ?: 0) <= System.currentTimeMillis()
+    val enabled = !this.user.lockoutEnabled || this.user.lockoutEnd <= System.currentTimeMillis()
 
     return SimpleTwoFactorUserDetails(
-        user.id!!.toString(),
-        user.userName?.toString().orEmpty(),
+        user.id.toString(),
+        user.userName,
         true,
         enabled,
-        user.passwordHash.orEmpty(),
+        user.passwordHash,
         true,
-        !(user.lockoutEnabled ?: false),
-        user.twoFactorEnabled ?: false,
+        !user.lockoutEnabled,
+        user.twoFactorEnabled,
         ArrayList(
             roles
         ),

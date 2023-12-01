@@ -1,3 +1,0 @@
-org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
-  com.labijie.application.open.configuration.OpenApiMybatisAutoConfiguration,\
-  com.labijie.application.open.configuration.OpenApiAutoConfiguration

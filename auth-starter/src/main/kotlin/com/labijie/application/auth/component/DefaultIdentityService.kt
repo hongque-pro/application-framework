@@ -2,12 +2,12 @@ package com.labijie.application.auth.component
 
 import com.labijie.application.ErrorCodedException
 import com.labijie.application.auth.AuthErrors
+import com.labijie.application.identity.data.pojo.User
 import com.labijie.application.identity.service.IUserService
 import com.labijie.application.web.roleAuthority
 import com.labijie.infra.oauth2.*
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.security.core.userdetails.UsernameNotFoundException
-import com.labijie.application.identity.data.UserRecord as User
 
 /**
  * Created with IntelliJ IDEA.
@@ -40,10 +40,10 @@ open class DefaultIdentityService constructor(
 
         return SimpleTwoFactorUserDetails(
                 user.id.toString(),
-                user.userName.orEmpty(),
+                user.userName,
                 credentialsNonExpired = true,
                 enabled = true,
-                password = user.passwordHash.orEmpty(),
+                password = user.passwordHash,
                 accountNonExpired = true,
                 accountNonLocked = !userLocked,
                 twoFactorEnabled = false,

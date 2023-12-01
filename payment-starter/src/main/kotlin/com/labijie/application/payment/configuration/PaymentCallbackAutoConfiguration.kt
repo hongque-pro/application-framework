@@ -12,6 +12,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplicat
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
+import org.springframework.security.config.annotation.web.configurers.AuthorizeHttpRequestsConfigurer
 import org.springframework.security.config.annotation.web.configurers.ExpressionUrlAuthorizationConfigurer
 import org.springframework.util.AntPathMatcher
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry
@@ -20,7 +21,6 @@ import java.util.stream.Collectors
 
 @Configuration(proxyBeanMethods = false)
 @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
-@Suppress("SpringJavaInjectionPointsAutowiringInspection")
 class PaymentCallbackAutoConfiguration {
 
     @Bean
@@ -54,10 +54,6 @@ class PaymentCallbackAutoConfiguration {
         private val refundCallbackMvcInterceptor: RefundCallbackMvcInterceptor,
         private val paymentCallbackInterceptor: PaymentCallbackMvcInterceptor) : WebMvcConfigurer, IResourceAuthorizationConfigurer {
 
-        override fun configure(registry: ExpressionUrlAuthorizationConfigurer<HttpSecurity>.ExpressionInterceptUrlRegistry) {
-            registry.antMatchers(PaymentProperties.PATH_PATTERN, ignoreCase = true).permitAll()
-            registry.antMatchers(PaymentProperties.PATH_REFUND_PATTERN, ignoreCase = true).permitAll()
-        }
 
         override fun addInterceptors(registry: InterceptorRegistry) {
             super.addInterceptors(registry)
@@ -74,6 +70,11 @@ class PaymentCallbackAutoConfiguration {
                 this.pathMatcher(matcher)
                 this.addPathPatterns(PaymentProperties.PATH_REFUND_PATTERN)
             }
+        }
+
+        override fun configure(registry: AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry) {
+            registry.antMatchers(PaymentProperties.PATH_PATTERN, ignoreCase = true).permitAll()
+            registry.antMatchers(PaymentProperties.PATH_REFUND_PATTERN, ignoreCase = true).permitAll()
         }
     }
 }

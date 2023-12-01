@@ -3,16 +3,16 @@ package com.labijie.application.open.configuration
 import com.labijie.application.identity.service.IUserService
 import com.labijie.application.open.component.ApiSignatureMvcInterceptor
 import com.labijie.application.open.component.OpenApiFilter
-import com.labijie.application.open.data.mapper.OpenAppMapper
-import com.labijie.application.open.data.mapper.OpenPartnerMapper
-import com.labijie.application.open.data.mapper.OpenPartnerUserMapper
+import com.labijie.application.open.data.OpenAppTable
 import com.labijie.application.open.service.IOpenAppService
 import com.labijie.application.open.service.IOpenPartnerService
 import com.labijie.application.open.service.impl.OpenAppService
 import com.labijie.application.open.service.impl.OpenPartnerService
 import com.labijie.infra.IIdGenerator
 import com.labijie.infra.oauth2.resource.IResourceAuthorizationConfigurer
+import com.labijie.infra.orm.annotation.TableScan
 import com.labijie.infra.utils.logger
+import jakarta.servlet.Filter
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication
 import org.springframework.boot.context.properties.EnableConfigurationProperties
@@ -20,17 +20,17 @@ import org.springframework.boot.web.servlet.FilterRegistrationBean
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
-import org.springframework.security.config.annotation.web.configurers.ExpressionUrlAuthorizationConfigurer
+import org.springframework.security.config.annotation.web.configurers.AuthorizeHttpRequestsConfigurer
 import org.springframework.transaction.support.TransactionTemplate
 import org.springframework.util.AntPathMatcher
 import org.springframework.web.filter.CorsFilter
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer
-import javax.servlet.Filter
 
 
 @Configuration(proxyBeanMethods = false)
 @EnableConfigurationProperties(OpenApiProperties::class)
+@TableScan(basePackageClasses = [OpenAppTable::class])
 class OpenApiAutoConfiguration {
 
 
@@ -39,10 +39,8 @@ class OpenApiAutoConfiguration {
     fun openAppService(
         idGenerator: IIdGenerator,
         transactionTemplate: TransactionTemplate,
-        partnerMapper: OpenPartnerMapper,
-        appMapper: OpenAppMapper
     ): IOpenAppService {
-        return OpenAppService(idGenerator, transactionTemplate, partnerMapper, appMapper)
+        return OpenAppService(idGenerator, transactionTemplate)
     }
 
     @ConditionalOnMissingBean(IOpenPartnerService::class)
@@ -50,11 +48,9 @@ class OpenApiAutoConfiguration {
     fun openPartnerService(
         idGenerator: IIdGenerator,
         transactionTemplate: TransactionTemplate,
-        partnerMapper: OpenPartnerMapper,
-        partnerUserMapper: OpenPartnerUserMapper,
         userService: IUserService
     ): IOpenPartnerService {
-        return OpenPartnerService(idGenerator, transactionTemplate, partnerMapper, partnerUserMapper, userService)
+        return OpenPartnerService(idGenerator, transactionTemplate, userService)
     }
 
 
@@ -71,9 +67,9 @@ class OpenApiAutoConfiguration {
         private val apiProperties: OpenApiProperties
     ) : WebMvcConfigurer, IResourceAuthorizationConfigurer {
 
-        override fun configure(registry: ExpressionUrlAuthorizationConfigurer<HttpSecurity>.ExpressionInterceptUrlRegistry) {
+        override fun configure(registry: AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry) {
             if (apiProperties.pathPattern.isNotBlank()) {
-                registry.antMatchers(apiProperties.pathPattern).permitAll()
+                registry.requestMatchers(apiProperties.pathPattern).permitAll()
             } else {
                 logger.warn("open api path pattern is blank, none api applied.")
             }

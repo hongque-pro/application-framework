@@ -1,12 +1,10 @@
-processResources {
-    from(rootProject.rootDir.toString() + "/sql-scripts") {
-        include("open.sql")
-    }
+infra {
+    useInfraOrmGenerator(Versions.infraOrm)
 }
 
 dependencies {
-    api(project(":auth-starter"))
-
+    api(project(":core-web"))
+    api("com.labijie.orm:exposed-springboot-starter:${Versions.infraOrm}")
     testImplementation("com.h2database:h2")
-    //testImplementation("mybatis-spring-boot-starter-test:org.mybatis.spring.boot")
+    testImplementation("com.labijie.orm:exposed-springboot-test-starter:${Versions.infraOrm}")
 }

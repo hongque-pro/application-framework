@@ -5,7 +5,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplicat
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Import
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
-import org.springframework.security.config.annotation.web.configurers.ExpressionUrlAuthorizationConfigurer
+import org.springframework.security.config.annotation.web.configurers.AuthorizeHttpRequestsConfigurer
 
 /**
  * Created with IntelliJ IDEA.
@@ -16,11 +16,7 @@ import org.springframework.security.config.annotation.web.configurers.Expression
 @Import(AllowAllCorsAutoConfiguration::class)
 @Configuration(proxyBeanMethods = false)
 class DefaultResourceSecurityConfiguration : IResourceAuthorizationConfigurer {
-    override fun getOrder(): Int = Int.MIN_VALUE
-
-    override fun configure(registry: ExpressionUrlAuthorizationConfigurer<HttpSecurity>.ExpressionInterceptUrlRegistry) {
-
-
+    override fun configure(registry: AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry) {
         val paths = mutableListOf(
             "/actuator/**",
             "/aliyun/cnf",
@@ -44,8 +40,10 @@ class DefaultResourceSecurityConfiguration : IResourceAuthorizationConfigurer {
 
         paths.add("/application-errors")
 
-        registry.mvcMatchers(*paths.toTypedArray()).permitAll()
+        registry.requestMatchers(*paths.toTypedArray()).permitAll()
     }
+
+    override fun getOrder(): Int = Int.MIN_VALUE
 
 
 }

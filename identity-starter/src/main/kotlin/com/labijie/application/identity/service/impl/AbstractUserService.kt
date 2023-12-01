@@ -1,24 +1,31 @@
 package com.labijie.application.identity.service.impl
 
-import com.labijie.application.component.IMessageSender
+import com.labijie.application.component.IMessageService
 import com.labijie.application.configuration.ValidationConfiguration
 import com.labijie.application.configure
+import com.labijie.application.exception.OperationConcurrencyException
 import com.labijie.application.exception.UserNotFoundException
-import com.labijie.application.identity.DynamicTableSupport
+import com.labijie.application.executeReadOnly
 import com.labijie.application.identity.IdentityCacheKeys
 import com.labijie.application.identity.IdentityCacheKeys.getUserCacheKey
 import com.labijie.application.identity.IdentityUtils
 import com.labijie.application.identity.configuration.IdentityProperties
-import com.labijie.application.identity.data.RoleRecord
-import com.labijie.application.identity.data.UserRecord
-import com.labijie.application.identity.data.UserRoleRecord
-import com.labijie.application.identity.data.extensions.*
-import com.labijie.application.identity.data.mapper.RoleDynamicSqlSupport.Role
-import com.labijie.application.identity.data.mapper.RoleMapper
-import com.labijie.application.identity.data.mapper.UserDynamicSqlSupport.User
-import com.labijie.application.identity.data.mapper.UserMapper
-import com.labijie.application.identity.data.mapper.UserRoleDynamicSqlSupport.UserRole
-import com.labijie.application.identity.data.mapper.UserRoleMapper
+import com.labijie.application.identity.data.RoleTable
+import com.labijie.application.identity.data.UserRoleTable
+import com.labijie.application.identity.data.UserTable
+import com.labijie.application.identity.data.pojo.Role
+import com.labijie.application.identity.data.pojo.User
+import com.labijie.application.identity.data.pojo.UserRole
+import com.labijie.application.identity.data.pojo.dsl.RoleDSL.insert
+import com.labijie.application.identity.data.pojo.dsl.RoleDSL.selectOne
+import com.labijie.application.identity.data.pojo.dsl.RoleDSL.toRoleList
+import com.labijie.application.identity.data.pojo.dsl.UserDSL.insert
+import com.labijie.application.identity.data.pojo.dsl.UserDSL.selectByPrimaryKey
+import com.labijie.application.identity.data.pojo.dsl.UserDSL.selectOne
+import com.labijie.application.identity.data.pojo.dsl.UserDSL.toUserList
+import com.labijie.application.identity.data.pojo.dsl.UserDSL.updateByPrimaryKey
+import com.labijie.application.identity.data.pojo.dsl.UserRoleDSL.insert
+import com.labijie.application.identity.data.pojo.dsl.UserRoleDSL.selectMany
 import com.labijie.application.identity.exception.*
 import com.labijie.application.identity.model.RegisterInfo
 import com.labijie.application.identity.model.UserAndRoles
@@ -31,14 +38,14 @@ import com.labijie.caching.getOrSet
 import com.labijie.infra.IIdGenerator
 import com.labijie.infra.utils.ShortId
 import com.labijie.infra.utils.ifNullOrBlank
-import org.mybatis.dynamic.sql.SqlBuilder.*
-import org.mybatis.dynamic.sql.util.kotlin.mybatis3.selectList
+import org.jetbrains.exposed.sql.*
+import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.springframework.context.ApplicationContext
 import org.springframework.context.ApplicationContextAware
 import org.springframework.dao.DuplicateKeyException
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
+import org.springframework.security.crypto.factory.PasswordEncoderFactories
 import org.springframework.security.crypto.password.PasswordEncoder
-import org.springframework.transaction.annotation.Transactional
 import org.springframework.transaction.support.TransactionTemplate
 import java.time.Clock
 import java.time.Duration
@@ -50,17 +57,15 @@ import java.time.Instant
  * @author Anders Xiao
  * @date 2019-09-06
  */
-abstract class AbstractUserService constructor(
+@Suppress("MemberVisibilityCanBePrivate")
+abstract class AbstractUserService(
+    protected val transactionTemplate: TransactionTemplate,
     protected val authServerProperties: IdentityProperties,
     protected val idGenerator: IIdGenerator,
-    protected val messageSender: IMessageSender,
+    protected val passwordEncoder: PasswordEncoder,
+    protected val messageSender: IMessageService,
     protected val cacheManager: ICacheManager,
-    protected val userMapper: UserMapper,
-    protected val userRoleMapper: UserRoleMapper,
-    protected val roleMapper: RoleMapper,
-    protected val transactionTemplate: TransactionTemplate
 ) : IUserService, ApplicationContextAware {
-
 
     protected var context: ApplicationContext? = null
         private set
@@ -68,20 +73,6 @@ abstract class AbstractUserService constructor(
     override fun setApplicationContext(applicationContext: ApplicationContext) {
         this.context = applicationContext
     }
-
-    private var encoder: PasswordEncoder? = null
-
-    protected var passwordEncoder: PasswordEncoder
-        get() {
-            if (encoder == null) {
-                encoder = this.context?.getBeansOfType(PasswordEncoder::class.java)?.values?.firstOrNull()
-                    ?: BCryptPasswordEncoder()
-            }
-            return encoder!!
-        }
-        set(value) {
-            encoder = value
-        }
 
     private var validationConfig: ValidationConfiguration? = null
 
@@ -102,12 +93,12 @@ abstract class AbstractUserService constructor(
         phoneNumber: String,
         loginProvider: String? = null
     ): UserAndRoles {
-        val user = userMapper.selectOne {
-            where(User.phoneNumber, isEqualTo(phoneNumber))
+        val user = UserTable.selectOne {
+            UserTable.phoneNumber eq phoneNumber
         } ?: throw UserNotFoundException(
             if(loginProvider.isNullOrBlank()) "User was not existed." else "User was not existed (provider: $loginProvider)."
         )
-        val roles = this.getUserRoles(user.id ?: 0)
+        val roles = this.getUserRoles(user.id)
         return UserAndRoles(user, roles)
     }
 
@@ -122,17 +113,20 @@ abstract class AbstractUserService constructor(
         return UserAndRoles(user, roles)
     }
 
-    @Transactional
     override fun changePhone(userId: Long, phoneNumber: String, confirmed: Boolean): Boolean {
-        val u = UserRecord()
+        val u = User()
         u.id = userId
         u.phoneNumber = phoneNumber
         u.phoneNumberConfirmed = confirmed
         u.concurrencyStamp = ShortId.newId()
 
-        cacheManager.removeAfterTransactionCommit("u:$userId", authServerProperties.cacheRegion)
-        val count = userMapper.updateByPrimaryKeySelective(u)
-        return count == 1
+        return transactionTemplate.execute {
+            cacheManager.removeAfterTransactionCommit("u:$userId", authServerProperties.cacheRegion)
+            val count = UserTable.update({UserTable.id eq userId}) {
+                it[UserTable.phoneNumber] = phoneNumber
+            }
+            count == 1
+        } ?: false
     }
 
     protected open fun onRegisteringUser(user: UserAndRoles, addition:String?) {}
@@ -140,9 +134,9 @@ abstract class AbstractUserService constructor(
     protected open fun onRegisteredUser(user: UserAndRoles,  addition:String?) {}
 
     override fun registerUser(register: RegisterInfo): UserAndRoles {
-        val u = this.transactionTemplate.execute {
-            val p = userMapper.selectOne {
-                where(User.phoneNumber, isEqualTo(register.phoneNumber))
+        val u = this.transactionTemplate.configure(isReadOnly = true).execute {
+            val p = UserTable.selectOne {
+                andWhere { UserTable.phoneNumber eq register.phoneNumber }
             }
             if (p != null) {
                 throw PhoneAlreadyExistedException()
@@ -158,10 +152,9 @@ abstract class AbstractUserService constructor(
                 idGenerator.newId(),
                 register.username.ifNullOrBlank { "u${id}" },
                 register.phoneNumber,
-                passwordEncoder.encode(register.password),
                 getDefaultUserType()
             )
-            val userAndRoles = this.createUser(user, *this.getDefaultUserRoles())
+            val userAndRoles = this.createUser(user, register.password, *this.getDefaultUserRoles())
             this.onRegisteringUser(userAndRoles, register.addition)
             userAndRoles
         }!!
@@ -169,171 +162,195 @@ abstract class AbstractUserService constructor(
         return u
     }
 
-    @Transactional
-    override fun createUser(user: UserRecord, vararg roles: String): UserAndRoles {
-        val rolesExisted = if (roles.isNotEmpty()) {
-            val roleEntities = roles.map {
-                getOrCreateRole(it)
-            }
-            roleEntities.forEach {
-                val key = UserRoleRecord().apply {
-                    this.userId = user.id
-                    this.roleId = it.id
+    override fun createUser(user: User, plainPassword:String, vararg roles: String): UserAndRoles {
+        user.passwordHash = passwordEncoder.encode(plainPassword)
+
+        return transactionTemplate.execute {
+            val rolesExisted = if (roles.isNotEmpty()) {
+                val roleEntities = roles.map {
+                    getOrCreateRole(it)
                 }
-                userRoleMapper.insert(key)
+                roleEntities.forEach {
+                    val key = UserRole().apply {
+                        this.userId = user.id
+                        this.roleId = it.id
+                    }
+                    UserRoleTable.insert(key)
+                }
+                roleEntities
+            } else {
+                listOf()
             }
-            roleEntities
-        } else {
-            listOf()
-        }
-        try {
-            userMapper.insert(user)
-        } catch (e: DuplicateKeyException) {
-            throw UserAlreadyExistedException()
-        }
-        return UserAndRoles(user, rolesExisted)
+            try {
+                UserTable.insert(user)
+            } catch (e: DuplicateKeyException) {
+                throw UserAlreadyExistedException()
+            }
+            UserAndRoles(user, rolesExisted)
+        }!!
     }
 
-    override fun getOrCreateRole(roleName: String): RoleRecord {
+    override fun existUser(userId: Long, throwIfNotExisted: Boolean): Boolean {
+        val u = transactionTemplate.executeReadOnly {
+            UserTable.selectOne(UserTable.id) {
+                andWhere { UserTable.id eq userId }
+            }
+        }
+        if(throwIfNotExisted && u == null){
+            throw UserNotFoundException()
+        }
+        return u != null
+    }
 
-        val role = roleMapper.selectOne {
-            where(Role.name, isEqualTo(roleName))
+    override fun getOrCreateRole(roleName: String): Role {
+
+        var role = transactionTemplate.executeReadOnly {
+            RoleTable.selectOne {
+                andWhere { RoleTable.name eq roleName }
+            }
         }
 
         return if (role == null) {
-            val r = RoleRecord().apply {
+            role = Role().apply {
                 this.id = idGenerator.newId()
                 this.concurrencyStamp = ShortId.newId()
                 this.name = roleName
             }
             try {
                 this.transactionTemplate.execute {
-                    roleMapper.insert(r)
-                    r
-                }!!
+                    RoleTable.insert(role)
+                }
+                role
             } catch (e: DuplicateKeyException) {
-                roleMapper.selectOne {
-                    where(Role.name, isEqualTo(roleName))
-                }?: throw RoleNotFoundException(roleName)
+                throw OperationConcurrencyException()
             }
         }else {
             role
         }
     }
 
-    @Transactional
     override fun setUserEnabled(userId: Long, enabled: Boolean): Boolean {
-        userMapper.selectByPrimaryKey(userId) ?: throw UserNotFoundException(
-            userId
-        )
 
-        val lock = if(enabled) Instant.now(Clock.systemUTC()).plusMillis(Duration.ofDays(1).toMillis()).toEpochMilli() else Long.MAX_VALUE
+        existUser(userId, true)
 
         val cacheKey = getUserCacheKey(userId)
-        cacheManager.removeAfterTransactionCommit(cacheKey, authServerProperties.cacheRegion)
-        val count = userMapper.update {
-            set(User.lockoutEnabled).equalTo(enabled)
-            set(User.lockoutEnd).equalTo(lock)
-                .where(User.id, isEqualTo(userId))
-        }
+
+        val lock = if(enabled) Instant.now(Clock.systemUTC()).minusMillis(Duration.ofDays(1).toMillis()).toEpochMilli() else Long.MAX_VALUE
+
+        val count = transactionTemplate.execute {
+            cacheManager.removeAfterTransactionCommit(cacheKey, authServerProperties.cacheRegion)
+            UserTable.updateByPrimaryKey(userId) {
+                it[lockoutEnabled] = !enabled
+                it[lockoutEnd] = lock
+            }
+        } ?: 0
+
 
         return count > 0
     }
 
-    override fun getUserById(userId: Long): UserRecord? {
+    override fun getUserById(userId: Long): User? {
         if (userId <= 0) {
             return null
         }
         val key = getUserCacheKey(userId)
         return cacheManager.getOrSet(key, authServerProperties.cacheUserTimeout) {
-            userMapper.selectOne {
-                where(User.id, isEqualTo(userId))
+            transactionTemplate.executeReadOnly {
+                UserTable.selectByPrimaryKey(userId)
             }
         }
     }
 
-    @Transactional(readOnly = true)
-    override fun getUsers(pageSize: Int, lastUserId: Long?, order: OrderBy): List<UserRecord> {
-        if (pageSize < 0) {
+    override fun getUsers(pageSize: Int, lastUserId: Long?, order: OrderBy): List<User> {
+        if (pageSize <= 0) {
             return listOf()
         }
 
-        return userMapper.select {
-            if(lastUserId != null){
+        return transactionTemplate.executeReadOnly {
+            val query = UserTable.selectAll()
+
+            if (lastUserId != null) {
                 if (order == OrderBy.Ascending) {
-                    where(User.id, isGreaterThan(lastUserId))
+                    query.andWhere { UserTable.id greater lastUserId }
                 } else {
-                    where(User.id, isLessThan(lastUserId))
+                    query.andWhere { UserTable.id less lastUserId }
                 }
             }
-            if (order == OrderBy.Ascending){
-                this.orderBy(User.id)
-            }else{
-                this.orderBy(User.id.descending())
+
+            if (order == OrderBy.Ascending) {
+                query.orderBy(UserTable.id to SortOrder.ASC)
+            } else {
+                query.orderBy(UserTable.id to SortOrder.DESC)
             }
-            this.limit(pageSize.toLong())
-        }
+            query.limit(pageSize, 0)
+
+            query.toUserList()
+        } ?: listOf()
     }
 
 
-    @Transactional
-    override fun changePassword(userId: Long, oldPassword: String, newPassword: String): Boolean {
-        val user = this.userMapper.selectByPrimaryKey(userId) ?: throw UserNotFoundException(
-            userId
-        )
-        if (!passwordEncoder.matches(oldPassword, user.passwordHash)) {
+    override fun changePassword(userId: Long, oldPlainPassword: String, newPlainPassword: String): Boolean {
+
+        val user = transactionTemplate.configure(isReadOnly = true).execute {
+            UserTable.selectByPrimaryKey(userId)
+        } ?: throw UserNotFoundException(userId)
+
+        if (!passwordEncoder.matches(oldPlainPassword, user.passwordHash)) {
             throw InvalidPasswordException("The old password was incorrect.")
         }
 
-        val passwordHash = passwordEncoder.encode(newPassword)
+        val passwordHash = passwordEncoder.encode(newPlainPassword)
+
 
         val cacheKey = getUserCacheKey(userId)
-        cacheManager.removeAfterTransactionCommit(cacheKey, authServerProperties.cacheRegion)
-        val count = userMapper.update {
-            set(User.passwordHash).equalTo(passwordHash)
-                .where(User.id, isEqualTo(userId))
-        }
-        return count == 1
+        return transactionTemplate.execute {
+            cacheManager.removeAfterTransactionCommit(cacheKey, authServerProperties.cacheRegion)
+            val count = UserTable.update({UserTable.id eq userId}) {
+                it[UserTable.passwordHash] = passwordHash
+            }
+            count == 1
+        } ?: false
     }
 
-    @Transactional
     override fun addRoleToUser(roleId: Long, userId: Long): Boolean {
 
-        userMapper.selectByPrimaryKey(userId) ?: throw UserNotFoundException(userId)
-        roleMapper.selectByPrimaryKey(roleId) ?: throw RoleNotFoundException(roleId)
+        val r = transactionTemplate.execute {
+            existUser(userId, true)
 
-        val record = UserRoleRecord().apply {
-            this.roleId = roleId
-            this.userId = userId
-        }
+            RoleTable.selectOne(RoleTable.id) {
+                andWhere { RoleTable.id eq roleId }
+            } ?: throw RoleNotFoundException(roleId)
 
-        val count = userRoleMapper.insert(record)
+            val ur = UserRole().apply {
+                this.roleId = roleId
+                this.userId = userId
+            }
 
-        return count > 0
+            UserRoleTable.insert(ur).insertedCount
+        } ?: 0
+
+        return r == 1
     }
 
-    @Transactional
     override fun removeRoleFromUser(roleId: Long, userId: Long): Boolean {
-        val count = userRoleMapper.deleteByPrimaryKey(userId, roleId)
-        return count == 1
+        return transactionTemplate.execute {
+            val count = UserRoleTable.deleteWhere {
+                UserRoleTable.roleId.eq(roleId) and UserRoleTable.userId.eq(userId)
+            }
+            count == 1
+        } ?: false
     }
 
-    private fun fetchAllRoles(): List<RoleRecord> {
+    private fun fetchAllRoles(): List<Role> {
         val roles = cacheManager.getOrSet(
             authServerProperties.jdbcTablePrefix.plus(IdentityCacheKeys.ALL_ROLES),
             authServerProperties.cacheRegion,
             authServerProperties.cacheRoleTimeout
         ) { _ ->
 
-            transactionTemplate.execute {
-                val roles = roleMapper.select {
-                    orderBy(Role.name)
-                }
-                if (roles.isNotEmpty()) {
-                    roles
-                } else {
-                    null
-                }
+            transactionTemplate.configure(isReadOnly = true).execute {
+                val list = RoleTable.selectAll().orderBy(RoleTable.name).toRoleList()
+                list.ifEmpty { null }
             }
 
         }
@@ -341,26 +358,22 @@ abstract class AbstractUserService constructor(
     }
 
 
-    @Transactional
-    override fun resetPassword(userId: Long, password: String): Boolean {
-        val u = userMapper.selectOne() {
-            where(User.id, isEqualTo(userId))
-        }
-        if (u != null) {
-            val passwordHash = passwordEncoder.encode(password)
+    override fun resetPassword(userId: Long, plainPassword: String): Boolean {
+        existUser(userId, true)
 
-            val cacheKey = getUserCacheKey(userId)
+        val cacheKey = getUserCacheKey(userId)
+
+        val passwordHash = passwordEncoder.encode(plainPassword)
+        return transactionTemplate.execute {
             cacheManager.removeAfterTransactionCommit(cacheKey, authServerProperties.cacheRegion)
-            val count =  userMapper.update {
-                set(User.passwordHash).equalTo(passwordHash)
-                    .where(User.id, isEqualTo(userId))
+            val count = UserTable.update({UserTable.id eq  userId}) {
+                it[UserTable.passwordHash] = passwordHash
             }
-            return count > 0
-        }
-        return false
+            count > 0
+        } ?: false
     }
 
-    override fun getUser(usr: String): UserRecord? {
+    override fun getUser(usr: String): User? {
         val u = this.transactionTemplate.configure(isReadOnly = true).execute {
             getUserByPrimaryField(usr)
         }
@@ -374,40 +387,58 @@ abstract class AbstractUserService constructor(
     }
 
 
-    private fun getUserByPrimaryField(usr: String): UserRecord? {
+    private fun getUserByPrimaryField(usr: String): User? {
         val id = usr.toLongOrNull()
         if(id != null){
-            return userMapper.selectOne {
-                where(User.id, isEqualTo(id))
-                    .or(User.phoneNumber, isEqualTo(usr))
-                    .or(User.userName, isEqualTo(usr))
-                    .or(User.email, isEqualTo(usr))
-            }
+            return UserTable.select {
+                UserTable.id.eq(id) or
+                UserTable.phoneNumber.eq(usr) or
+                UserTable.userName.eq(usr) or
+                UserTable.email.eq(usr)
+            }.toUserList().firstOrNull()
         }
-        return userMapper.selectOne {
-            where(User.phoneNumber, isEqualTo(usr))
-                .or(User.userName, isEqualTo(usr))
-                .or(User.email, isEqualTo(usr))
-        }
+
+        return UserTable.select {
+                    UserTable.phoneNumber.eq(usr) or
+                    UserTable.userName.eq(usr) or
+                    UserTable.email.eq(usr)
+        }.toUserList().firstOrNull()
     }
 
-    @Transactional(readOnly = true)
-    override fun getUserRoles(userId: Long): List<RoleRecord> {
+    override fun getUserRoles(userId: Long): List<Role> {
 
-        val roleIds = selectList(userRoleMapper::selectMany, listOf(UserRole.roleId), DynamicTableSupport.getTable(UserRole)) {
-            where(UserRole.userId, isEqualTo(userId))
-        }.map { it.roleId ?: 0 }
+        val roleIds = transactionTemplate.configure(isReadOnly = true).execute {
+            UserRoleTable.selectMany(UserRoleTable.roleId) {
+                andWhere { UserRoleTable.userId eq userId }
+            }.map { it.roleId }
+        } ?: listOf()
 
         val roles = this.fetchAllRoles()
         return roles.filter { roleIds.contains(it.id) }
     }
 
-    @Transactional
-    override fun updateUser(userId: Long, user: UserRecord): Boolean {
-        user.id = userId
+    override fun updateUser(userId: Long, user: User): Boolean {
         val cacheKey = getUserCacheKey(userId)
-        cacheManager.removeAfterTransactionCommit(cacheKey, authServerProperties.cacheRegion)
+        return transactionTemplate.execute {
+            cacheManager.removeAfterTransactionCommit(cacheKey, authServerProperties.cacheRegion)
 
-        return userMapper.updateByPrimaryKeySelective(user) > 0
+            UserTable.updateByPrimaryKey(user) > 0
+        } ?: false
+    }
+
+    override fun updateUserLastLogin(userId: Long, ipAddress: String, platform: String?, area: String?, clientVersion: String?): Boolean {
+        val cacheKey = getUserCacheKey(userId)
+        return transactionTemplate.execute {
+            cacheManager.removeAfterTransactionCommit(cacheKey, authServerProperties.cacheRegion)
+
+            val count = UserTable.update({ UserTable.id eq userId }) {
+                it[lastSignInIp] = ipAddress
+                it[lastSignInPlatform] = platform ?: ""
+                it[lastSignInArea] = area ?: ""
+                it[lastClientVersion] = clientVersion ?: ""
+                it[timeLastLogin] = System.currentTimeMillis()
+            }
+            count > 0
+        } ?: false
     }
 }

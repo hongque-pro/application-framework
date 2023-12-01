@@ -1,6 +1,6 @@
 package com.labijie.application.identity.service
 
-import com.labijie.application.identity.data.OAuth2ClientDetailsRecord
+import com.labijie.application.identity.data.pojo.OAuth2Client
 import org.springframework.security.crypto.password.PasswordEncoder
 
 /**
@@ -10,12 +10,12 @@ import org.springframework.security.crypto.password.PasswordEncoder
  * @Description:
  */
 interface IOAuth2ClientService {
-    fun getById(clientId: String): OAuth2ClientDetailsRecord?
-    fun getAll(): List<OAuth2ClientDetailsRecord>
+    fun getById(clientId: String): OAuth2Client?
+    fun getAll(): List<OAuth2Client>
 
     fun setPasswordEncoder(passwordEncoder: PasswordEncoder)
-    fun add(clientDetails: OAuth2ClientDetailsRecord)
+    fun add(clientDetails: OAuth2Client)
     fun remove(clientId: String)
-    fun update(clientDetails: OAuth2ClientDetailsRecord)
+    fun update(clientDetails: OAuth2Client)
     fun updateSecret(clientId: String, secret: String)
 }

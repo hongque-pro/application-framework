@@ -1,7 +1,7 @@
 package com.labijie.application.identity.model
 
-import com.labijie.application.identity.data.RoleRecord as Role
-import com.labijie.application.identity.data.UserRecord as User
+import com.labijie.application.identity.data.pojo.Role
+import com.labijie.application.identity.data.pojo.User
 
 /**
  * Created with IntelliJ IDEA.

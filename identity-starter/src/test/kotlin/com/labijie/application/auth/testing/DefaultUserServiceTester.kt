@@ -1,28 +1,39 @@
 package com.labijie.application.auth.testing
 
-import com.labijie.application.identity.DynamicTableSupport
-import com.labijie.application.component.impl.NoneMessageSender
+import com.labijie.application.component.impl.NoneMessageService
+import com.labijie.application.exception.UserNotFoundException
+import com.labijie.application.executeReadOnly
 import com.labijie.application.identity.IdentityUtils
 import com.labijie.application.identity.configuration.IdentityProperties
-import com.labijie.application.identity.data.mapper.*
+import com.labijie.application.identity.data.UserRoleTable
+import com.labijie.application.identity.data.UserTable
+import com.labijie.application.identity.data.pojo.User
+import com.labijie.application.identity.data.pojo.dsl.UserDSL.deleteByPrimaryKey
+import com.labijie.application.identity.exception.InvalidPasswordException
+import com.labijie.application.identity.exception.UnsupportedLoginProviderException
+import com.labijie.application.identity.isEnabled
+import com.labijie.application.identity.model.RegisterInfo
+import com.labijie.application.identity.model.SocialRegisterInfo
 import com.labijie.application.identity.service.impl.DefaultUserService
+import com.labijie.application.maskPhone
+import com.labijie.application.model.SendSmsCaptchaParam
 import com.labijie.caching.ICacheManager
-import com.labijie.caching.memory.MemoryCacheManager
 import com.labijie.infra.IIdGenerator
-import com.labijie.infra.commons.snowflake.ISlotProvider
-import com.labijie.infra.commons.snowflake.ISlotProviderFactory
-import com.labijie.infra.commons.snowflake.SnowflakeIdGenerator
-import com.labijie.infra.commons.snowflake.configuration.SnowflakeProperties
-import com.labijie.infra.commons.snowflake.providers.StaticSlotProvider
+import com.labijie.infra.impl.DebugIdGenerator
+import com.labijie.infra.orm.test.ExposedTest
+import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
+import org.jetbrains.exposed.sql.deleteWhere
+import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.extension.ExtendWith
-import org.mybatis.spring.boot.test.autoconfigure.MybatisTest
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.test.context.ContextConfiguration
-import org.springframework.test.context.jdbc.Sql
 import org.springframework.test.context.junit.jupiter.SpringExtension
-import org.springframework.transaction.annotation.EnableTransactionManagement
+import org.springframework.transaction.annotation.Transactional
 import org.springframework.transaction.support.TransactionTemplate
+import kotlin.test.AfterTest
+import kotlin.test.BeforeTest
 import kotlin.test.Test
 
 /**
@@ -33,32 +44,20 @@ import kotlin.test.Test
  */
 
 @ExtendWith(SpringExtension::class)
-@MybatisTest
-@EnableTransactionManagement
+@ExposedTest
 @ContextConfiguration(classes = [UnitTestConfiguration::class])
 //@AutoConfigureTestDatabase
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-@Sql("classpath:auth.sql")
-class DefaultUserServiceTester {
+open class DefaultUserServiceTester {
 
     companion object {
         const val IdentityTablePrefix = "identity_"
+        const val defaultLoginProvider = "testProvider"
+        const val notExistedLoginProvider = "testProvider2"
+        const val defaultAuthorizationCode = "authorizationCode"
+        const val defaultUserPassword = "!@#RFVC"
     }
 
-    @Autowired
-    private lateinit var userMapper: UserMapper
-
-    @Autowired
-    private lateinit var roleMapper: RoleMapper
-
-    @Autowired
-    private lateinit var userRoleMapper: UserRoleMapper
-
-    @Autowired
-    private lateinit var userLoginMapper: UserLoginMapper
-
-    @Autowired
-    private lateinit var userOpenIdMapper: UserOpenIdMapper
 
     @Autowired
     private lateinit var transactionTemplate: TransactionTemplate
@@ -67,52 +66,194 @@ class DefaultUserServiceTester {
     private lateinit var cacheManager: ICacheManager
 
 
-    val snowflakeIdGenerator: IIdGenerator by lazy {
-        val config = SnowflakeProperties().apply {
-            this.provider = "static"
-            this.static.slot = 1
-        }
+    val snowflakeIdGenerator: IIdGenerator = DebugIdGenerator()
+    lateinit var defaultUser: User
+    val passwordEncoder = BCryptPasswordEncoder()
+    val messageService = NoneMessageService()
 
-        val fact: ISlotProviderFactory = object : ISlotProviderFactory {
-            override fun createProvider(providerName: String): ISlotProvider {
-                return StaticSlotProvider()
-            }
-        }
-
-        SnowflakeIdGenerator(config, fact)
-    }
-
-    private fun createServiceInstance(): DefaultUserService {
+    private val svc by lazy {
 
         val identityProperties = IdentityProperties().apply {
             this.jdbcTablePrefix = IdentityTablePrefix
         }
 
-        DynamicTableSupport.prefix = IdentityTablePrefix
-
-        return DefaultUserService(
-                identityProperties,
-                snowflakeIdGenerator,
-                NoneMessageSender(),
-                cacheManager,
-                userMapper,
-                userRoleMapper,
-                roleMapper,
-                userLoginMapper,
-                userOpenIdMapper,
-                transactionTemplate)
+        DefaultUserService(
+            identityProperties,
+            snowflakeIdGenerator,
+            passwordEncoder,
+            messageService,
+            cacheManager,
+            transactionTemplate
+        )
     }
+
+    @BeforeTest
+    fun before() {
+        defaultUser = IdentityUtils.createUser(1, "nick", "13888888888", 1)
+        svc.createUser(defaultUser, defaultUserPassword)
+        Assertions.assertNotNull(svc.getUserById(defaultUser.id), "create default user failed.")
+    }
+
+    @AfterTest
+    fun after() {
+        transactionTemplate.execute {
+            UserTable.deleteByPrimaryKey(defaultUser.id)
+            UserRoleTable.deleteWhere { userId.eq(defaultUser.id) }
+        }
+
+    }
+
 
     @Test
     fun getUserTester() {
-        val svc = createServiceInstance()
         svc.getUser("test")
     }
 
     @Test
     fun createRole() {
-        val svc = createServiceInstance()
-        val u = IdentityUtils.createUser(this.snowflakeIdGenerator.newId(), "t1", "18888888888", "dfdsfsdf", 1)
+        val u = IdentityUtils.createUser(this.snowflakeIdGenerator.newId(), "t1", "18888888888", 1)
         svc.createUser(u, "r1", "r2")
     }
+
+    @Test
+    fun getSocialUser() {
+        Assertions.assertThrowsExactly(UnsupportedLoginProviderException::class.java) {
+            svc.getSocialUser("test", "xxxxx")
+        }
+    }
+
+    @Test
+    fun addLoginProvider() {
+        Assertions.assertThrowsExactly(UserNotFoundException::class.java) {
+            svc.addLoginProvider(123, notExistedLoginProvider, defaultAuthorizationCode)
+        }
+    }
+
+    @Test
+    fun removeLoginProvider() {
+        svc.removeLoginProvider(defaultUser.id, notExistedLoginProvider)
+    }
+
+    @Test
+    fun registerSocialUser() {
+        Assertions.assertThrowsExactly(UnsupportedLoginProviderException::class.java) {
+            val reg = SocialRegisterInfo().apply {
+                this.username = "uab"
+                this.phoneNumber = "13888888889"
+                this.provider = "wechat"
+                this.password = "111111"
+                this.code = "#@#%#GFSVCST"
+            }
+            svc.registerSocialUser(reg)
+        }
+    }
+
+    @Test
+    fun getOpenId() {
+        Assertions.assertThrowsExactly(UnsupportedLoginProviderException::class.java) {
+            svc.getOpenId(defaultUser.id, "tttttt", "wechat")
+        }
+    }
+
+    @Test
+    fun changePhone() {
+        val newNumber = "13888888877"
+        val oldNumber = defaultUser.phoneNumber
+        var r = svc.changePhone(defaultUser.id, newNumber)
+        Assertions.assertTrue(r, "change phone nummber return false")
+        val u = svc.getUser(newNumber)
+        Assertions.assertNotNull(u, "find user failed after change phone number")
+
+        r = svc.changePhone(defaultUser.id, oldNumber)
+        Assertions.assertTrue(r, "change phone nummber return false")
+    }
+
+    @Test
+    fun registerUser() {
+
+        messageService.sendSmsCaptcha(SendSmsCaptchaParam(defaultUser.phoneNumber))
+
+        val r = RegisterInfo(username = "newUsr", password = "1232454564", phoneNumber = "13777777777")
+        val u = svc.registerUser(r)
+        val u2 = svc.getUser(u.user.id.toString())
+
+        Assertions.assertNotNull(u2)
+        Assertions.assertEquals(u.user.phoneNumber, u2!!.phoneNumber)
+    }
+
+    @Test
+    fun getOrCreateRole() {
+        val r = svc.getOrCreateRole("Role2")
+        Assertions.assertNotNull(r)
+    }
+
+    @Test
+    open fun setUserEnabled() {
+
+        val u = svc.getUserById(defaultUser.id)!!
+
+        Assertions.assertTrue(svc.setUserEnabled(u.id, !u.isEnabled()),"setUserEnabled return false")
+
+        val u2 = svc.getUserById(defaultUser.id)!!
+        Assertions.assertNotEquals(u.isEnabled(), u2.isEnabled())
+        Assertions.assertNotEquals(u.lockoutEnabled, u2.lockoutEnabled)
+    }
+    @Test
+    fun getUsers() {
+        val users = svc.getUsers(10)
+        Assertions.assertTrue(users.isNotEmpty())
+    }
+
+    @Test
+    fun changePassword() {
+        svc.changePassword(defaultUser.id, defaultUserPassword, "123243556")
+        svc.changePassword(defaultUser.id, "123243556", "33333333")
+        Assertions.assertThrowsExactly(InvalidPasswordException::class.java) {
+            svc.changePassword(defaultUser.id, "44444444", "55555")
+        }
+    }
+
+    @Test
+    fun addRoleToUser() {
+        val role = svc.getOrCreateRole("role1234")
+
+        svc.addRoleToUser(role.id, defaultUser.id)
+        val roles = svc.getUserRoles(defaultUser.id)
+        Assertions.assertTrue(roles.any { it.id == role.id })
+    }
+
+    @Test
+    fun removeRoleFromUser() {
+        val role = svc.getOrCreateRole("role1234")
+        svc.addRoleToUser(role.id, defaultUser.id)
+        val roles = svc.getUserRoles(defaultUser.id)
+        Assertions.assertTrue(roles.any { it.id == role.id })
+
+        Assertions.assertTrue(svc.removeRoleFromUser(role.id, defaultUser.id))
+
+        val roles2 = svc.getUserRoles(defaultUser.id)
+        Assertions.assertFalse(roles2.any { it.id == role.id })
+    }
+
+    @Test
+    fun resetPassword() {
+        val pwd = "!QZCdrf@#%2dfdaf"
+        svc.resetPassword(defaultUser.id, pwd)
+        val u = svc.getUserById(defaultUser.id)
+        passwordEncoder.matches(pwd, u?.passwordHash ?: "")
+    }
+
+    @Test
+    fun updateUser() {
+        svc.updateUser(defaultUser.id, defaultUser)
+    }
+
+    @Test
+    fun updateUserLastLogin() {
+        svc.updateUserLastLogin(defaultUser.id, ipAddress = "192.168.0.1")
+        val u = svc.getUserById(defaultUser.id)
+
+        Assertions.assertEquals(u?.lastSignInIp, "192.168.0.1")
+    }
+
 }

@@ -9,13 +9,9 @@ import java.time.Duration
  * @date 20-5-18
  * @since JDK1.8
  */
-data class SmsAsyncSettings(
-    var sinkEnabled: Boolean = true,
-    var messageExpiration: Duration = Duration.ofMinutes(1)
-)
 
 @ConfigurationProperties("application.sms")
 data class SmsBaseSettings(
-    var async: SmsAsyncSettings = SmsAsyncSettings(),
-    var sendRateLimit: Duration = Duration.ofSeconds(10)
+    var messageExpiration: Duration = Duration.ofMinutes(1),
+    var sendRateLimit: Duration = Duration.ofSeconds(30)
 )

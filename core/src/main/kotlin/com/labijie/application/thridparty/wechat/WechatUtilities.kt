@@ -1,11 +1,11 @@
 package com.labijie.application.thridparty.wechat
 
+import com.ctc.wstx.stax.WstxOutputFactory
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.core.JsonProcessingException
 import com.fasterxml.jackson.core.type.TypeReference
 import com.fasterxml.jackson.databind.MapperFeature
 import com.fasterxml.jackson.databind.PropertyNamingStrategies
-import com.fasterxml.jackson.databind.PropertyNamingStrategy
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.dataformat.xml.XmlMapper
 import com.labijie.application.SpringContext
@@ -17,14 +17,10 @@ import com.labijie.infra.json.JacksonHelper
 import com.labijie.infra.utils.ifNullOrBlank
 import com.labijie.infra.utils.logger
 import com.labijie.infra.utils.throwIfNecessary
-import com.sun.xml.internal.stream.writers.UTF8OutputStreamWriter
 import org.springframework.http.*
 import org.springframework.web.client.RestTemplate
-import java.io.ByteArrayOutputStream
 import java.io.StringWriter
 import java.time.format.DateTimeFormatter
-import javax.swing.Spring
-import javax.xml.stream.XMLOutputFactory
 import javax.xml.stream.XMLStreamException
 import javax.xml.stream.XMLStreamWriter
 import kotlin.reflect.KClass
@@ -56,7 +52,6 @@ object WechatUtilities {
         try {
             this.close()
         } catch (_: XMLStreamException) {
-
         }
     }
 
@@ -91,7 +86,7 @@ object WechatUtilities {
      * 创建微信特有格式的 XML
      */
     fun buildXmlBody(parameter: Map<String, String>, useCDataContent: Boolean = true): String {
-        val xmlOutputFactory = XMLOutputFactory.newFactory()
+        val xmlOutputFactory = WstxOutputFactory()
         return try {
             StringWriter().use { out ->
                 val sw = xmlOutputFactory.createXMLStreamWriter(out)
@@ -168,7 +163,7 @@ object WechatUtilities {
             val error = """
                 Invoke $PLATFORM_NAME api fault.
                 Request URL: $url
-                HTTP STATUS: ${response.statusCodeValue}, 
+                HTTP STATUS: ${response.statusCode}, 
                 Wechat Response: ${response.body.ifNullOrBlank { "<null>" }}
                 
                 Doc URL: https://pay.weixin.qq.com/wiki/doc/api/wxa/wxa_api.php?chapter=9_1""".trimIndent()

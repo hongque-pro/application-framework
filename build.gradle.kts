@@ -13,42 +13,38 @@ allprojects {
     infra {
         useDefault {
             includeSource = true
+            includeDocument = true
             infraBomVersion = Versions.infraBom
             kotlinVersion = Versions.kotlin
-            useMavenProxy = true
-            addHongQueGitHubPackages()
         }
-        useNexusPublish()
+        //usePublishingPlugin()
     }
 }
 
 
 
 subprojects {
-    val mybatisConfigFile = File(this.projectDir, "mybatis-conf/config.xml")
-
     infra {
-
-
         if (!project.name.startsWith("dummy")) {
-            usePublish {
-                description = "application framework package"
-                githubUrl("hongque-pro", "application-framework")
-                artifactId { "framework-${it.name}" }
+            publishing {
+                pom {
+                    description = "application framework package"
+                    githubUrl("hongque-pro", "application-framework")
+                    artifactId { "framework-${it.name}" }
+                }
             }
 
-            useGitHubPackages("hongque-pro", "application-framework")
+            //toGitHubPackages("hongque-pro", "application-framework")
         }
-        if(mybatisConfigFile.exists()){
-            val propertiesFile = File(project.rootProject.projectDir, ("mybatis-conf/settings.properties").replace('/', File.separatorChar))
-            useMybatis(mybatisConfigFile.absolutePath, propertiesFile.absolutePath)
-        }
+//        if(mybatisConfigFile.exists()){
+//            val propertiesFile = File(project.rootProject.projectDir, ("mybatis-conf/settings.properties").replace('/', File.separatorChar))
+//            useMybatis(mybatisConfigFile.absolutePath, propertiesFile.absolutePath)
+//        }
     }
 
 
     dependencies {
         add("testImplementation", "org.springframework.boot:spring-boot-starter-test")
-        add("testImplementation","org.mybatis.spring.boot:mybatis-spring-boot-starter-test:${Versions.mybatisSpringBootTest}")
     }
 }
 

@@ -6,11 +6,11 @@ import com.labijie.application.web.annotation.HumanVerify
 import com.labijie.application.web.getRealIp
 import com.labijie.application.web.handler.ErrorResponse
 import com.labijie.infra.json.JacksonHelper
+import jakarta.servlet.http.HttpServletRequest
+import jakarta.servlet.http.HttpServletResponse
 import org.springframework.http.HttpStatus
 import org.springframework.web.method.HandlerMethod
 import org.springframework.web.servlet.HandlerInterceptor
-import javax.servlet.http.HttpServletRequest
-import javax.servlet.http.HttpServletResponse
 
 /**
  * Created with IntelliJ IDEA.

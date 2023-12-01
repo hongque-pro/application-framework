@@ -15,6 +15,7 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
+import org.springframework.security.config.annotation.web.configurers.AuthorizeHttpRequestsConfigurer
 import org.springframework.security.config.annotation.web.configurers.ExpressionUrlAuthorizationConfigurer
 import org.springframework.web.client.RestTemplate
 
@@ -28,18 +29,18 @@ import org.springframework.web.client.RestTemplate
 @EnableConfigurationProperties(AuthSocialProperties::class)
 @AutoConfigureBefore(AuthServerAutoConfiguration::class)
 @AutoConfigureAfter(IdentityAutoConfiguration::class)
-@Suppress("SpringJavaInjectionPointsAutowiringInspection")
 class AuthSocialAutoConfiguration : IResourceAuthorizationConfigurer {
     companion object{
         const val PROVIDERS_CONFIG_PREFIX = "application.auth.social.providers"
     }
 
-    override fun configure(registry: ExpressionUrlAuthorizationConfigurer<HttpSecurity>.ExpressionInterceptUrlRegistry) {
-        registry
-                .antMatchers(
-                        "/oauth/social/register",
-                        "/oauth/social/login"
-                ).permitAll()
+
+    override fun configure(registry: AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry) {
+
+        registry.requestMatchers(
+            "/oauth/social/register",
+            "/oauth/social/login"
+        ).permitAll()
     }
 
     @Bean
@@ -74,7 +75,5 @@ class AuthSocialAutoConfiguration : IResourceAuthorizationConfigurer {
             return AlipayMiniProgramProvider(alipayMiniOptions, restTemplate)
         }
     }
-
-
 
 }

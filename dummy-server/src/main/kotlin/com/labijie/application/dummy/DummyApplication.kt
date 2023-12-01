@@ -1,7 +1,6 @@
 package com.labijie.application.dummy
 
 import org.springframework.boot.autoconfigure.SpringBootApplication
-import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration
 import org.springframework.boot.runApplication
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
 import org.springframework.web.servlet.config.annotation.EnableWebMvc

@@ -4,6 +4,8 @@ import com.labijie.application.ApplicationErrors
 import com.labijie.application.ApplicationErrors.UnhandledError
 import com.labijie.application.ErrorCodedException
 import com.labijie.application.ErrorCodedStatusException
+import jakarta.servlet.http.HttpServletRequest
+import jakarta.validation.ConstraintViolationException
 import org.slf4j.LoggerFactory
 import org.springframework.core.Ordered
 import org.springframework.http.HttpStatus
@@ -19,8 +21,6 @@ import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestControllerAdvice
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException
 import java.lang.reflect.UndeclaredThrowableException
-import javax.servlet.http.HttpServletRequest
-import javax.validation.ConstraintViolationException
 
 /**
  * Created with IntelliJ IDEA.

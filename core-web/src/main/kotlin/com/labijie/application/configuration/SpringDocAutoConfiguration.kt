@@ -1,8 +1,7 @@
 package com.labijie.application.configuration
 
-import com.labijie.infra.spring.configuration.getApplicationName
-import com.labijie.infra.utils.ifNullOrBlank
-import org.springdoc.core.GroupedOpenApi
+import com.labijie.infra.getApplicationName
+import org.springdoc.core.models.GroupedOpenApi
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Profile
@@ -22,21 +21,21 @@ class SpringDocAutoConfiguration(private val environment: Environment) {
     @Profile("!prod", "!production")
     fun applicationApi(): GroupedOpenApi {
         return GroupedOpenApi.builder()
-            .group(environment.getApplicationName().ifNullOrBlank { "Application" })
+            .group(environment.getApplicationName())
             .packagesToExclude("com.labijie.application", "com.labijie.infra", "org.springframework")
             .build()
     }
 
 
-    @Bean
-    @Profile("!prod", "!production")
-    fun infraApi(): GroupedOpenApi {
-        return GroupedOpenApi.builder()
-            .group("Infra Library")
-            .packagesToScan("com.labijie.infra")
-            .pathsToExclude("/oauth/**")
-            .build()
-    }
+//    @Bean
+//    @Profile("!prod", "!production")
+//    fun infraApi(): GroupedOpenApi {
+//        return GroupedOpenApi.builder()
+//            .group("Infra Library")
+//            .packagesToScan("com.labijie.infra")
+//            .pathsToExclude("/oauth2/**")
+//            .build()
+//    }
 
     @Bean
     @Profile("!prod", "!production")
@@ -52,7 +51,7 @@ class SpringDocAutoConfiguration(private val environment: Environment) {
     fun oauth2Api(): GroupedOpenApi {
         return GroupedOpenApi.builder()
             .group("Security OAuth2")
-            .pathsToMatch("/oauth/**")
+            .pathsToMatch("/oauth2/**")
             .build()
     }
 
@@ -62,7 +61,7 @@ class SpringDocAutoConfiguration(private val environment: Environment) {
         return GroupedOpenApi.builder()
             .group("Spring Framework")
             .packagesToScan("org.springframework")
-            .pathsToExclude("/oauth/**")
+            .pathsToExclude("/oauth2/**")
             .build()
 
     }

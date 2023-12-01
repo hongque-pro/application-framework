@@ -1,6 +1,8 @@
 package com.labijie.application.model
 
-import javax.validation.constraints.NotBlank
+import com.labijie.application.validation.ConfigurablePattern
+import jakarta.validation.constraints.NotBlank
+
 
 /**
  * Created with IntelliJ IDEA.
@@ -8,11 +10,11 @@ import javax.validation.constraints.NotBlank
  * @date 2019-10-19
  */
 open class SmsCaptcha {
-    var modifier: String? = null
+    open var phoneNumber: String = ""
 
     @get:NotBlank(message = "验证码令牌不能空")
-    var stamp: String = ""
+    var clientStamp: String = ""
 
     @get:NotBlank(message = "短信验证码不能为空")
-    var captcha: String = ""
+    var code: String = ""
 }

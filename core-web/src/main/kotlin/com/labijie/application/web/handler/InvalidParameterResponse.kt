@@ -8,8 +8,9 @@ import com.fasterxml.jackson.annotation.JsonProperty
  * @date 2019-09-13
  */
 class InvalidParameterResponse(
-    error:String,
-    description:String,
+    error: String,
+    description: String,
     @get:JsonProperty("param_errors")
-    var paramErrors:Map<String, String>) :
+    var paramErrors: Map<String, String>
+) :
     ErrorResponse(error = error, errorDescription = description)

@@ -1,11 +1,11 @@
 package com.labijie.application.identity.model
 
-import com.labijie.application.identity.data.RoleRecord
-import com.labijie.application.identity.data.UserRecord
+import com.labijie.application.identity.data.pojo.Role
+import com.labijie.application.identity.data.pojo.User
 
 class SocialUserAndRoles(
-    user: UserRecord,
-    roles: List<RoleRecord>,
+    user: User,
+    roles: List<Role>,
     val loginProvider: String,
     val loginProviderKey: String
 ) : UserAndRoles(user, roles) {

@@ -1,12 +1,12 @@
 package com.labijie.application.validation
 
 import com.labijie.infra.utils.logger
+import jakarta.validation.ConstraintValidator
+import jakarta.validation.ConstraintValidatorContext
 import org.owasp.validator.html.AntiSamy
 import org.owasp.validator.html.Policy
 import org.owasp.validator.html.PolicyException
 import org.springframework.core.io.ClassPathResource
-import javax.validation.ConstraintValidator
-import javax.validation.ConstraintValidatorContext
 
 
 /**

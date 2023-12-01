@@ -4,40 +4,31 @@ import com.labijie.application.ApplicationInitializationRunner
 import com.labijie.application.CoreErrorRegistration
 import com.labijie.application.ErrorRegistry
 import com.labijie.application.IErrorRegistry
-import com.labijie.application.component.IMessageSender
-import com.labijie.application.model.SendSmsTemplateParam
-import com.labijie.application.okhttp.IOkHttpClientCustomizer
-import com.labijie.application.okhttp.OkHttpLoggingInterceptor
+import com.labijie.application.netty.NettyUtils
+import com.labijie.application.netty.NettyUtils.configure
 import com.labijie.application.web.client.MultiRestTemplates
 import com.labijie.infra.json.JacksonHelper
-import okhttp3.ConnectionPool
-import okhttp3.OkHttpClient
-import org.springframework.beans.factory.ObjectProvider
 import org.springframework.boot.autoconfigure.AutoConfigureBefore
 import org.springframework.boot.autoconfigure.condition.*
 import org.springframework.boot.autoconfigure.web.client.RestTemplateAutoConfiguration
+import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.boot.web.client.RestTemplateBuilder
 import org.springframework.boot.web.client.RestTemplateCustomizer
 import org.springframework.boot.web.reactive.context.AnnotationConfigReactiveWebServerApplicationContext
 import org.springframework.boot.web.servlet.context.AnnotationConfigServletWebServerApplicationContext
-import org.springframework.cloud.commons.httpclient.OkHttpClientConnectionPoolFactory
-import org.springframework.cloud.commons.httpclient.OkHttpClientFactory
 import org.springframework.context.ConfigurableApplicationContext
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Lazy
 import org.springframework.core.annotation.Order
-import org.springframework.http.client.OkHttp3ClientHttpRequestFactory
+import org.springframework.http.client.ReactorNettyClientRequestFactory
 import org.springframework.http.converter.AbstractHttpMessageConverter
 import org.springframework.http.converter.ByteArrayHttpMessageConverter
 import org.springframework.http.converter.StringHttpMessageConverter
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter
 import org.springframework.web.client.RestTemplate
-import java.util.concurrent.TimeUnit
-import java.util.function.Consumer
-import java.util.stream.Collectors
-import javax.annotation.PreDestroy
+import reactor.netty.http.client.HttpClient
 
 
 /**
@@ -45,9 +36,8 @@ import javax.annotation.PreDestroy
  * @author Anders Xiao
  * @date 2019-09-09
  */
-@Suppress("SpringJavaInjectionPointsAutowiringInspection")
 @Configuration(proxyBeanMethods = false)
-@EnableConfigurationProperties(ValidationConfiguration::class, SmsBaseSettings::class, OpenApiClientProperties::class)
+@EnableConfigurationProperties(ValidationConfiguration::class, SmsBaseSettings::class, OpenApiClientProperties::class, HttpClientProperties::class)
 @AutoConfigureBefore(RestTemplateAutoConfiguration::class)
 @Order(-1)
 class ApplicationCoreAutoConfiguration {
@@ -84,78 +74,23 @@ class ApplicationCoreAutoConfiguration {
 
 
     @Configuration(proxyBeanMethods = false)
-    @ConditionalOnBean(IMessageSender::class)
-    @ConditionalOnProperty(value = ["application.sms.async.sink-enabled"], matchIfMissing = true)
-    protected class MessageSinkConfiguration {
-        @Bean
-        fun handleSms(messageSender: IMessageSender): Consumer<SendSmsTemplateParam> {
-            return Consumer {
-                messageSender.sendSmsTemplate(it, async = false, checkTimeout = true)
-            }
-        }
-    }
-
-    @Configuration(proxyBeanMethods = false)
     @ConditionalOnProperty(value = ["application.okhttp.enabled"], matchIfMissing = true)
-    @EnableConfigurationProperties(OkHttpClientProperties::class)
-    @ConditionalOnMissingBean(OkHttpClient::class)
-    protected class OkHttpClientAutoConfiguration {
+    @ConditionalOnMissingBean(HttpClient::class)
+    protected class NettyHttpClientAutoConfiguration {
 
-        private var okHttpClient: OkHttpClient? = null
 
         @Bean
-        @ConditionalOnMissingBean(ConnectionPool::class)
-        fun connectionPool(
-            okHttpClientProperties: OkHttpClientProperties,
-            connectionPoolFactory: OkHttpClientConnectionPoolFactory
-        ): ConnectionPool {
-            val maxTotalConnections: Int = okHttpClientProperties.maxConnections
-            val timeToLive: Long = okHttpClientProperties.timeToLive.toMillis()
-            return connectionPoolFactory.create(maxTotalConnections, timeToLive, TimeUnit.MILLISECONDS)
-        }
-
-        @Bean
-        fun okHttpClient(
-            customizers: ObjectProvider<IOkHttpClientCustomizer>,
-            httpClientFactory: OkHttpClientFactory,
-            connectionPool: ConnectionPool,
-            okHttpClientProperties: OkHttpClientProperties
-        ): OkHttpClient {
-            val disableSslValidation: Boolean = okHttpClientProperties.sslValidationDisabled
-            this.okHttpClient = httpClientFactory.createBuilder(disableSslValidation)
-                .connectTimeout(okHttpClientProperties.connectTimeout)
-                .readTimeout(okHttpClientProperties.readTimeout)
-                .writeTimeout(okHttpClientProperties.writeTimeout)
-                .followRedirects(okHttpClientProperties.followRedirects)
-                .connectionPool(connectionPool)
-                .addInterceptor(OkHttpLoggingInterceptor())
-                .apply {
-                    customizers.orderedStream().forEach {
-                        it.customize(this)
-                    }
-                }
-                .build()
-
-            return this.okHttpClient!!
-        }
-
-        @PreDestroy
-        fun destroy() {
-            okHttpClient?.dispatcher()?.executorService()?.shutdown()
-            okHttpClient?.connectionPool()?.evictAll()
+        fun nettyHttpClient(nettyHttpClientProperties: HttpClientProperties): HttpClient {
+            return NettyUtils.createHttpClient(null, null, nettyHttpClientProperties.loggerEnabled)
         }
 
         @Configuration(proxyBeanMethods = false)
         protected class RestTemplateConfiguration {
 
             @Bean
-            fun okhttpCustomizer(
-                okHttpClient: OkHttpClient
-            ): RestTemplateCustomizer {
+            fun nettyHttpCustomizer(): RestTemplateCustomizer {
                 return RestTemplateCustomizer { rt ->
-                    rt.requestFactory = OkHttp3ClientHttpRequestFactory(okHttpClient)
 
-                    //替换默认的 json mapper 转换
                     rt.messageConverters.removeIf {
                         it is MappingJackson2HttpMessageConverter
                     }
@@ -167,7 +102,6 @@ class ApplicationCoreAutoConfiguration {
                         when (it) {
                             is StringHttpMessageConverter -> {
                                 it.defaultCharset = Charsets.UTF_8
-                                it.setWriteAcceptCharset(false)
                             }
                             !is ByteArrayHttpMessageConverter -> {
                                 it.defaultCharset = Charsets.UTF_8
@@ -180,11 +114,15 @@ class ApplicationCoreAutoConfiguration {
             @Lazy
             @ConditionalOnMissingBean(RestTemplate::class)
             @Bean
-            fun restTemplate(builder: RestTemplateBuilder): RestTemplate {
+            fun restTemplate(
+                nettyHttpClient: HttpClient,
+                nettyHttpClientProperties: HttpClientProperties,
+                builder: RestTemplateBuilder): RestTemplate {
+                val factory = ReactorNettyClientRequestFactory(nettyHttpClient).apply {
+                    this.configure(nettyHttpClientProperties)
+                }
                 return builder.build().apply {
-                    this.messageConverters.filterIsInstance<StringHttpMessageConverter>().forEach {
-                        it.setWriteAcceptCharset(false)
-                    }
+                    requestFactory = factory
                 }
             }
 
@@ -192,19 +130,13 @@ class ApplicationCoreAutoConfiguration {
             @Bean
             @ConditionalOnMissingBean(MultiRestTemplates::class)
             fun multiRestTemplates(
-                customizers: ObjectProvider<IOkHttpClientCustomizer>,
-                httpClientFactory: OkHttpClientFactory,
-                okHttpClientProperties: OkHttpClientProperties,
-                poolFactory: OkHttpClientConnectionPoolFactory,
+                okHttpClientProperties: HttpClientProperties,
                 restTemplateBuilder: RestTemplateBuilder,
                 restTemplate: RestTemplate
             ): MultiRestTemplates {
                 return MultiRestTemplates(
-                    httpClientFactory,
                     restTemplateBuilder,
                     okHttpClientProperties,
-                    poolFactory,
-                    customizers.orderedStream().collect(Collectors.toList()),
                     restTemplate
                 )
             }

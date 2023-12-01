@@ -1,7 +1,7 @@
 package com.labijie.application.identity.configuration
 
-import com.labijie.application.component.IMessageSender
-import com.labijie.application.identity.data.mapper.*
+import com.labijie.application.component.IMessageService
+import com.labijie.application.identity.data.UserTable
 import com.labijie.application.identity.service.IOAuth2ClientService
 import com.labijie.application.identity.service.IUserService
 import com.labijie.application.identity.service.impl.DefaultOAuth2ClientService
@@ -10,13 +10,15 @@ import com.labijie.application.identity.social.DefaultSocialUserGenerator
 import com.labijie.application.identity.social.ISocialUserGenerator
 import com.labijie.caching.ICacheManager
 import com.labijie.infra.IIdGenerator
-import org.mybatis.spring.annotation.MapperScan
-import org.mybatis.spring.boot.autoconfigure.MybatisAutoConfiguration
-import org.springframework.boot.autoconfigure.AutoConfigureAfter
+import com.labijie.infra.orm.annotation.TableScan
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.security.crypto.argon2.Argon2PasswordEncoder
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
+import org.springframework.security.crypto.password.*
+import org.springframework.security.crypto.scrypt.SCryptPasswordEncoder
 import org.springframework.transaction.support.TransactionTemplate
 
 /**
@@ -25,48 +27,50 @@ import org.springframework.transaction.support.TransactionTemplate
  * @Date: 2021-04-29 12:28
  * @Description:
  */
-@AutoConfigureAfter(MybatisAutoConfiguration::class)
-@MapperScan(basePackageClasses = [UserMapper::class])
+@Suppress("SpringJavaInjectionPointsAutowiringInspection")
+@TableScan(basePackageClasses = [UserTable::class])
 @EnableConfigurationProperties(IdentityProperties::class)
 @Configuration(proxyBeanMethods = false)
 class IdentityAutoConfiguration {
 
+    private val passwordEncoder by lazy {
+        BCryptPasswordEncoder()
+    }
+
     @Bean
     @ConditionalOnMissingBean(IOAuth2ClientService::class)
     fun oath2ClientService(
-            cacheManager: ICacheManager,
-            identityProperties: IdentityProperties,
-            oAuth2ClientDetailsMapper: OAuth2ClientDetailsMapper,
-            transactionTemplate: TransactionTemplate): DefaultOAuth2ClientService {
-        return DefaultOAuth2ClientService(transactionTemplate, identityProperties, cacheManager, oAuth2ClientDetailsMapper)
+        cacheManager: ICacheManager,
+        identityProperties: IdentityProperties,
+        transactionTemplate: TransactionTemplate
+    ): DefaultOAuth2ClientService {
+        return DefaultOAuth2ClientService(transactionTemplate, identityProperties, cacheManager)
     }
 
+    @Bean
+    @ConditionalOnMissingBean(PasswordEncoder::class)
+    fun identityPasswordEncoder(): PasswordEncoder {
+        return passwordEncoder
+    }
 
     @Bean
     @ConditionalOnMissingBean(IUserService::class)
     fun defaultUserService(
-            identityProperties: IdentityProperties,
-            idGenerator: IIdGenerator,
-            messageSender: IMessageSender,
-            cacheManager: ICacheManager,
-            userMapper: UserMapper,
-            userRoleMapper: UserRoleMapper,
-            roleMapper: RoleMapper,
-            userLoginMapper: UserLoginMapper,
-            userOpenIdMapper: UserOpenIdMapper,
-            transactionTemplate: TransactionTemplate
+        passwordEncoder: PasswordEncoder,
+        identityProperties: IdentityProperties,
+        idGenerator: IIdGenerator,
+        messageService: IMessageService,
+        cacheManager: ICacheManager,
+        transactionTemplate: TransactionTemplate
     ): DefaultUserService {
         return DefaultUserService(
-                identityProperties,
-                idGenerator,
-                messageSender,
-                cacheManager,
-                userMapper,
-                userRoleMapper,
-                roleMapper,
-                userLoginMapper,
-                userOpenIdMapper,
-                transactionTemplate)
+            identityProperties,
+            idGenerator,
+            passwordEncoder,
+            messageService,
+            cacheManager,
+            transactionTemplate
+        )
     }
 
     @Bean

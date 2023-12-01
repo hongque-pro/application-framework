@@ -1,6 +1,7 @@
 package com.labijie.application.open.service
 
 import com.labijie.application.ForwardList
+import com.labijie.application.open.data.pojo.OpenApp
 import com.labijie.application.open.model.*
 
 interface IOpenAppService {

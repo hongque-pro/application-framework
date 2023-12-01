@@ -1,6 +1,6 @@
 package com.labijie.application
 
-import org.springframework.util.Base64Utils
+import java.util.*
 
 /**
  * Created with IntelliJ IDEA.
@@ -41,11 +41,12 @@ object ForwardTokenCodec {
             }
         }
         val token = "${lastOffset}:${keys.joinToString(":")}"
-        return Base64Utils.encodeToUrlSafeString(token.toByteArray(Charsets.US_ASCII))
+        return Base64.getUrlEncoder().encodeToString(token.toByteArray(Charsets.US_ASCII))
     }
 
     fun decode(forwardToken:String): ForwardOffset {
-        val tokenString = Base64Utils.decodeFromUrlSafeString(forwardToken).toString(Charsets.US_ASCII)
+        val tokenString =
+            Base64.getUrlDecoder().decode(forwardToken).toString(Charsets.US_ASCII)
         val elements = tokenString.split(":")
         val offset = elements.first()
         val keys = elements.subList(1, elements.size)

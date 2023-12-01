@@ -1,12 +1,8 @@
 package com.labijie.application.auth.social.providers.wechat
 
 import com.labijie.application.crypto.AesUtils
-import com.labijie.application.crypto.RsaUtils
-import com.labijie.infra.utils.throwIfNecessary
-import org.apache.commons.codec.digest.DigestUtils
-import org.bouncycastle.jce.provider.BouncyCastleProvider
-import java.lang.Exception
-import java.security.Security
+import com.labijie.infra.oauth2.OAuth2ServerUtils.toHexString
+import java.security.MessageDigest
 import java.util.*
 import javax.crypto.Cipher
 import javax.crypto.spec.IvParameterSpec
@@ -60,7 +56,11 @@ object WechatCrypto {
         return plain?.toString(Charsets.UTF_8) ?: ""
     }
 
-    fun verifySha1(data: String, sessionKey:String, sign: String): Boolean{
-        return DigestUtils.sha1Hex(data + sessionKey) == sign
+    fun verifySha1(data: String, sessionKey: String, sign: String): Boolean {
+        val bytes = "${data}${sessionKey}".toByteArray(Charsets.UTF_8)
+        val md = MessageDigest.getInstance("SHA")
+        md.update(bytes)
+        val r = md.digest().toHexString()
+        return r == sign
     }
 }

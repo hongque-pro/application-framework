@@ -1,8 +1,8 @@
 package com.labijie.application.identity
 
+import com.labijie.application.identity.data.pojo.User
 import com.labijie.infra.utils.ShortId
 import java.time.ZoneOffset
-import com.labijie.application.identity.data.UserRecord as User
 
 /**
  * Created with IntelliJ IDEA.
@@ -16,7 +16,6 @@ object IdentityUtils {
     fun createUser(id: Long,
                    userName: String,
                    phoneNumber: String,
-                   passwordHash: String,
                    userType: Byte): User {
         return User().apply {
             this.id = id
@@ -24,7 +23,6 @@ object IdentityUtils {
             this.lockoutEnd = System.currentTimeMillis()
             this.lockoutEnabled = false
             this.language = "zh-CN"
-            this.passwordHash = passwordHash
             this.accessFailedCount = 0
             this.concurrencyStamp = ShortId.newId()
             this.email = "${userName.lowercase()}@null.null"
@@ -45,11 +43,12 @@ object IdentityUtils {
             this.securityStamp = ShortId.newId()
             this.approved = true
             this.approverId = 0
-            this.memberId = 0
         }
     }
 }
 
 
 val User.isNullEmail
-    get() = this.email?.endsWith("@null.null") ?: true
+    get() = this.email.endsWith("@null.null") ?: true
+
+fun User.isEnabled(): Boolean = !this.lockoutEnabled || this.lockoutEnd < System.currentTimeMillis()

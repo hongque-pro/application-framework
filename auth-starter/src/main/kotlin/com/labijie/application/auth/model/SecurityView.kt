@@ -9,7 +9,7 @@ import com.labijie.application.model.BindingStatus
  */
 data class SecurityView(
     var email:String = "",
-    var emialStatus: BindingStatus = BindingStatus.Unbound,
+    var emailStatus: BindingStatus = BindingStatus.Unbound,
     var mobile:String = "",
     var mobileStatus:BindingStatus = BindingStatus.Unbound
 )

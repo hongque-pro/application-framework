@@ -1,6 +1,6 @@
 package com.labijie.application.auth.model
 
-import javax.validation.constraints.NotBlank
+import jakarta.validation.constraints.NotBlank
 
 /**
  * Created with IntelliJ IDEA.

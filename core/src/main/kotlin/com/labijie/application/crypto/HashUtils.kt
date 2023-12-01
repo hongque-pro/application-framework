@@ -1,7 +1,8 @@
 package com.labijie.application.crypto
 
-import org.apache.commons.codec.binary.Hex
-import org.apache.commons.codec.digest.DigestUtils
+import org.apache.hc.client5.http.utils.Hex
+import org.bouncycastle.jcajce.provider.digest.MD5
+import org.springframework.util.DigestUtils
 import java.security.MessageDigest
 import java.util.*
 import javax.crypto.Mac
@@ -28,8 +29,7 @@ object HashUtils {
 
             val content = getSignContent(params).plus("&key=$key")
             val rawHmac = mac.doFinal(content.toByteArray())
-            val hexBytes = Hex().encode(rawHmac)
-            String(hexBytes, Charsets.UTF_8).lowercase()
+            Hex.encodeHexString(rawHmac).lowercase()
         } catch (e: Exception) {
             throw RuntimeException()
         }
@@ -54,7 +54,7 @@ object HashUtils {
 
     fun signMD5(params: Map<String, String>, key: String): String {
         val content = getSignContent(params).plus("&key=$key")
-        return DigestUtils.md5Hex(content).lowercase()
+        return DigestUtils.md5DigestAsHex(content.toByteArray(Charsets.UTF_8)).lowercase()
     }
 
     fun verifyMD5(params: Map<String, String>, sign: String, key: String): Boolean {
@@ -69,8 +69,7 @@ object HashUtils {
      * @return
      */
     fun sha256(str: String): String {
-        val messageDigest: MessageDigest
-        messageDigest = MessageDigest.getInstance("SHA-256")
+        val messageDigest: MessageDigest = MessageDigest.getInstance("SHA-256")
         messageDigest.update(str.toByteArray(charset("UTF-8")))
         return byte2Hex(messageDigest.digest())
     }

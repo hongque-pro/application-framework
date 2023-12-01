@@ -1,12 +1,12 @@
 package com.labijie.application
 
 import com.labijie.application.component.IHumanChecker
-import com.labijie.application.component.IMessageSender
+import com.labijie.application.component.IMessageService
 import com.labijie.application.component.IObjectStorage
 import com.labijie.application.jackson.DescribeEnumDeserializer
 import com.labijie.application.jackson.DescribeEnumSerializer
+import com.labijie.infra.getApplicationName
 import com.labijie.infra.json.JacksonHelper
-import com.labijie.infra.spring.configuration.getApplicationName
 import com.labijie.infra.utils.ifNullOrBlank
 import com.labijie.infra.utils.logger
 import com.labijie.infra.utils.toLocalDateTime
@@ -29,7 +29,6 @@ import java.lang.reflect.Method
 import java.lang.reflect.ParameterizedType
 import kotlin.concurrent.thread
 import kotlin.reflect.KClass
-import kotlin.streams.toList
 import kotlin.system.exitProcess
 
 /**
@@ -57,7 +56,7 @@ class ApplicationInitializationRunner<T : ConfigurableApplicationContext>(
         SpringContext.current = applicationContext
         environment = applicationContext.environment
         this.applicationContext = applicationContext
-        applicationName = environment.getApplicationName()
+        applicationName = environment.getApplicationName(false) ?: "NoneName"
         profiles = applicationContext.environment.activeProfiles.joinToString()
         errorRegistrations = applicationContext.getBeanProvider(IErrorRegistration::class.java)
         errorRegistry = applicationContext.getBean(IErrorRegistry::class.java)
@@ -167,7 +166,7 @@ class ApplicationInitializationRunner<T : ConfigurableApplicationContext>(
 [${this.applicationName}] has been started !! 
 framework ver: ${gitProperties.get("build.version")}   
 framework commit: ${gitProperties.commitTime.toLocalDateTime().toLocalDate()}  
-${printComponentImplements(IHumanChecker::class, IObjectStorage::class, IMessageSender::class)}
+${printComponentImplements(IHumanChecker::class, IObjectStorage::class, IMessageService::class)}
 module loaded:  ${moduleList.ifNullOrBlank("none module")}
 current profiles: $profiles
 --------------------------------------------------------------------

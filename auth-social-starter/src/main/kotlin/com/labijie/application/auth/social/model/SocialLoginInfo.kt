@@ -1,7 +1,7 @@
 package com.labijie.application.auth.social.model
 
+import jakarta.validation.constraints.NotBlank
 import org.hibernate.validator.constraints.Length
-import javax.validation.constraints.NotBlank
 
 /**
  * Created with IntelliJ IDEA.

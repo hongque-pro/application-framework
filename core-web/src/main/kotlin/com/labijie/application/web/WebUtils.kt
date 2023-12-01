@@ -1,6 +1,6 @@
 package com.labijie.application.web
 
-import com.labijie.infra.oauth2.Constants
+import com.labijie.infra.oauth2.OAuth2Constants
 import com.labijie.infra.oauth2.TwoFactorPrincipal
 import com.labijie.infra.utils.ifNullOrBlank
 import org.springframework.core.annotation.AnnotationUtils
@@ -18,7 +18,8 @@ import java.lang.IllegalArgumentException
 import java.net.URLEncoder
 import java.nio.charset.Charset
 import java.util.*
-import javax.servlet.http.HttpServletRequest
+import jakarta.servlet.http.HttpServletRequest
+import org.springframework.security.config.annotation.web.configurers.AuthorizeHttpRequestsConfigurer
 import kotlin.reflect.KClass
 
 
@@ -138,7 +139,7 @@ fun HandlerMethod.hasAnnotationOnMethodOrClass(annotation: KClass<out Annotation
     return this.hasMethodAnnotation(annotation.java) || AnnotationUtils.isAnnotationDeclaredLocally(annotation.java, this.method.declaringClass)
 }
 
-private const val ROLE_PREFIX = Constants.ROLE_AUTHORITY_PREFIX
+private const val ROLE_PREFIX = OAuth2Constants.ROLE_AUTHORITY_PREFIX
 
 fun roleAuthority(role: String): SimpleGrantedAuthority {
     return SimpleGrantedAuthority("$ROLE_PREFIX${role}")
@@ -177,9 +178,9 @@ object WebUtils {
         }
 }
 
-fun ExpressionUrlAuthorizationConfigurer<HttpSecurity>.ExpressionInterceptUrlRegistry.antMatchers(vararg antPatterns: String, ignoreCase: Boolean = false, method: HttpMethod? = null): ExpressionUrlAuthorizationConfigurer<HttpSecurity>.AuthorizedUrl {
+fun AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry.antMatchers(vararg antPatterns: String, ignoreCase: Boolean = false, method: HttpMethod? = null): AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizedUrl {
     val matchers = antPatterns.toList().map {
-        AntPathRequestMatcher(it, method?.name, !ignoreCase)
+        AntPathRequestMatcher(it, method?.name(), !ignoreCase)
     }.toTypedArray()
     return this.requestMatchers(*matchers)
 }

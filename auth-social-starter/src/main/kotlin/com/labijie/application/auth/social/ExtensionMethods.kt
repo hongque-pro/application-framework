@@ -8,6 +8,8 @@ import com.labijie.application.auth.social.providers.wechat.WechatMiniOptions
 import com.labijie.application.identity.service.ISocialUserService
 import com.labijie.infra.oauth2.TwoFactorPrincipal
 import com.labijie.infra.oauth2.resource.hasTokenAttributeValue
+import org.springframework.security.config.annotation.web.builders.HttpSecurity
+import org.springframework.security.config.annotation.web.configurers.AuthorizeHttpRequestsConfigurer
 import org.springframework.security.config.annotation.web.configurers.ExpressionUrlAuthorizationConfigurer
 
 
@@ -36,10 +38,10 @@ val TwoFactorPrincipal.isAlipayMiniUser: Boolean
     get()= (this.loginProvider == AlipayMiniOptions.ProviderName)
 
 
-fun ExpressionUrlAuthorizationConfigurer<*>.AuthorizedUrl.wechatMiniOnly(): ExpressionUrlAuthorizationConfigurer<*>.ExpressionInterceptUrlRegistry {
+fun AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizedUrl.wechatMiniOnly(): AuthorizeHttpRequestsConfigurer<*>.AuthorizationManagerRequestMatcherRegistry {
     return this.hasTokenAttributeValue(OAuth2SocialConstants.LoginProviderFieldName, WechatMiniOptions.ProviderName)
 }
 
-fun ExpressionUrlAuthorizationConfigurer<*>.AuthorizedUrl.alipayMiniOnly(): ExpressionUrlAuthorizationConfigurer<*>.ExpressionInterceptUrlRegistry {
+fun AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizedUrl.alipayMiniOnly(): AuthorizeHttpRequestsConfigurer<*>.AuthorizationManagerRequestMatcherRegistry {
     return this.hasTokenAttributeValue(OAuth2SocialConstants.LoginProviderFieldName, AlipayMiniOptions.ProviderName)
 }

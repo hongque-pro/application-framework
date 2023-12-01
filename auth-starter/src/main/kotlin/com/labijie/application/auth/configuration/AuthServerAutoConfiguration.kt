@@ -16,6 +16,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
+import org.springframework.security.config.annotation.web.configurers.AuthorizeHttpRequestsConfigurer
 import org.springframework.security.config.annotation.web.configurers.ExpressionUrlAuthorizationConfigurer
 
 /**
@@ -23,14 +24,13 @@ import org.springframework.security.config.annotation.web.configurers.Expression
  * @author Anders Xiao
  * @date 2019-09-05
  */
-@Suppress("SpringJavaInjectionPointsAutowiringInspection")
 @Configuration(proxyBeanMethods = false)
 @AutoConfigureAfter(IdentityAutoConfiguration::class)
 @AutoConfigureBefore(OAuth2DependenciesAutoConfiguration::class)
 class AuthServerAutoConfiguration : IResourceAuthorizationConfigurer {
 
-    override fun configure(registry: ExpressionUrlAuthorizationConfigurer<HttpSecurity>.ExpressionInterceptUrlRegistry) {
-        registry.antMatchers(
+    override fun configure(registry: AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry) {
+        registry.requestMatchers(
             "/account/register",
             "/account/verify",
             "/account/set-password",
@@ -69,6 +69,7 @@ class AuthServerAutoConfiguration : IResourceAuthorizationConfigurer {
     ): UserSignInEventListener {
         return UserSignInEventListener(signInPlatformDetection, userService)
     }
+
 
 
 //    @Bean

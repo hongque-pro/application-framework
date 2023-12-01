@@ -2,8 +2,8 @@ package com.labijie.application.open.model
 
 import com.labijie.application.configuration.ValidationConfiguration
 import com.labijie.application.validation.ConfigurablePattern
+import jakarta.validation.constraints.Email
 import org.hibernate.validator.constraints.Length
-import javax.validation.constraints.Email
 
 data class OpenPartnerContact(
     @Length(max=16)

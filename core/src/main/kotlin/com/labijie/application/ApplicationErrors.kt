@@ -31,6 +31,8 @@ object ApplicationErrors {
     const val DataMissed = "data_missed"
     @ErrorDescription("数据已经存在")
     const val DataExisted = "data_existed"
+    @ErrorDescription("数据操作冲突，请重试")
+    const val DataOperationConcurrency = "data_operation_concurrency"
     @ErrorDescription("不支持的 HTTP 媒体类型")
     const val MediaTypeNotAcceptable = "media_type_not_acceptable"
     @ErrorDescription("你没有权限进行该操作")

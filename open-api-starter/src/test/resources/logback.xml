@@ -11,7 +11,7 @@
 
     <logger name="com.labijie.application.geo.impl" level="DEBUG" />
     <logger name="com.labijie.application.open.data.mapper" level="DEBUG" />
-    <root level="WARN">
+    <root level="DEBUG">
         <appender-ref ref="STDOUT"/>
     </root>
 </configuration>

@@ -1,0 +1,2 @@
+com.labijie.application.auth.social.configuration.AuthSocialAutoConfiguration
+com.labijie.application.auth.social.configuration.AuthSocialControllerAutoConfiguration

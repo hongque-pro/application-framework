@@ -1,6 +1,6 @@
 package com.labijie.application.auth.component
 
-import com.labijie.application.identity.data.OAuth2ClientDetailsRecord
+import com.labijie.application.identity.data.pojo.OAuth2Client
 import com.labijie.application.identity.service.IOAuth2ClientService
 import com.labijie.infra.oauth2.configuration.OAuth2ServerProperties
 import org.springframework.context.ApplicationContext
@@ -8,7 +8,7 @@ import org.springframework.context.ApplicationContextAware
 import org.springframework.security.oauth2.core.AuthorizationGrantType
 import org.springframework.security.oauth2.server.authorization.client.RegisteredClient
 import org.springframework.security.oauth2.server.authorization.client.RegisteredClientRepository
-import org.springframework.security.oauth2.server.authorization.config.TokenSettings
+import org.springframework.security.oauth2.server.authorization.settings.TokenSettings
 import org.springframework.util.StringUtils
 import java.time.Duration
 
@@ -33,17 +33,17 @@ class DefaultClientRepository(
         val r = this.findById(registeredClient.id)
         if (r == null) {
 
-            val record = OAuth2ClientDetailsRecord().apply {
+            val record = OAuth2Client().apply {
                 this.clientId = client.clientId
-                this.clientSecret = client.clientSecret
+                this.clientSecret = client.clientSecret ?: ""
                 this.resourceIds = ""
-                this.accessTokenValidity = client.tokenSettings.accessTokenTimeToLive.seconds.toInt()
-                this.refreshTokenValidity = client.tokenSettings.refreshTokenTimeToLive.seconds.toInt()
+                this.accessTokenLiveSeconds = client.tokenSettings.accessTokenTimeToLive.seconds.toInt()
+                this.refreshTokenLiveSeconds = client.tokenSettings.refreshTokenTimeToLive.seconds.toInt()
                 this.authorities = ""
-                this.scope = StringUtils.collectionToCommaDelimitedString(client.scopes)
-                this.autoapprove = ""
+                this.scopes = StringUtils.collectionToCommaDelimitedString(client.scopes)
+                this.autoApprove = false
                 this.enabled = true
-                this.webServerRedirectUri = StringUtils.collectionToCommaDelimitedString(client.redirectUris)
+                this.redirectUrls = StringUtils.collectionToCommaDelimitedString(client.redirectUris)
                 this.authorizedGrantTypes =
                     StringUtils.collectionToCommaDelimitedString(client.authorizationGrantTypes.map { it.value })
             }
@@ -62,7 +62,7 @@ class DefaultClientRepository(
                     .clientId(it.clientId)
                     .clientSecret(it.clientSecret)
                     .redirectUris { uris ->
-                        uris.addAll(StringUtils.commaDelimitedListToStringArray(it.webServerRedirectUri.orEmpty()))
+                        uris.addAll(StringUtils.commaDelimitedListToStringArray(it.redirectUrls.orEmpty()))
                     }
                     .authorizationGrantTypes { types ->
                         types.addAll(
@@ -70,16 +70,14 @@ class DefaultClientRepository(
                                 .map { t -> AuthorizationGrantType(t) })
                     }
                     .scopes { ss ->
-                        ss.addAll(StringUtils.commaDelimitedListToStringArray(it.scope.orEmpty()))
+                        ss.addAll(StringUtils.commaDelimitedListToStringArray(it.scopes.orEmpty()))
                     }
                     .tokenSettings(
                         TokenSettings
                             .builder()
-                            .accessTokenTimeToLive(Duration.ofSeconds((it.accessTokenValidity ?: 3600).toLong()))
+                            .accessTokenTimeToLive(Duration.ofSeconds(it.accessTokenLiveSeconds.toLong()))
                             .refreshTokenTimeToLive(
-                                Duration.ofSeconds(
-                                    (it.refreshTokenValidity ?: (24 * 3600)).toLong()
-                                )
+                                Duration.ofSeconds(it.refreshTokenLiveSeconds.toLong())
                             )
                             .reuseRefreshTokens(oauth2ServerProperties?.token?.reuseRefreshToken ?: true)
                             .build()

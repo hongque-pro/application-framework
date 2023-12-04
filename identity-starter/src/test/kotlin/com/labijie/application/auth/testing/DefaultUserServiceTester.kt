@@ -2,7 +2,6 @@ package com.labijie.application.auth.testing
 
 import com.labijie.application.component.impl.NoneMessageService
 import com.labijie.application.exception.UserNotFoundException
-import com.labijie.application.executeReadOnly
 import com.labijie.application.identity.IdentityUtils
 import com.labijie.application.identity.configuration.IdentityProperties
 import com.labijie.application.identity.data.UserRoleTable
@@ -15,8 +14,7 @@ import com.labijie.application.identity.isEnabled
 import com.labijie.application.identity.model.RegisterInfo
 import com.labijie.application.identity.model.SocialRegisterInfo
 import com.labijie.application.identity.service.impl.DefaultUserService
-import com.labijie.application.maskPhone
-import com.labijie.application.model.SendSmsCaptchaParam
+import com.labijie.application.model.SmsCodeType
 import com.labijie.caching.ICacheManager
 import com.labijie.infra.IIdGenerator
 import com.labijie.infra.impl.DebugIdGenerator
@@ -30,7 +28,6 @@ import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabas
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.test.context.ContextConfiguration
 import org.springframework.test.context.junit.jupiter.SpringExtension
-import org.springframework.transaction.annotation.Transactional
 import org.springframework.transaction.support.TransactionTemplate
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
@@ -69,7 +66,6 @@ open class DefaultUserServiceTester {
     val snowflakeIdGenerator: IIdGenerator = DebugIdGenerator()
     lateinit var defaultUser: User
     val passwordEncoder = BCryptPasswordEncoder()
-    val messageService = NoneMessageService()
 
     private val svc by lazy {
 
@@ -81,7 +77,6 @@ open class DefaultUserServiceTester {
             identityProperties,
             snowflakeIdGenerator,
             passwordEncoder,
-            messageService,
             cacheManager,
             transactionTemplate
         )
@@ -170,10 +165,8 @@ open class DefaultUserServiceTester {
 
     @Test
     fun registerUser() {
-
-        messageService.sendSmsCaptcha(SendSmsCaptchaParam(defaultUser.phoneNumber))
-
         val r = RegisterInfo(username = "newUsr", password = "1232454564", phoneNumber = "13777777777")
+
         val u = svc.registerUser(r)
         val u2 = svc.getUser(u.user.id.toString())
 

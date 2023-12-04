@@ -1,0 +1,12 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:testdb;mode=mysql
+    username: sa
+    driver-class-name: org.h2.Driver
+application:
+  httpclient:
+    logger-enabled: true
+logging:
+  level:
+    reactor.netty.http.client: debug
+    root: debug

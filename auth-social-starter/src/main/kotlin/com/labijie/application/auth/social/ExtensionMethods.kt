@@ -1,3 +1,5 @@
+@file:Suppress("unused")
+
 package com.labijie.application.auth.social
 
 import com.labijie.application.SpringContext
@@ -10,7 +12,6 @@ import com.labijie.infra.oauth2.TwoFactorPrincipal
 import com.labijie.infra.oauth2.resource.hasTokenAttributeValue
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configurers.AuthorizeHttpRequestsConfigurer
-import org.springframework.security.config.annotation.web.configurers.ExpressionUrlAuthorizationConfigurer
 
 
 val TwoFactorPrincipal.loginProvider:String

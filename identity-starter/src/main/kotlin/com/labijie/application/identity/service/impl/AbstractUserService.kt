@@ -1,7 +1,6 @@
 package com.labijie.application.identity.service.impl
 
-import com.labijie.application.component.IMessageService
-import com.labijie.application.configuration.ValidationConfiguration
+import com.labijie.application.configuration.ValidationProperties
 import com.labijie.application.configure
 import com.labijie.application.exception.OperationConcurrencyException
 import com.labijie.application.exception.UserNotFoundException
@@ -26,13 +25,15 @@ import com.labijie.application.identity.data.pojo.dsl.UserDSL.toUserList
 import com.labijie.application.identity.data.pojo.dsl.UserDSL.updateByPrimaryKey
 import com.labijie.application.identity.data.pojo.dsl.UserRoleDSL.insert
 import com.labijie.application.identity.data.pojo.dsl.UserRoleDSL.selectMany
-import com.labijie.application.identity.exception.*
+import com.labijie.application.identity.exception.InvalidPasswordException
+import com.labijie.application.identity.exception.PhoneAlreadyExistedException
+import com.labijie.application.identity.exception.RoleNotFoundException
+import com.labijie.application.identity.exception.UserAlreadyExistedException
 import com.labijie.application.identity.model.RegisterInfo
 import com.labijie.application.identity.model.UserAndRoles
 import com.labijie.application.identity.service.IUserService
 import com.labijie.application.model.OrderBy
 import com.labijie.application.removeAfterTransactionCommit
-import com.labijie.application.verifySmsCaptcha
 import com.labijie.caching.ICacheManager
 import com.labijie.caching.getOrSet
 import com.labijie.infra.IIdGenerator
@@ -43,8 +44,6 @@ import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.springframework.context.ApplicationContext
 import org.springframework.context.ApplicationContextAware
 import org.springframework.dao.DuplicateKeyException
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
-import org.springframework.security.crypto.factory.PasswordEncoderFactories
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.transaction.support.TransactionTemplate
 import java.time.Clock
@@ -63,7 +62,6 @@ abstract class AbstractUserService(
     protected val authServerProperties: IdentityProperties,
     protected val idGenerator: IIdGenerator,
     protected val passwordEncoder: PasswordEncoder,
-    protected val messageSender: IMessageService,
     protected val cacheManager: ICacheManager,
 ) : IUserService, ApplicationContextAware {
 
@@ -74,14 +72,14 @@ abstract class AbstractUserService(
         this.context = applicationContext
     }
 
-    private var validationConfig: ValidationConfiguration? = null
+    private var validationConfig: ValidationProperties? = null
 
-    protected var validationConfiguration: ValidationConfiguration
+    protected var validationConfiguration: ValidationProperties
         get() {
             if (validationConfig == null) {
                 validationConfig =
-                    this.context?.getBeansOfType(ValidationConfiguration::class.java)?.values?.firstOrNull()
-                        ?: ValidationConfiguration()
+                    this.context?.getBeansOfType(ValidationProperties::class.java)?.values?.firstOrNull()
+                        ?: ValidationProperties()
             }
             return validationConfig!!
         }
@@ -141,11 +139,6 @@ abstract class AbstractUserService(
             if (p != null) {
                 throw PhoneAlreadyExistedException()
             }
-
-            messageSender.verifySmsCaptcha(
-                register.captcha,
-                throwIfMissMatched = true
-            )
             val id = idGenerator.newId()
 
             val user = IdentityUtils.createUser(

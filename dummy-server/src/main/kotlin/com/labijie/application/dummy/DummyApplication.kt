@@ -19,5 +19,6 @@ class DummyApplication
 fun main(args: Array<String>) {
     Locale.setDefault(Locale.US)
     runApplication<DummyApplication>(*args)
+
 }
 

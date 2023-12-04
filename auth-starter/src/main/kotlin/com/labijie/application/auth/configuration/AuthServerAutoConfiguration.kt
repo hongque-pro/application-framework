@@ -15,6 +15,7 @@ import org.springframework.boot.autoconfigure.AutoConfigureBefore
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.context.annotation.Import
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configurers.AuthorizeHttpRequestsConfigurer
 import org.springframework.security.config.annotation.web.configurers.ExpressionUrlAuthorizationConfigurer
@@ -27,6 +28,7 @@ import org.springframework.security.config.annotation.web.configurers.Expression
 @Configuration(proxyBeanMethods = false)
 @AutoConfigureAfter(IdentityAutoConfiguration::class)
 @AutoConfigureBefore(OAuth2DependenciesAutoConfiguration::class)
+@Import(AuthDocConfiguration::class)
 class AuthServerAutoConfiguration : IResourceAuthorizationConfigurer {
 
     override fun configure(registry: AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry) {

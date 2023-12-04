@@ -1,0 +1,41 @@
+{
+  "groups": [
+    {
+      "name": "application.dapr",
+      "type": "com.labijie.application.dapr.configuration.DaprProperties",
+      "sourceType": "com.labijie.application.dapr.configuration.DaprProperties"
+    },
+    {
+      "name": "application.dapr.message-service",
+      "type": "com.labijie.application.dapr.configuration.DaprMessageServiceProperties",
+      "sourceType": "com.labijie.application.dapr.configuration.DaprMessageServiceProperties"
+    }
+  ],
+  "properties": [
+    {
+      "name": "application.dapr.message-service.sms-pubsub-name",
+      "type": "java.lang.String",
+      "sourceType": "com.labijie.application.dapr.configuration.DaprMessageServiceProperties",
+      "defaultValue": "smspubsub"
+    },
+    {
+      "name": "application.dapr.message-service.sms-topic",
+      "type": "java.lang.String",
+      "sourceType": "com.labijie.application.dapr.configuration.DaprMessageServiceProperties",
+      "defaultValue": "sms"
+    },
+    {
+      "name": "application.dapr.pub-service-enabled",
+      "type": "java.lang.Boolean",
+      "sourceType": "com.labijie.application.dapr.configuration.DaprProperties",
+      "defaultValue": false
+    },
+    {
+      "name": "application.dapr.sub-service-enabled",
+      "type": "java.lang.Boolean",
+      "sourceType": "com.labijie.application.dapr.configuration.DaprProperties",
+      "defaultValue": false
+    }
+  ],
+  "hints": []
+}

@@ -4,7 +4,7 @@ infra {
 }
 
 dependencies {
-    api(project(":core"))
+    api(project(":core-starter"))
     api("com.labijie.orm:exposed-springboot-starter:${Versions.infraOrm}")
     api("org.springframework.security:spring-security-crypto")
     testImplementation("com.h2database:h2")

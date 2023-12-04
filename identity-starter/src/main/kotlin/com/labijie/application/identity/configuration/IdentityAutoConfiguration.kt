@@ -59,7 +59,6 @@ class IdentityAutoConfiguration {
         passwordEncoder: PasswordEncoder,
         identityProperties: IdentityProperties,
         idGenerator: IIdGenerator,
-        messageService: IMessageService,
         cacheManager: ICacheManager,
         transactionTemplate: TransactionTemplate
     ): DefaultUserService {
@@ -67,7 +66,6 @@ class IdentityAutoConfiguration {
             identityProperties,
             idGenerator,
             passwordEncoder,
-            messageService,
             cacheManager,
             transactionTemplate
         )

@@ -4,6 +4,7 @@ import com.labijie.application.auth.model.*
 import com.labijie.application.auth.toHttpResponse
 import com.labijie.application.auth.toPrincipal
 import com.labijie.application.component.IMessageService
+import com.labijie.application.configuration.ApplicationCoreProperties
 import com.labijie.application.crypto.DesUtils
 import com.labijie.application.exception.UserNotFoundException
 import com.labijie.application.identity.data.pojo.User
@@ -13,10 +14,10 @@ import com.labijie.application.identity.service.IUserService
 import com.labijie.application.maskEmail
 import com.labijie.application.maskPhone
 import com.labijie.application.model.BindingStatus
-import com.labijie.application.model.SmsCaptcha
+import com.labijie.application.model.SmsAssociated
 import com.labijie.application.model.SimpleValue
 import com.labijie.application.model.UpdateResult
-import com.labijie.application.verifySmsCaptcha
+import com.labijie.application.verifySmsCode
 import com.labijie.infra.oauth2.OAuth2Utils
 import com.labijie.infra.oauth2.TwoFactorPrincipal
 import com.labijie.infra.oauth2.TwoFactorSignInHelper
@@ -39,7 +40,8 @@ import java.time.Duration
 class AccountController @Autowired constructor(
     private val userService: IUserService,
     private val messageService: IMessageService,
-    private val signInHelper: TwoFactorSignInHelper
+    private val signInHelper: TwoFactorSignInHelper,
+    private val applicationProperties: ApplicationCoreProperties
 ) {
 
     init {
@@ -80,11 +82,11 @@ class AccountController @Autowired constructor(
     /**
      * 找回密码（需要验证短信验证码）
      */
-    @PostMapping("/set-password")
-    fun setPassword(@RequestBody @Validated request: SetPasswordRequest): SimpleValue<Boolean> {
+    @PostMapping("/forgot-password")
+    fun resetPassword(@RequestBody @Validated request: SetPasswordRequest): SimpleValue<Boolean> {
         val u = userService.getUserById(request.userId) ?: throw  UserNotFoundException()
 
-        messageService.verifySmsCaptcha(request.password, request.code, request.clientStamp, true)
+        messageService.verifySmsCode(request, true)
         val succeed = userService.resetPassword(request.userId, request.password)
         return SimpleValue(succeed)
     }
@@ -111,11 +113,11 @@ class AccountController @Autowired constructor(
      * 变更手机号，验证身份（需要使用旧的手机号验证短信验证码）
      */
     @PostMapping("/change-phone-verify")
-    fun getChangePhoneToken(@RequestBody @Validated request: SmsCaptcha): SimpleValue<String> {
+    fun getChangePhoneToken(@RequestBody @Validated request: SmsAssociated): SimpleValue<String> {
         val userId = OAuth2Utils.currentTwoFactorPrincipal().userId
-        val user = userService.getUserById(userId.toLong()) ?: throw UserNotFoundException()
-        messageService.verifySmsCaptcha(user.phoneNumber, request.code, request.clientStamp, true)
-        val token = DesUtils.generateToken(userId, Duration.ofMinutes(10))
+        messageService.verifySmsCode(request, true)
+        val u = userService.getUserById(userId.toLong()) ?: throw UserNotFoundException()
+        val token = DesUtils.generateToken(userId, Duration.ofMinutes(10), u.securityStamp)
         return SimpleValue(token)
     }
 
@@ -124,9 +126,10 @@ class AccountController @Autowired constructor(
      */
     @PostMapping("/change-phone")
     fun changePhoneNumber(@RequestBody @Validated request: ChangePhoneRequest): UpdateResult<String> {
-        messageService.verifySmsCaptcha(request, true)
+        messageService.verifySmsCode(request, true)
         val userId = OAuth2Utils.currentTwoFactorPrincipal().userId.toLong()
-        DesUtils.verifyToken(request.token, userId.toString(), throwIfInvalid = true)
+        val u = userService.getUserById(userId) ?: throw UserNotFoundException()
+        DesUtils.verifyToken(request.token, userId.toString(), u.securityStamp, throwIfInvalid = true)
         val success = userService.changePhone(userId, request.phoneNumber, true)
         return UpdateResult(request.phoneNumber.maskPhone(), success)
     }
@@ -134,7 +137,7 @@ class AccountController @Autowired constructor(
     /**
      * 修改密码
      */
-    @PostMapping("/password")
+    @PostMapping("/change-password")
     fun changePassword(@RequestBody @Validated request: ChangePasswordRequest): SimpleValue<Boolean> {
         val userId = OAuth2Utils.currentTwoFactorPrincipal().userId.toLong()
         val result = userService.changePassword(userId, request.oldPassword, request.newPassword)

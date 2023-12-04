@@ -299,7 +299,7 @@ ForwardTokenCodec.encode(list, InsuranceCatalog:: modifiedAt, InsuranceCatalog::
 
 ### controller 中获取当前用户
 
-直接使用 TwoFactorPrincipal 类型的参数再方法上接收即可（如果没有登录会返回 auth 错误） 
+直接使用 TwoFactorPrincipal 类型的参数在方法上接收即可（如果没有登录会返回 auth 错误） 
 
 ### 短信邮件处理
 

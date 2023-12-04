@@ -1,0 +1,127 @@
+{
+  "group": [
+    {
+      "name": "application",
+      "type": "com.labijie.application.configuration.ApplicationCoreProperties"
+    },
+    {
+      "name": "application.validation",
+      "type": "com.labijie.application.configuration.ValidationProperties"
+    },
+    {
+      "name": "application.http-client",
+      "type": "com.labijie.application.configuration.HttpClientProperties"
+    },
+    {
+      "name": "application.sms",
+      "type": "com.labijie.application.configuration.SmsBaseProperties"
+    },
+    {
+      "name": "application.open-api.client",
+      "type": "com.labijie.application.configuration.OpenApiClientProperties"
+    }
+  ],
+  "properties": [
+    {
+      "name": "application.des-secret",
+      "sourceType": "com.labijie.application.configuration.ApplicationCoreProperties",
+      "description": "The key used by application DES digest.",
+      "type": "java.lang.String"
+    },
+    {
+      "name": "application.sms.send-rate-limit",
+      "sourceType": "com.labijie.application.configuration.SmsBaseProperties",
+      "type": "java.time.Duration",
+      "defaultValue": "30s"
+    },
+    {
+      "name": "application.sms.message-expire",
+      "sourceType": "com.labijie.application.configuration.SmsBaseProperties",
+      "type": "java.time.Duration",
+      "defaultValue": "1m"
+    },
+    {
+      "name": "application.sms.message-expiration",
+      "type": "java.time.Duration",
+      "sourceType": "com.labijie.application.configuration.SmsBaseProperties",
+      "defaultValue": "1m"
+    },
+    {
+      "name": "application.validation.regex",
+      "type": "java.util.Map<java.lang.String, java.lang.String>",
+      "sourceType": "com.labijie.application.configuration.ValidationProperties"
+    },
+    {
+      "name": "application.http-client.connect-timeout",
+      "type": "java.time.Duration",
+      "sourceType": "com.labijie.application.configuration.HttpClientProperties",
+      "defaultValue": "2s"
+    },
+    {
+      "name": "application.http-client.read-timeout",
+      "type": "java.time.Duration",
+      "sourceType": "com.labijie.application.configuration.HttpClientProperties",
+      "defaultValue": "5s"
+    },
+    {
+      "name": "application.http-client.write-timeout",
+      "type": "java.time.Duration",
+      "sourceType": "com.labijie.application.configuration.HttpClientProperties",
+      "defaultValue": "5s"
+    },
+    {
+      "name": "application.http-client.log-enabled",
+      "type": "java.lang.Boolean",
+      "sourceType": "com.labijie.application.configuration.HttpClientProperties",
+      "defaultValue": false
+    },
+    {
+      "name": "application.open-api.client.appid",
+      "type": "java.lang.String",
+      "sourceType": "com.labijie.application.configuration.OpenApiClientProperties"
+    },
+    {
+      "name": "application.open-api.client.secret",
+      "type": "java.lang.String",
+      "sourceType": "com.labijie.application.configuration.OpenApiClientProperties"
+    },
+    {
+      "name": "application.open-api.client.algorithm",
+      "type": "java.lang.String",
+      "sourceType": "com.labijie.application.configuration.OpenApiClientProperties",
+      "defaultValue": "sha256"
+    }
+  ],
+  "hints": [
+    {
+      "name": "application.validation.regex.keys",
+      "values": [
+        {
+          "value": "user-name"
+        },
+        {
+          "value": "phone-number"
+        },
+        {
+          "value": "code"
+        }
+      ],
+      "providers": [
+        {
+          "name": "any"
+        }
+      ]
+    },
+    {
+      "name": "application.open-api.client.algorithm",
+      "values": [
+        {
+          "value": "sha256"
+        },
+        {
+          "value": "md5"
+        }
+      ]
+    }
+  ]
+}

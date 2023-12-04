@@ -3,6 +3,7 @@ package com.labijie.application.identity
 import com.labijie.application.identity.data.pojo.User
 import com.labijie.infra.utils.ShortId
 import java.time.ZoneOffset
+import java.util.UUID
 
 /**
  * Created with IntelliJ IDEA.
@@ -40,7 +41,7 @@ object IdentityUtils {
             this.userType = userType
             this.phoneNumber = phoneNumber
             this.phoneNumberConfirmed = true
-            this.securityStamp = ShortId.newId()
+            this.securityStamp = UUID.randomUUID().toString().replace("-", "")
             this.approved = true
             this.approverId = 0
         }

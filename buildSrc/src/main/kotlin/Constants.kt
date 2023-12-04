@@ -13,8 +13,6 @@ object Versions {
     const val apachePOI = "5.1.0"
     const val uberH3 = "3.7.1"
 
-    const val kaptcha = "2.3.2"
-
     const val mysqlVersion="8.2.0"
 
     const val infraBom = "3.2.0"
@@ -27,7 +25,14 @@ object Versions {
 
     const val bouncyCastle = "1.77"
 
+    //for pretty html
+    const val jsoup = "1.17.1"
+
+    //use: https://github.com/pig-mesh/easy-captcha
+    const val easyCaptcha = "2.2.3"
+
     const val minio = "8.5.7"
+    const val dapr = "1.10.0"
 
 }
 

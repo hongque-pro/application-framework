@@ -1,6 +1,6 @@
 rootProject.name = "application-framework"
-include("core")
-include("core-web")
+include("core-starter")
+include("core-web-starter")
 include("identity-starter")
 //include("aliyun-starter")
 include("auth-starter")
@@ -29,3 +29,4 @@ pluginManagement {
         gradlePluginPortal()
     }
 }
+include("dapr-starter")

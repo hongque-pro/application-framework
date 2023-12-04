@@ -6,9 +6,12 @@ import com.labijie.application.auth.social.exception.SocialUserLockedException
 import com.labijie.application.auth.social.model.SocialLoginInfo
 import com.labijie.application.auth.toHttpResponse
 import com.labijie.application.auth.toPrincipal
+import com.labijie.application.component.IMessageService
+import com.labijie.application.component.impl.NoneMessageService
 import com.labijie.application.identity.model.SocialRegisterInfo
 import com.labijie.application.identity.model.SocialUserAndRoles
 import com.labijie.application.identity.service.ISocialUserService
+import com.labijie.application.verifySmsCode
 import com.labijie.infra.oauth2.TwoFactorSignInHelper
 import com.labijie.infra.oauth2.filter.ClientRequired
 import jakarta.validation.Valid
@@ -29,7 +32,8 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping("/oauth/social")
 class AccountSocialController(
     private val userService: ISocialUserService,
-    private val signInHelper: TwoFactorSignInHelper
+    private val signInHelper: TwoFactorSignInHelper,
+    private val messageService: IMessageService,
 ) {
 
     @PostMapping("/register")
@@ -38,7 +42,9 @@ class AccountSocialController(
         @RequestBody @Valid info: SocialRegisterInfo,
         clientDetails: RegisteredClient
     ): Map<String, Any> {
-        val userRoles = userService.registerSocialUser(info, validateSms = true)
+
+        messageService.verifySmsCode(info, true)
+        val userRoles = userService.registerSocialUser(info)
         return signInUser(userRoles, clientDetails)
     }
 

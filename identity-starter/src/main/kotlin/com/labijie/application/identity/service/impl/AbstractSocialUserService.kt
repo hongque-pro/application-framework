@@ -1,10 +1,8 @@
 package com.labijie.application.identity.service.impl
 
 import com.labijie.application.ApplicationRuntimeException
-import com.labijie.application.component.IMessageService
-import com.labijie.application.configuration.ValidationConfiguration
+import com.labijie.application.configuration.ValidationProperties
 import com.labijie.application.configure
-import com.labijie.application.exception.InvalidCaptchaException
 import com.labijie.application.exception.InvalidPhoneNumberException
 import com.labijie.application.exception.OperationConcurrencyException
 import com.labijie.application.exception.UserNotFoundException
@@ -29,7 +27,6 @@ import com.labijie.application.identity.model.SocialRegisterInfo
 import com.labijie.application.identity.model.SocialUserAndRoles
 import com.labijie.application.identity.service.ISocialUserService
 import com.labijie.application.identity.social.*
-import com.labijie.application.verifySmsCaptcha
 import com.labijie.caching.ICacheManager
 import com.labijie.infra.IIdGenerator
 import com.labijie.infra.utils.logger
@@ -54,7 +51,6 @@ abstract class AbstractSocialUserService(
     authServerProperties: IdentityProperties,
     passwordEncoder: PasswordEncoder,
     idGenerator: IIdGenerator,
-    messageSender: IMessageService,
     cacheManager: ICacheManager,
     transactionTemplate: TransactionTemplate
 ) : AbstractUserService(
@@ -62,7 +58,6 @@ abstract class AbstractSocialUserService(
     authServerProperties,
     idGenerator,
     passwordEncoder,
-    messageSender,
     cacheManager,
 ), ISocialUserService {
 
@@ -223,19 +218,9 @@ abstract class AbstractSocialUserService(
     override fun registerSocialUser(
         socialRegisterInfo: SocialRegisterInfo,
         throwIfExisted: Boolean,
-        validateSms: Boolean
     ): SocialUserAndRoles {
         //解密用的向量为空，如果空认为电话号码为明文
         val iv = socialRegisterInfo.iv ?: ""
-
-        if (validateSms && iv.isBlank()) { //不使用微信提供的电话需要先验证短信验证
-            val smsCaptcha = socialRegisterInfo.captcha
-            if (smsCaptcha == null) {
-                throw InvalidCaptchaException()
-            } else {
-                messageSender.verifySmsCaptcha(smsCaptcha, true)
-            }
-        }
 
         val loginProvider = socialRegisterInfo.provider
         val r = fetchUserFromSocialCode(socialRegisterInfo.provider, socialRegisterInfo.code)
@@ -251,7 +236,7 @@ abstract class AbstractSocialUserService(
         }
 
         val valid =
-            Pattern.matches(this.validationConfiguration.regex[ValidationConfiguration.PHONE_NUMBER]!!, phoneNumber)
+            Pattern.matches(this.validationConfiguration.regex[ValidationProperties.PHONE_NUMBER]!!, phoneNumber)
         if (!valid) {
             throw InvalidPhoneNumberException()
         }

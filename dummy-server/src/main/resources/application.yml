@@ -9,9 +9,13 @@ spring:
     driver-class-name: org.h2.Driver
 
 infra:
+  exposed:
+    generate-schema: true
   oauth2:
     client-repository: memory
     default-client:
       client-id: app
       secret: 1234567
-
+application:
+  httpclient:
+    logger-enabled: true

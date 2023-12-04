@@ -16,14 +16,12 @@ open class DefaultUserService(
     identityProperties: IdentityProperties,
     idGenerator: IIdGenerator,
     passwordEncoder: PasswordEncoder,
-    messageSender: IMessageService,
     cacheManager: ICacheManager,
     transactionTemplate: TransactionTemplate
 ) : AbstractSocialUserService(
     identityProperties,
     passwordEncoder,
     idGenerator,
-    messageSender,
     cacheManager,
     transactionTemplate
 ) {

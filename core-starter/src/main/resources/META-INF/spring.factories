@@ -1,0 +1,6 @@
+
+org.springframework.context.ApplicationListener=\
+  com.labijie.application.env.InfraEnvironmentPreparedListener
+
+org.springframework.boot.env.EnvironmentPostProcessor=\
+  com.labijie.application.configuration.DefaultConfigurationProcessor

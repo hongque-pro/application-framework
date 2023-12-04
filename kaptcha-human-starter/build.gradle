@@ -1,4 +1,0 @@
-dependencies {
-    api(project(":core-web"))
-    api("com.github.penggle:kaptcha:${Versions.kaptcha}")
-}

@@ -1,5 +1,6 @@
 package com.labijie.application
 
+import org.springdoc.core.utils.Constants.SPRINGDOC_SHOW_OAUTH2_ENDPOINTS
 import org.springframework.boot.SpringApplication
 import org.springframework.boot.env.EnvironmentPostProcessor
 import org.springframework.core.env.ConfigurableEnvironment
@@ -12,7 +13,7 @@ import org.springframework.core.env.MapPropertySource
 class WebDefaultConfigurationProcessor : EnvironmentPostProcessor {
     override fun postProcessEnvironment(environment: ConfigurableEnvironment, application: SpringApplication) {
         val config:Map<String, Any> = mapOf(
-            "springdoc.show-oauth2-endpoints" to true
+            SPRINGDOC_SHOW_OAUTH2_ENDPOINTS to false
         )
         val propertySource = MapPropertySource(
             "framework-web-configuration", config

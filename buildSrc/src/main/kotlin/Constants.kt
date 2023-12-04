@@ -24,6 +24,7 @@ object Versions {
     const val infraCloudStream = "1.2.1"
 
     const val bouncyCastle = "1.77"
+    const val apacheCommonsText = "1.11.0"
 
     //for pretty html
     const val jsoup = "1.17.1"

@@ -3,6 +3,7 @@ plugins {
 }
 dependencies {
     api("com.labijie.infra:commons-springboot-starter:${Versions.infraCommons}")
+    api("org.apache.commons:commons-text:${Versions.apacheCommonsText}")
 
 //    api("org.springframework.cloud:spring-cloud-stream")
 //    api("org.springframework.cloud:spring-cloud-commons")

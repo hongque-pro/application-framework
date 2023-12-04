@@ -1,5 +1,6 @@
 package com.labijie.application.configuration
 
+import com.labijie.application.web.antMatchers
 import com.labijie.infra.oauth2.resource.IResourceAuthorizationConfigurer
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication
 import org.springframework.context.annotation.Configuration
@@ -31,8 +32,8 @@ class DefaultResourceSecurityConfiguration : IResourceAuthorizationConfigurer {
             "/swagger-resources/**",
             "/swagger-ui/**",
         )
-        registry.requestMatchers(*authenticatedPaths.toTypedArray()).authenticated()
-        registry.requestMatchers(*permitAllPaths.toTypedArray()).permitAll()
+        registry.antMatchers(*authenticatedPaths.toTypedArray()).authenticated()
+        registry.antMatchers(*permitAllPaths.toTypedArray()).permitAll()
     }
 
     override fun getOrder(): Int = Int.MIN_VALUE

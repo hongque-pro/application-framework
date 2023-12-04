@@ -33,8 +33,8 @@ open class TestingController {
 
 
     @GetMapping("/array")
-    fun getUrl(@RequestParam param:Array<String>) : String {
-        return param.joinToString()
+    fun getUrl(@RequestParam param: TestEnum, @RequestParam param2: TestEnum? = null) : SimpleValue<String> {
+        return "OK".toSimpleValue()
     }
 
     @GetMapping("/model")

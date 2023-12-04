@@ -257,7 +257,7 @@ abstract class AbstractSocialUserService(
             } ?: throw UserNotFoundException()
             val ctx = registrationContext
             if (ctx != null) {
-                this.onRegisteredSocialUser(ctx)
+                this.onSocialUserRegisteredAfterTranscationCommitted(ctx)
             }
             if (r.provider.isMultiOpenId) {
                 //对于多 open id 的提供程，例如微信，第三方账号可能存在，但是仍然可能存在第三方的不同的 APP OPEN ID 不存在的问题, 单独事务处理
@@ -270,12 +270,12 @@ abstract class AbstractSocialUserService(
         return SocialUserAndRoles(userAndRoles, loginProvider, r.token.userKey)
     }
 
-    protected open fun onRegisteringSocialUser(context: SocialUserRegistrationContext) {
-        this.onRegisteringUser(context.user, context.registerInfo.addition)
+    protected open fun onSocialUserRegisteredInTranscation(context: SocialUserRegistrationContext) {
+        this.onUserRegisteredInTranscation(context.user, context.registerInfo.addition)
     }
 
-    protected open fun onRegisteredSocialUser(context: SocialUserRegistrationContext) {
-        this.onRegisteredUser(context.user, context.registerInfo.addition)
+    protected open fun onSocialUserRegisteredAfterTranscationCommitted(context: SocialUserRegistrationContext) {
+        this.onUserRegisteredAfterTranscationCommitted(context.user, context.registerInfo.addition)
     }
 
     protected class DuplicateRegisteringException : ApplicationRuntimeException()
@@ -332,7 +332,7 @@ abstract class AbstractSocialUserService(
                 this.addUserLogin(userAndRoles.user.id, loginProvider, token)
 
                 val reContext = SocialUserRegistrationContext(socialRegisterInfo, userAndRoles, provider, token)
-                this.onRegisteringSocialUser(reContext)
+                this.onSocialUserRegisteredInTranscation(reContext)
                 return Pair(SocialUserAndRoles(userAndRoles, provider.name, token.userKey), reContext)
             } catch (e: DuplicateKeyException) {
                 logger.warn("Duplicate social user register (provider: $loginProvider).", e)

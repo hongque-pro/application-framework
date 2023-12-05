@@ -6,19 +6,22 @@ import com.labijie.application.component.IObjectStorage
 import com.labijie.application.component.impl.NoneHumanChecker
 import com.labijie.application.component.impl.NoneMessageService
 import com.labijie.application.component.impl.NoneObjectStorage
+import com.labijie.application.service.IFileIndexService
+import com.labijie.application.service.impl.FileIndexService
 import com.labijie.caching.ICacheManager
+import com.labijie.infra.IIdGenerator
 import com.labijie.infra.security.Rfc6238TokenService
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.core.Ordered
+import org.springframework.core.annotation.Order
 import org.springframework.core.env.Environment
+import org.springframework.transaction.support.TransactionTemplate
 
 @Configuration(proxyBeanMethods = false)
-class DefaultsAutoConfiguration: Ordered {
-
-    override fun getOrder(): Int = Int.MAX_VALUE
-
+@Order(Int.MAX_VALUE)
+class DefaultsAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean(IMessageService::class)
     fun noneMessageService(
@@ -38,5 +41,14 @@ class DefaultsAutoConfiguration: Ordered {
     @ConditionalOnMissingBean(IObjectStorage::class)
     fun noneObjectStorage(): IObjectStorage {
         return NoneObjectStorage()
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(IFileIndexService::class)
+    fun fileIndexService(
+        objectStorage: IObjectStorage,
+        idGenerator: IIdGenerator,
+        transactionTemplate: TransactionTemplate,) : FileIndexService {
+        return FileIndexService(transactionTemplate, idGenerator, objectStorage)
     }
 }

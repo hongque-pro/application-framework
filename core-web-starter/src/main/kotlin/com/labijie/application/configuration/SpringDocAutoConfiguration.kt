@@ -61,7 +61,6 @@ class SpringDocAutoConfiguration(private val environment: Environment): Initiali
             )
             .pathsToExclude("/oauth2/**")
             .build()
-        nowString()
     }
 
 

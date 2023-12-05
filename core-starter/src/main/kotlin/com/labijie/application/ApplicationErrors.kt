@@ -6,6 +6,7 @@ package com.labijie.application
  * @author Anders Xiao
  * @date 2019-09-05
  */
+@Suppress("ConstPropertyName")
 object ApplicationErrors {
     @ErrorDescription("服务器系统错误")
     const val UnhandledError = "system_error"
@@ -47,4 +48,7 @@ object ApplicationErrors {
 
     @ErrorDescription("该账号不存在")
     const val UserNotFound = "usr_not_found"
+
+    @ErrorDescription("文件索引已经存在")
+    const val FileIndexAlreadyExisted  = "file_index_existed"
 }

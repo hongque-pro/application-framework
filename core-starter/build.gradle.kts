@@ -1,18 +1,17 @@
-plugins {
-    id("com.gorylenko.gradle-git-properties")
+
+infra {
+    useInfraOrmGenerator(Versions.infraOrm)
 }
+
 dependencies {
     api("com.labijie.infra:commons-springboot-starter:${Versions.infraCommons}")
     api("org.apache.commons:commons-text:${Versions.apacheCommonsText}")
-
-//    api("org.springframework.cloud:spring-cloud-stream")
-//    api("org.springframework.cloud:spring-cloud-commons")
-//    api("com.labijie.infra:spring-cloud-stream-binder-core:${Versions.infraCloudStream}")
 
     api("org.jsoup:jsoup:${Versions.jsoup}")
     api("org.springframework:spring-tx")
     api("com.labijie:caching-kotlin-core-starter:${Versions.infraCaching}")
     api("org.hibernate.validator:hibernate-validator")
+    //for web XXS injection
     api("org.owasp.antisamy:antisamy:${Versions.antisamy}") {
         exclude(module = "slf4j-simple")
     }

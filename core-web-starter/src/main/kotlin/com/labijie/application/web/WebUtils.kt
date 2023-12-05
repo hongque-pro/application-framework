@@ -3,23 +3,21 @@ package com.labijie.application.web
 import com.labijie.infra.oauth2.OAuth2Constants
 import com.labijie.infra.oauth2.TwoFactorPrincipal
 import com.labijie.infra.utils.ifNullOrBlank
+import jakarta.servlet.http.HttpServletRequest
 import org.springframework.core.annotation.AnnotationUtils
 import org.springframework.http.HttpMethod
 import org.springframework.http.MediaType
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
-import org.springframework.security.config.annotation.web.configurers.ExpressionUrlAuthorizationConfigurer
+import org.springframework.security.config.annotation.web.configurers.AuthorizeHttpRequestsConfigurer
 import org.springframework.security.core.authority.SimpleGrantedAuthority
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher
 import org.springframework.web.context.request.RequestContextHolder
 import org.springframework.web.context.request.ServletRequestAttributes
 import org.springframework.web.method.HandlerMethod
 import java.io.*
-import java.lang.IllegalArgumentException
 import java.net.URLEncoder
 import java.nio.charset.Charset
 import java.util.*
-import jakarta.servlet.http.HttpServletRequest
-import org.springframework.security.config.annotation.web.configurers.AuthorizeHttpRequestsConfigurer
 import kotlin.reflect.KClass
 
 

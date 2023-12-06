@@ -11,6 +11,7 @@ spring:
 infra:
   exposed:
     generate-schema: true
+    show-sql: true
   oauth2:
     client-repository: memory
     default-client:

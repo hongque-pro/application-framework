@@ -1,13 +1,11 @@
-package com.labijie.application.controller
+package com.labijie.application.web.controller
 
 import com.labijie.application.component.IMessageService
 import com.labijie.application.component.SmsToken
-import com.labijie.application.component.impl.NoneMessageService
 import com.labijie.application.exception.UserNotFoundException
 import com.labijie.application.identity.service.IUserService
 import com.labijie.application.model.*
 import com.labijie.infra.oauth2.TwoFactorPrincipal
-import io.swagger.v3.oas.annotations.Hidden
 import io.swagger.v3.oas.annotations.Parameter
 import jakarta.validation.constraints.NotBlank
 import org.springframework.beans.factory.annotation.Autowired

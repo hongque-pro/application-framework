@@ -5,7 +5,6 @@ infra {
 
 dependencies {
     api("com.labijie.infra:commons-springboot-starter:${Versions.infraCommons}")
-    api("org.apache.commons:commons-text:${Versions.apacheCommonsText}")
 
     api("org.jsoup:jsoup:${Versions.jsoup}")
     api("org.springframework:spring-tx")
@@ -27,8 +26,7 @@ dependencies {
         exclude(module= "protobuf-java")
     }
 
-
-    compileOnly("com.labijie.orm:exposed-core:${Versions.infraOrm}")
+    api("com.labijie.orm:exposed-springboot-starter:${Versions.infraOrm}")
 
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.springframework.boot:spring-boot-starter-logging")

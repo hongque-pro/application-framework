@@ -2,11 +2,11 @@ package com.labijie.application.configuration
 
 import com.labijie.application.component.IHumanChecker
 import com.labijie.application.component.impl.NoneHumanChecker
-import com.labijie.application.controller.CaptchaController
-import com.labijie.application.controller.SmsController
+import com.labijie.application.web.controller.CaptchaController
+import com.labijie.application.web.controller.SmsController
 import com.labijie.application.service.CaptchaHumanChecker
 import com.labijie.application.web.WrappedResponseBodyAdvice
-import com.labijie.application.web.controller.ErrorDescriptionController
+import com.labijie.application.web.controller.ApplicationController
 import com.labijie.application.web.converter.EnhanceStringToEnumConverterFactory
 import com.labijie.application.web.handler.ControllerExceptionHandler
 import com.labijie.application.web.interceptor.HttpCacheInterceptor
@@ -24,10 +24,8 @@ import org.springframework.boot.autoconfigure.AutoConfigureBefore
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication
 import org.springframework.context.annotation.Bean
-import org.springframework.context.annotation.ComponentScan
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Import
-import org.springframework.core.annotation.Order
 import org.springframework.core.env.Environment
 import org.springframework.format.FormatterRegistry
 import org.springframework.http.MediaType
@@ -47,7 +45,7 @@ import org.springframework.web.servlet.config.annotation.*
 @Configuration(proxyBeanMethods = false)
 @Import(
     DefaultResourceSecurityConfiguration::class,
-    ErrorDescriptionController::class,
+    ApplicationController::class,
     SpringDocAutoConfiguration::class,
     SmsController::class
 )

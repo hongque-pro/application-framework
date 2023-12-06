@@ -1,4 +1,4 @@
-package com.labijie.application.controller
+package com.labijie.application.web.controller
 
 import com.labijie.application.configuration.ApplicationCoreProperties
 import com.labijie.application.crypto.DesUtils

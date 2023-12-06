@@ -7,4 +7,4 @@ package com.labijie.application
  */
 @Target(AnnotationTarget.FIELD)
 @Retention(AnnotationRetention.RUNTIME)
-annotation class ErrorDescription(val description:String)
+annotation class ErrorDescription(val description:String, val locale: String = "zh-CN")

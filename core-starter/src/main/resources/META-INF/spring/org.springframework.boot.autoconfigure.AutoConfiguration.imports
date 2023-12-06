@@ -2,3 +2,4 @@ com.labijie.application.configuration.HttpClientAutoConfiguration
 com.labijie.application.configuration.ApplicationCoreAutoConfiguration
 com.labijie.application.configuration.DefaultsAutoConfiguration
 com.labijie.application.configuration.ApplicationTransactionAutoConfiguration
+com.labijie.application.configuration.CachingOverrideAutoConfiguration

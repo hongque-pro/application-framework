@@ -1,6 +1,7 @@
 package com.labijie.application
 
 import com.labijie.application.open.OpenApiErrors
+import org.springframework.context.MessageSource
 
 /**
  *
@@ -9,7 +10,8 @@ import com.labijie.application.open.OpenApiErrors
  * @Description:
  */
 class CoreErrorRegistration : IErrorRegistration {
-    override fun register(registry: IErrorRegistry) {
-        registry.registerErrors(OpenApiErrors)
+
+    override fun register(registry: IErrorRegistry, messageSource: MessageSource) {
+        registry.registerErrors(OpenApiErrors, messageSource)
     }
 }

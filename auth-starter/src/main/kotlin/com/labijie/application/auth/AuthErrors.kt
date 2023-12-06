@@ -15,7 +15,7 @@ object AuthErrors {
     const val INVALID_CLIENT = OAuth2ErrorCodes.INVALID_CLIENT
     @ErrorDescription("用户名或密码不正确")
     const val INVALID_GRANT = OAuth2ErrorCodes.INVALID_GRANT
-    @ErrorDescription("客户端没有权限访问该资源")
+    @ErrorDescription("未授权的客户端访问请求")
     const val UNAUTHORIZED_CLIENT = OAuth2ErrorCodes.UNAUTHORIZED_CLIENT
     @ErrorDescription("不支持该授权类型, 请检查 grant type 是否正确")
     const val UNSUPPORTED_GRANT_TYPE = OAuth2ErrorCodes.UNSUPPORTED_GRANT_TYPE

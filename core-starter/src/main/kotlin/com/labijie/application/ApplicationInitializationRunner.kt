@@ -25,6 +25,7 @@ import org.springframework.context.ApplicationContext
 import org.springframework.context.ApplicationContextAware
 import org.springframework.context.ApplicationListener
 import org.springframework.context.ConfigurableApplicationContext
+import org.springframework.context.MessageSource
 import org.springframework.context.event.EventListener
 import org.springframework.core.Ordered
 import org.springframework.core.env.Environment
@@ -57,8 +58,13 @@ class ApplicationInitializationRunner<T : ConfigurableApplicationContext>(
     private var gitProperties: GitProperties? = null
 
     private val loggingSystem by lazy {
-        SpringContext.current.getBean(LOGGING_SYSTEM_BEAN_NAME, LoggingSystem::class.java)
+        applicationContext.getBean(LOGGING_SYSTEM_BEAN_NAME, LoggingSystem::class.java)
     }
+
+    private val messageSource by lazy {
+        applicationContext.getBean(MessageSource::class.java)
+    }
+
     private var httpClientProperties: HttpClientProperties? = null
 
 
@@ -101,9 +107,8 @@ class ApplicationInitializationRunner<T : ConfigurableApplicationContext>(
         try {
             loadModules()
             thread {
-                errorRegistry.registerErrors(ApplicationErrors)
                 errorRegistrations.orderedStream().forEach {
-                    it.register(errorRegistry)
+                    it.register(errorRegistry, messageSource)
                 }
             }
         } catch (e: Throwable) {

@@ -15,4 +15,6 @@ interface ILocalizationService {
 
     fun getLocaleMessages(locale: Locale, includeBlank: Boolean = true) : LocalizationMessages
     fun saveLocaleMessages(message: LocalizationMessages, override: Boolean = true)
+
+    fun reload()
 }

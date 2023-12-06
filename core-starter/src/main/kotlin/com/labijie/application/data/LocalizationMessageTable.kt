@@ -11,7 +11,7 @@ object LocalizationMessageTable : Table("localization_messages") {
     @KspPrimaryKey
     var locale = varchar("locale", 8)
     @KspPrimaryKey
-    var code = varchar("code",64)
+    var code = varchar("code",128)
 
     var message = mediumText("message")
 

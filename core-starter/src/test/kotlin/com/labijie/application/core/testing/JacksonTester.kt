@@ -20,7 +20,6 @@ class JacksonTester {
         val l = JacksonHelper.deserializeFromString(r, Locale::class)
         Assertions.assertEquals(l, locale)
 
-        LocaleUtils.toLocale()
         val l2 = JacksonHelper.deserializeFromString("zh-CN", Locale::class)
         Assertions.assertEquals(l, locale)
     }

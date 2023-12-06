@@ -9,7 +9,7 @@ import org.jetbrains.exposed.sql.Table
  */
 object LocalizationCodeTable : Table("localization_codes") {
     @KspPrimaryKey
-    val code = varchar("code", 64)
+    val code = varchar("code", 128)
 
     override val primaryKey: PrimaryKey
         get() = PrimaryKey(code)

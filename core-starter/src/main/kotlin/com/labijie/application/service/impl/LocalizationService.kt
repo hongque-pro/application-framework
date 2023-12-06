@@ -145,4 +145,8 @@ class LocalizationService(
         }
     }
 
+    override fun reload() {
+        cacheManager.clear()
+    }
+
 }

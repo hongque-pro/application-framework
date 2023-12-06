@@ -29,7 +29,7 @@ internal class ErrorRegistry : IErrorRegistry {
                 if (list.containsKey(value)) {
                     logger.error("Duplex error code '$value' defined. (source code: ${errorObject::class.simpleName}.${it.name})")
                 } else {
-                    list[value] = LocaleMessage("err_${value}", desc)
+                    list[value] = LocaleMessage("error.${value}", desc)
                 }
             }
         }

@@ -1,5 +1,6 @@
 package com.labijie.application.auth.model
 
+import com.labijie.application.configuration.ValidationProperties
 import com.labijie.application.model.SmsAssociated
 import com.labijie.application.validation.ConfigurablePattern
 import jakarta.validation.constraints.NotBlank
@@ -10,11 +11,11 @@ import jakarta.validation.constraints.NotBlank
  * @date 2019-10-19
  */
 class ChangePhoneRequest : SmsAssociated() {
-    @get:NotBlank(message = "手机号不能为空")
-    @get:ConfigurablePattern("phone-number", message = "不是有效的手机号")
+    @get:NotBlank
+    @get:ConfigurablePattern(ValidationProperties.PHONE_NUMBER)
     var phoneNumber: String = ""
 
 
-    @get:NotBlank(message = "身份安全令牌不能为空")
+    @get:NotBlank
     var token: String = ""
 }

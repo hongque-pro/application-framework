@@ -12,6 +12,8 @@ object ApplicationErrors {
     const val UnhandledError = "system_error"
     @ErrorDescription("请求参数不满足约束条件")
     const val BadRequestParameter  = "bad_request_param"
+    @ErrorDescription("请求数据的格式不正确或请求数据中的字段格式不正确")
+    const val InvalidRequestFormat  = "invalid_request_format"
     @ErrorDescription("缺少必要的请求参数")
     const val RequestParameterMissed  = "miss_request_param"
     @ErrorDescription("验证码不正确")

@@ -23,6 +23,7 @@ import com.labijie.infra.oauth2.TwoFactorPrincipal
 import com.labijie.infra.oauth2.TwoFactorSignInHelper
 import com.labijie.infra.oauth2.filter.ClientRequired
 import com.labijie.infra.utils.logger
+import jakarta.validation.constraints.NotBlank
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.security.oauth2.server.authorization.client.RegisteredClient
 import org.springframework.validation.annotation.Validated
@@ -73,7 +74,7 @@ class AccountController @Autowired constructor(
      * 找回密码第一步，验证身份
      */
     @PostMapping("/verify")
-    fun verify(@RequestParam("u", required = false) usr: String): UserVerifyResult {
+    fun verify(@RequestParam("u", required = false) @NotBlank usr: String): UserVerifyResult {
         val u = if (usr.isNotBlank()) userService.getUser(usr) else null
         val user = u ?: throw UserNotFoundException(usr)
         return UserVerifyResult(user.id, securityView(user))

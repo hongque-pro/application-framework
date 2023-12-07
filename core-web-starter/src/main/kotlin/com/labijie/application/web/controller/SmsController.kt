@@ -8,6 +8,7 @@ import com.labijie.application.model.*
 import com.labijie.infra.oauth2.TwoFactorPrincipal
 import io.swagger.v3.oas.annotations.Parameter
 import jakarta.validation.constraints.NotBlank
+import org.hibernate.validator.constraints.Length
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.validation.annotation.Validated
 import org.springframework.web.bind.annotation.PostMapping
@@ -40,8 +41,8 @@ class SmsController @Autowired constructor(
         return messageService.sendSmsCode(user.phoneNumber, request.type)
     }
 
-    @RequestMapping("/verify", method = [RequestMethod.POST])
-    fun verify(@NotBlank(message = "短信验证码不能为空") code: String, @NotBlank(message = "令牌不能为空") token: String): SimpleValue<Boolean> {
+    @PostMapping("/verify")
+    fun verify(@NotBlank @Length(max=6) code: String, @NotBlank token: String): SimpleValue<Boolean> {
         messageService.verifySmsCode(code, token, true)
         return true.toSimpleValue()
     }

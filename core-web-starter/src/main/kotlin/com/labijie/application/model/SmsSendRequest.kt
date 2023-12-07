@@ -1,5 +1,6 @@
 package com.labijie.application.model
 
+import com.labijie.application.configuration.ValidationProperties
 import com.labijie.application.validation.ConfigurablePattern
 import jakarta.validation.constraints.NotBlank
 
@@ -8,8 +9,8 @@ import jakarta.validation.constraints.NotBlank
  * @date 2023-12-01
  */
 class SmsSendRequest {
-    @get:NotBlank(message = "手机号不能为空")
-    @get:ConfigurablePattern("phone-number", message = "不是有效的手机号")
+    @get:NotBlank
+    @get:ConfigurablePattern(ValidationProperties.PHONE_NUMBER)
     var phoneNumber: String = ""
     var captcha: String = ""
     var type: SmsCodeType = SmsCodeType.General

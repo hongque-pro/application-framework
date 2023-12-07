@@ -7,19 +7,15 @@ import com.labijie.application.IErrorRegistry
 import com.labijie.application.data.LocalizationMessageTable
 import com.labijie.application.httpclient.NettyUtils
 import com.labijie.application.service.ILocalizationService
-import com.labijie.application.service.LocalizationMessageSource
 import com.labijie.application.service.impl.LocalizationService
 import com.labijie.application.web.client.MultiRestTemplates
-import com.labijie.infra.IIdGenerator
 import com.labijie.infra.orm.annotation.TableScan
 import com.labijie.infra.utils.logger
 import org.springframework.boot.CommandLineRunner
 import org.springframework.boot.autoconfigure.AutoConfigureAfter
-import org.springframework.boot.autoconfigure.AutoConfigureBefore
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.condition.ConditionalOnNotWebApplication
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication
-import org.springframework.boot.autoconfigure.context.MessageSourceAutoConfiguration
 import org.springframework.boot.autoconfigure.web.client.RestClientAutoConfiguration
 import org.springframework.boot.autoconfigure.web.client.RestTemplateAutoConfiguration
 import org.springframework.boot.context.properties.EnableConfigurationProperties
@@ -27,10 +23,8 @@ import org.springframework.boot.web.client.RestTemplateBuilder
 import org.springframework.boot.web.reactive.context.AnnotationConfigReactiveWebServerApplicationContext
 import org.springframework.boot.web.servlet.context.AnnotationConfigServletWebServerApplicationContext
 import org.springframework.context.ConfigurableApplicationContext
-import org.springframework.context.MessageSource
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
-import org.springframework.context.annotation.Primary
 import org.springframework.http.client.ReactorNettyClientRequestFactory
 import org.springframework.transaction.support.TransactionTemplate
 import org.springframework.web.client.RestTemplate
@@ -50,21 +44,9 @@ import reactor.netty.http.client.HttpClient
     SmsBaseProperties::class,
     OpenApiClientProperties::class,
 )
-@AutoConfigureBefore(MessageSourceAutoConfiguration::class)
 @AutoConfigureAfter(RestTemplateAutoConfiguration::class, RestClientAutoConfiguration::class)
 class ApplicationCoreAutoConfiguration {
 
-    @Bean
-    @ConditionalOnMissingBean(ILocalizationService::class)
-    fun localizationService(transactionTemplate: TransactionTemplate) : LocalizationService {
-        return LocalizationService(transactionTemplate)
-    }
-
-    @Bean
-    @Primary
-    fun localizationMessageSource(localizationService: ILocalizationService) : MessageSource {
-        return LocalizationMessageSource(localizationService)
-    }
 
     @Bean
     @ConditionalOnMissingBean(CoreErrorRegistration::class)

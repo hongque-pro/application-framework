@@ -12,10 +12,11 @@ import org.hibernate.validator.constraints.Range
  */
 class SetPasswordRequest : SmsAssociated() {
 
-    @get:Range(min = 1, message = "用户 id 不合法")
+    @get:Range(min = 1)
+    @get:Range(min = 1)
     var userId:Long = 0
 
-    @get:NotBlank(message = "新密码不能为空")
-    @get:Length(min=6, message = "密码不能少于 6 位")
+    @get:NotBlank
+    @get:Length(min=6)
     var password:String = ""
 }

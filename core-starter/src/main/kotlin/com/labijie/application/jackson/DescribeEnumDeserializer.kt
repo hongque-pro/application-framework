@@ -1,5 +1,6 @@
 package com.labijie.application.jackson
 
+import com.fasterxml.jackson.core.JsonParseException
 import com.fasterxml.jackson.core.JsonParser
 import com.fasterxml.jackson.databind.BeanProperty
 import com.fasterxml.jackson.databind.DeserializationContext
@@ -36,7 +37,7 @@ class DescribeEnumDeserializer(private val property: BeanProperty? = null) : Jso
             } catch (ex: NumberFormatException) {
                 val clazz =
                     if (ctxt.contextualType != null) ctxt.contextualType.rawClass else this.property!!.type.rawClass
-                throw IOException("Cant read json value '$rawValue' as enum (${clazz.simpleName}).")
+                throw JsonParseException(p, "Cant read json value '$rawValue' as enum (${clazz.simpleName}).")
             }
         }
         return null

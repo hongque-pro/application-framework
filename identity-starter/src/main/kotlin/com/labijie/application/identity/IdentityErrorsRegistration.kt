@@ -2,6 +2,7 @@ package com.labijie.application.identity
 
 import com.labijie.application.IErrorRegistration
 import com.labijie.application.IErrorRegistry
+import com.labijie.application.service.ILocalizationService
 import org.springframework.context.MessageSource
 
 /**
@@ -11,8 +12,7 @@ import org.springframework.context.MessageSource
  * @Description:
  */
 class IdentityErrorsRegistration  : IErrorRegistration {
-
-    override fun register(registry: IErrorRegistry, messageSource: MessageSource) {
-        registry.registerErrors(IdentityErrors, messageSource)
+    override fun register(registry: IErrorRegistry, localizationService: ILocalizationService) {
+        registry.registerErrors(IdentityErrors, localizationService)
     }
 }

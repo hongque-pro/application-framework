@@ -8,7 +8,9 @@ import org.springframework.context.ApplicationContextAware
 import org.springframework.context.MessageSource
 import org.springframework.context.i18n.LocaleContextHolder
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
+import java.util.Locale
 
 /**
  * Created with IntelliJ IDEA.
@@ -31,20 +33,19 @@ class ApplicationController: ApplicationContextAware {
         applicationContext.getBean(ILocalizationService::class.java)
     }
 
-
     @GetMapping("/errors")
     fun errors(): Map<String, String> {
         val locale = LocaleContextHolder.getLocale()
-        val mesages = errorRegistry.errorMessages.map {
-            it.key to  (messageSource.getMessage(it.value.code, null, it.value.defaultMessage, locale) ?: "")
+        val mesages = errorRegistry.errorMessageCodes.map {
+            it.key to  (messageSource.getMessage(it.value, null, locale) ?: "")
         }
         return mesages.toMap()
     }
 
     @GetMapping("/locale-messages")
-    fun localeMessages(): LocalizationMessages {
-        val locale = LocaleContextHolder.getLocale()
-        return localizationService.getLocaleMessages(locale)
+    fun localeMessages(@RequestParam locale: Locale? = null): LocalizationMessages {
+        val l = locale ?: LocaleContextHolder.getLocale()
+        return localizationService.getLocaleMessages(l)
     }
 
 

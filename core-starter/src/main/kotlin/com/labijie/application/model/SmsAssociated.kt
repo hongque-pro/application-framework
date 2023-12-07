@@ -9,10 +9,10 @@ import jakarta.validation.constraints.NotBlank
  * @date 2019-10-19
  */
 open class SmsAssociated {
-    @get:NotBlank(message = "令牌不能为空")
+    @get:NotBlank
     var smsToken: String = ""
 
-    @get:NotBlank(message = "短信验证码不能为空")
+    @get:NotBlank
     var smsCode: String = ""
 
     fun setSmsCode(code: String, token: String) {

@@ -29,6 +29,13 @@
       "type": "java.lang.String"
     },
     {
+      "name": "application.preload-locales",
+      "sourceType": "com.labijie.application.configuration.ApplicationCoreProperties",
+      "description": "Pre-load cultural messages into the database.",
+      "type": "java.lang.String",
+      "defaultValue": "zh_CN,en_US"
+    },
+    {
       "name": "application.sms.send-rate-limit",
       "sourceType": "com.labijie.application.configuration.SmsBaseProperties",
       "type": "java.time.Duration",

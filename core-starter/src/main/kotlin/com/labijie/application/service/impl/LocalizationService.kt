@@ -11,20 +11,23 @@ import com.labijie.application.data.pojo.dsl.LocalizationCodeDSL.insert
 import com.labijie.application.data.pojo.dsl.LocalizationCodeDSL.selectByPrimaryKey
 import com.labijie.application.data.pojo.dsl.LocalizationLanguageDSL.insert
 import com.labijie.application.data.pojo.dsl.LocalizationLanguageDSL.selectByPrimaryKey
+import com.labijie.application.data.pojo.dsl.LocalizationLanguageDSL.toLocalizationLanguageList
 import com.labijie.application.data.pojo.dsl.LocalizationMessageDSL.insert
 import com.labijie.application.data.pojo.dsl.LocalizationMessageDSL.selectByPrimaryKey
 import com.labijie.application.data.pojo.dsl.LocalizationMessageDSL.updateByPrimaryKey
 import com.labijie.application.executeReadOnly
 import com.labijie.application.model.LocalizationMessages
+import com.labijie.application.removeAfterTransactionCommit
 import com.labijie.application.service.ILocalizationService
+import com.labijie.caching.getOrSet
 import com.labijie.caching.getOrSetSliding
 import com.labijie.caching.memory.MemoryCacheManager
 import com.labijie.infra.IIdGenerator
 import com.labijie.infra.utils.ifNullOrBlank
 import com.labijie.infra.utils.logger
-import org.jetbrains.exposed.sql.JoinType
-import org.jetbrains.exposed.sql.andWhere
-import org.jetbrains.exposed.sql.selectAll
+import org.apache.commons.lang3.LocaleUtils
+import org.jetbrains.exposed.sql.*
+import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.springframework.context.MessageSourceResolvable
 import org.springframework.context.NoSuchMessageException
 import org.springframework.transaction.support.TransactionTemplate
@@ -42,23 +45,50 @@ class LocalizationService(
 
     private val cacheManager: MemoryCacheManager = MemoryCacheManager()
 
-    private fun addLocaleIfNotExisted(locale: Locale) {
+    private fun getCacheKey(locale: Locale, code: String): String {
+        return "loc_${locale.getId()}:${code}"
+    }
+
+    private fun allLocales(): List<Locale> {
+        return cacheManager.getOrSet("loc_all_locales", Duration.ofDays(365)) {
+            transactionTemplate.executeReadOnly() {
+                val list = LocalizationLanguageTable.selectAll()
+                    .orderBy(LocalizationLanguageTable.locale)
+                    .toLocalizationLanguageList()
+                list.map { LocaleUtils.toLocale(it.locale) }
+            }
+        } ?: listOf()
+    }
+
+    private fun addLocaleIfNotExisted(locale: Locale, refreshCache: Boolean = true) {
         val localId = locale.getId()
-        transactionTemplate.execute {
-            val lang = LocalizationLanguageTable.selectByPrimaryKey(localId)
-            if (lang == null) {
-                val newLang = LocalizationLanguage().apply {
-                    this.locale = localId
-                    this.language = locale.language
-                    this.country = locale.country
+        val existed = allLocales().any { locale.getId() == it.getId() }
+        if (existed) {
+            transactionTemplate.execute {
+                val lang = LocalizationLanguageTable.selectByPrimaryKey(localId)
+                if (lang == null) {
+                    if (refreshCache) {
+                        cacheManager.removeAfterTransactionCommit("all_locales")
+                    }
+                    val newLang = LocalizationLanguage().apply {
+                        this.locale = localId
+                        this.language = locale.language
+                        this.country = locale.country
+                    }
+                    LocalizationLanguageTable.insert(newLang)
                 }
-                LocalizationLanguageTable.insert(newLang)
             }
         }
     }
 
-    private fun addOrUpdateMessage(code: String, message: String, locale: Locale, override: Boolean) {
-        transactionTemplate.execute {
+    private fun addOrUpdateMessage(
+        code: String,
+        message: String,
+        locale: Locale,
+        override: Boolean,
+        refreshCache: Boolean = true
+    ): Boolean {
+        val count = transactionTemplate.execute {
             val existed = LocalizationMessageTable.selectByPrimaryKey(
                 locale.getId(),
                 code,
@@ -72,42 +102,70 @@ class LocalizationService(
                 }
                 LocalizationMessageTable.insert(newMessage).insertedCount
             } else if (override) {
+                if (refreshCache) {
+                    cacheManager.removeAfterTransactionCommit(getCacheKey(locale, code))
+                }
                 existed.message = message
                 LocalizationMessageTable.updateByPrimaryKey(existed)
             } else {
                 0
             }
-        }
+        } ?: 0
+        return count > 0
     }
 
     private fun addCodeIfNotExisted(code: String) {
 
         transactionTemplate.execute {
             val lc = LocalizationCodeTable.selectByPrimaryKey(code)
-            if(lc == null) {
+            if (lc == null) {
                 val newLoc = LocalizationCode().apply { this.code = code }
                 LocalizationCodeTable.insert(newLoc)
             }
         }
     }
 
-    override fun setMessage(code: String, message: String, locale: Locale, override: Boolean) {
+    private fun setMessage(
+        code: String,
+        message: String,
+        locale: Locale,
+        override: Boolean,
+        refreshCache: Boolean
+    ): Boolean {
         if (code.isBlank()) {
             logger.warn("Localization code is blank.")
-            return
+            return false
         }
-        transactionTemplate.execute {
-            addLocaleIfNotExisted(locale)
+        return transactionTemplate.execute {
+            addLocaleIfNotExisted(locale, refreshCache)
             addCodeIfNotExisted(code)
-            addOrUpdateMessage(code, message, locale, override)
-        }
+            addOrUpdateMessage(code, message, locale, override, refreshCache)
+        } ?: false
+    }
+
+    override fun setMessage(code: String, message: String, locale: Locale, override: Boolean): Boolean {
+        return setMessage(code, message, locale, override, true)
+    }
+
+    override fun setMessages(properties: Properties, locale: Locale, override: Boolean): Int {
+        return transactionTemplate.execute {
+            var count = 0
+            properties.forEach {
+                val success = setMessage(it.key.toString(), it.value.toString(), locale, override, false)
+                if (success) {
+                    count++
+                }
+            }
+            count
+        } ?: 0
     }
 
     override fun getMessage(code: String, locale: Locale): String? {
         if (code.isBlank()) {
             return null
         }
-        return cacheManager.getOrSetSliding("${locale.getId()}:${code}", Duration.ofMinutes(6)) {
+        val key = getCacheKey(locale, code)
+        return cacheManager.getOrSetSliding(key, Duration.ofMinutes(5)) {
             transactionTemplate.configure(isReadOnly = true).execute {
                 LocalizationMessageTable.selectByPrimaryKey(
                     locale.getId(),
@@ -118,23 +176,34 @@ class LocalizationService(
         }
     }
 
-    override fun getLocaleMessages(locale: Locale, includeBlank: Boolean): LocalizationMessages {
-         return transactionTemplate.executeReadOnly {
-            val list = LocalizationCodeTable.join(LocalizationMessageTable, JoinType.LEFT,
-                onColumn = LocalizationCodeTable.code,
-                otherColumn = LocalizationMessageTable.code)
-                .slice(LocalizationCodeTable.code, LocalizationMessageTable.message)
+    override fun getLocaleMessages(locale: Locale): LocalizationMessages {
+
+        return transactionTemplate.executeReadOnly {
+
+            val messagesQuery = LocalizationMessageTable
+                .slice(LocalizationMessageTable.code, LocalizationMessageTable.message)
                 .selectAll()
-                .andWhere { LocalizationMessageTable.locale eq locale.getId() }
+                .andWhere {
+                    LocalizationMessageTable.locale eq locale.getId()
+                }.alias("messages")
+
+            val list = LocalizationCodeTable.join(
+                messagesQuery,
+                JoinType.LEFT,
+                LocalizationCodeTable.code,
+                messagesQuery[LocalizationMessageTable.code]
+            )
+                .slice(LocalizationCodeTable.code, messagesQuery[LocalizationMessageTable.message])
+                .selectAll()
                 .orderBy(LocalizationCodeTable.code)
                 .toList()
 
-             val messages = list.associate {
-                 it[LocalizationCodeTable.code] to it[LocalizationMessageTable.message]
-             }
+            val messages = list.associate {
+                it[LocalizationCodeTable.code] to it[messagesQuery[LocalizationMessageTable.message]].orEmpty()
+            }
 
-             LocalizationMessages(locale, messages)
-         } ?: LocalizationMessages(locale)
+            LocalizationMessages(locale, messages)
+        } ?: LocalizationMessages(locale)
     }
 
     override fun saveLocaleMessages(message: LocalizationMessages, override: Boolean) {

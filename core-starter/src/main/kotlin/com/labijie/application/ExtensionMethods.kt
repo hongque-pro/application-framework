@@ -7,6 +7,8 @@ import com.labijie.application.model.SmsAssociated
 import com.labijie.caching.ICacheManager
 import com.labijie.infra.SecondIntervalTimeoutTimer
 import com.labijie.infra.json.JacksonHelper
+import org.springframework.context.NoSuchMessageException
+import org.springframework.context.i18n.LocaleContextHolder
 import org.springframework.core.ParameterizedTypeReference
 import org.springframework.http.HttpEntity
 import org.springframework.http.HttpMethod
@@ -27,6 +29,7 @@ import java.time.OffsetDateTime
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 import java.time.format.DateTimeParseException
+import java.util.Locale
 import kotlin.reflect.KClass
 
 
@@ -464,4 +467,28 @@ internal class CacheRemoveTransactionSynchronization(
             cacheManager.remove(key, region)
         }
     }
+}
+
+fun localeMessage(locale: Locale, code: String, vararg args: Any): String {
+    return if(SpringContext.isInitialized){
+        SpringContext.current.getMessage(code, args, null, locale) ?: throw NoSuchMessageException(code)
+    } else throw ApplicationRuntimeException("Spring context is NULL")
+}
+
+fun localeMessage(defaultMessage: String, code: String, vararg args: Any): String {
+    return localeMessage(defaultMessage, LocaleContextHolder.getLocale(), code, *args)
+}
+
+fun localeMessage(defaultMessage: String, locale: Locale, code: String, vararg args: Any): String {
+    return if(SpringContext.isInitialized){
+        SpringContext.current.getMessage(code, args, defaultMessage, locale) ?: defaultMessage
+    } else defaultMessage
+}
+
+fun localeErrorMessage(errorCode: String, defaultMessage: String? = null): String {
+    val e = if(SpringContext.isInitialized){
+        SpringContext.current.getMessage("app.err.${errorCode}", null, defaultMessage, LocaleContextHolder.getLocale()) ?: defaultMessage
+    } else defaultMessage
+
+    return e?: errorCode.replace("_", " ")
 }

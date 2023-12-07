@@ -6,14 +6,14 @@ import jakarta.validation.constraints.Email
 import org.hibernate.validator.constraints.Length
 
 data class OpenPartnerContact(
-    @Length(max=16)
-    @ConfigurablePattern(ValidationProperties.PHONE_NUMBER)
+    @get:Length(max=16)
+    @get:ConfigurablePattern(ValidationProperties.PHONE_NUMBER)
     var phoneNumber: String? = null,
 
-    @Length(max=6)
+    @get:Length(max=6)
     var contact: String? = null,
 
-    @Email
-    @Length(max=64)
+    @get:Email
+    @get:Length(max=64)
     var email: String? = null
 )

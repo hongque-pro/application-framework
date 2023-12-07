@@ -32,8 +32,5 @@ object AuthErrors {
     @ErrorDescription("你没有权限访问该资源")
     const val ACCESS_DENIED = OAuth2ErrorCodes.ACCESS_DENIED
 
-    @ErrorDescription("账号已锁定")
-    const val ACCOUNT_LOCKED = "account_locked"
-
 
 }

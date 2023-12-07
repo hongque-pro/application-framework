@@ -1,16 +1,16 @@
 package com.labijie.application.web.handler
 
-import com.labijie.application.ApplicationErrors
+import com.fasterxml.jackson.core.JacksonException
+import com.labijie.application.*
 import com.labijie.application.ApplicationErrors.UnhandledError
-import com.labijie.application.ErrorCodedException
-import com.labijie.application.ErrorCodedStatusException
-import com.labijie.application.getCauseFromChain
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.validation.ConstraintViolationException
 import org.slf4j.LoggerFactory
+import org.springframework.context.MessageSource
 import org.springframework.core.Ordered
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
+import org.springframework.http.converter.HttpMessageNotReadableException
 import org.springframework.security.core.AuthenticationException
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException
 import org.springframework.security.oauth2.core.OAuth2ErrorCodes
@@ -20,9 +20,11 @@ import org.springframework.web.bind.MissingServletRequestParameterException
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestControllerAdvice
+import org.springframework.web.method.annotation.HandlerMethodValidationException
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException
 import org.springframework.web.servlet.NoHandlerFoundException
 import java.lang.reflect.UndeclaredThrowableException
+import kotlin.collections.toMap
 
 /**
  * Created with IntelliJ IDEA.
@@ -30,7 +32,7 @@ import java.lang.reflect.UndeclaredThrowableException
  * @date 2019-09-05
  */
 @RestControllerAdvice
-class ControllerExceptionHandler : Ordered {
+class ControllerExceptionHandler(private val messageSource: MessageSource) : Ordered {
     override fun getOrder(): Int {
         return Int.MAX_VALUE
     }
@@ -42,9 +44,25 @@ class ControllerExceptionHandler : Ordered {
     @ResponseStatus(HttpStatus.UNAUTHORIZED)
     fun handleAuthenticationException(request: HttpServletRequest, e: AuthenticationException): ErrorResponse {
         if(e is OAuth2AuthenticationException){
-            return ErrorResponse(e.error.errorCode, e.error.description ?: e.error.errorCode)
+            return ErrorResponse(e.error.errorCode, localeErrorMessage(e.error.errorCode, e.error.description ?: e.error.errorCode))
         }
-        return ErrorResponse(OAuth2ErrorCodes.ACCESS_DENIED, e.message ?: "Access denied")
+        return ErrorResponse(OAuth2ErrorCodes.ACCESS_DENIED)
+    }
+
+    @ExceptionHandler(HandlerMethodValidationException::class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    fun handle(request: HttpServletRequest, e: HandlerMethodValidationException): ErrorResponse {
+        val argErrors =
+            e.allValidationResults.filter { !it.methodParameter.parameterName.isNullOrBlank() }.associate { result ->
+                result.methodParameter.parameterName!! to result.resolvableErrors.map {
+                    it.defaultMessage
+                }.joinToString("\n")
+            }
+
+        return InvalidParameterResponse(
+            ApplicationErrors.BadRequestParameter,
+            argErrors
+        )
     }
 
     @ExceptionHandler(MethodArgumentNotValidException::class)
@@ -66,7 +84,6 @@ class ControllerExceptionHandler : Ordered {
 
         return InvalidParameterResponse(
             ApplicationErrors.BadRequestParameter,
-            "invalid argument",
             argErrors
         )
     }
@@ -99,7 +116,6 @@ class ControllerExceptionHandler : Ordered {
 
         return InvalidParameterResponse(
             ApplicationErrors.BadRequestParameter,
-            "invalid argument",
             msg
         )
     }
@@ -135,6 +151,17 @@ class ControllerExceptionHandler : Ordered {
         return ErrorResponse(e.error, e.message, e.getDetails())
     }
 
+    @ExceptionHandler(HttpMessageNotReadableException::class)
+    fun handleHttpMessageNotReadableExceptionHandler(request: HttpServletRequest, e: HttpMessageNotReadableException): ResponseEntity<ErrorResponse> {
+        if(e.getCauseFromChain(JacksonException::class) != null) {
+            val error = ErrorResponse(ApplicationErrors.InvalidRequestFormat)
+            return ResponseEntity(error, HttpStatus.BAD_REQUEST)
+        }
+
+        val response = handleUnhandledException(request, e)
+        return ResponseEntity(response, HttpStatus.INTERNAL_SERVER_ERROR)
+    }
+
     @ExceptionHandler(NoHandlerFoundException::class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
     fun handleNoHandlerFoundException(request: HttpServletRequest, e: NoHandlerFoundException): ErrorResponse {
@@ -142,7 +169,7 @@ class ControllerExceptionHandler : Ordered {
             "http_method" to e.httpMethod,
             "request_url" to e.requestURL
         )
-        return ErrorResponse("HTTP_404", e.message, details)
+        return ErrorResponse("HTTP_404", e.localizedMessage, details)
     }
 
     @ExceptionHandler(Throwable::class)
@@ -160,6 +187,6 @@ class ControllerExceptionHandler : Ordered {
             HTTP Method: ${request.method} 
             Request URI: ${request.requestURI}
             """, error)
-        return ErrorResponse(UnhandledError, "system error")
+        return ErrorResponse(UnhandledError)
     }
 }

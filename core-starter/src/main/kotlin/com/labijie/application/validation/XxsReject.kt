@@ -18,7 +18,7 @@ import kotlin.reflect.KClass
 @Retention(AnnotationRetention.RUNTIME)
 @Constraint(validatedBy = [XxsValidator::class])
 annotation class XxsReject(
-    val message: String = "Xxs content detected",
+    val message: String = "{app.validation.xxs.message}",
     val policy: XxsDefinePolicy = XxsDefinePolicy.Strict,
     val groups: Array<KClass<*>> = [],
     val payload: Array<KClass<out Payload>> = []

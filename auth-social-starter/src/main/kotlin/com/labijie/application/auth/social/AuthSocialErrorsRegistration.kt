@@ -2,6 +2,7 @@ package com.labijie.application.auth.social
 
 import com.labijie.application.IErrorRegistration
 import com.labijie.application.IErrorRegistry
+import com.labijie.application.service.ILocalizationService
 import org.springframework.context.MessageSource
 
 /**
@@ -10,7 +11,7 @@ import org.springframework.context.MessageSource
  * @date 2019-12-14
  */
 class AuthSocialErrorsRegistration : IErrorRegistration {
-    override fun register(registry: IErrorRegistry, messageSource: MessageSource) {
-        registry.registerErrors(AuthSocialErrors, messageSource)
+    override fun register(registry: IErrorRegistry, localizationService: ILocalizationService) {
+        registry.registerErrors(AuthSocialErrors, localizationService)
     }
 }

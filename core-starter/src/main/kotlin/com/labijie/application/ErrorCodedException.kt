@@ -7,9 +7,9 @@ package com.labijie.application
  */
 open class ErrorCodedException(
     val error: String,
-    message: String,
+    message: String? = null,
     cause: Throwable? = null
-) : ApplicationRuntimeException(message, cause){
+) : ApplicationRuntimeException(localeErrorMessage(error, message), cause){
     open fun getDetails():Map<String, Any>? {
         return null
     }

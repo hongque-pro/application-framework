@@ -3,8 +3,10 @@ package com.labijie.application.env
 import com.labijie.infra.utils.logger
 import org.springframework.boot.context.event.ApplicationEnvironmentPreparedEvent
 import org.springframework.context.ApplicationListener
+import org.springframework.context.i18n.LocaleContextHolder
 import org.springframework.core.env.Environment
 import org.springframework.core.env.MapPropertySource
+import java.util.*
 
 /**
  *
@@ -20,6 +22,7 @@ class InfraEnvironmentPreparedListener : ApplicationListener<ApplicationEnvironm
     }
 
     private fun defaultProperties(origin: Environment): MapPropertySource {
+        LocaleContextHolder.setDefaultLocale(Locale.SIMPLIFIED_CHINESE)
         val configMap = mutableMapOf<String, Any>()
         return MapPropertySource("application-framework-config", configMap)
     }

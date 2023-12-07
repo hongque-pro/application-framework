@@ -12,8 +12,8 @@ import org.hibernate.validator.constraints.Length
  * @date 2019-12-11
  */
 class SocialRegisterInfo : SmsAssociated() {
-    @get:Length(min=3, max = 16, message =  "用户名长度为 3-16 位")
-    @get: ConfigurablePattern(ValidationProperties.USER_NAME, message = "用户名为 3-16 位，必须以字母开头，只能包含字母、数字、下划线、减号，且符号不能连续出现")
+    @get:Length(min=3, max = 16)
+    @get: ConfigurablePattern(ValidationProperties.USER_NAME)
     var username: String? = null
 
     @get:NotBlank
@@ -24,7 +24,7 @@ class SocialRegisterInfo : SmsAssociated() {
     var provider: String = ""
 
     @get:NotBlank
-    @get: ConfigurablePattern(ValidationProperties.PHONE_NUMBER, message="不是有效的电话号码")
+    @get: ConfigurablePattern(ValidationProperties.PHONE_NUMBER)
     @get:Length(max = 16)
     var phoneNumber: String = ""
 

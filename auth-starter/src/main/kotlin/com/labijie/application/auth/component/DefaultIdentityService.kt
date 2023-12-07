@@ -2,6 +2,7 @@ package com.labijie.application.auth.component
 
 import com.labijie.application.ErrorCodedException
 import com.labijie.application.auth.AuthErrors
+import com.labijie.application.identity.IdentityErrors
 import com.labijie.application.identity.data.pojo.User
 import com.labijie.application.identity.service.IUserService
 import com.labijie.application.web.roleAuthority
@@ -31,7 +32,7 @@ open class DefaultIdentityService constructor(
         val user = getUser(userName)
         val userLocked = (user.lockoutEnabled ?: false && (user.lockoutEnd ?: 0) > System.currentTimeMillis())
 
-        if (userLocked) throw ErrorCodedException(error = AuthErrors.ACCOUNT_LOCKED, message = "account is locked!")
+        if (userLocked) throw ErrorCodedException(error = IdentityErrors.ACCOUNT_LOCKED)
 
         val roles = ArrayList(
                 userService.getUserRoles(user.id ?: 0).map {

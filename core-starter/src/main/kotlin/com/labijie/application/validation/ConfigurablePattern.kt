@@ -13,8 +13,8 @@ import kotlin.reflect.KClass
 @Retention(AnnotationRetention.RUNTIME)
 @Constraint(validatedBy = [ConfigurablePatternValidator::class])
 annotation class ConfigurablePattern(
-    val regexProperty:String,
-    val message: String = "{javax.validation.constraints.Pattern.message}",
+    val regexConfigName:String,
+    val message: String = ConfigurablePatternValidator.DEFAULT_MESSAGE_TEMPLATE,
     val groups: Array<KClass<*>> = [],
     val payload: Array<KClass<out Payload>> = []
 )

@@ -3,15 +3,23 @@ package com.labijie.application
 import com.labijie.application.component.IHumanChecker
 import com.labijie.application.component.IMessageService
 import com.labijie.application.component.IObjectStorage
+import com.labijie.application.configuration.ApplicationCoreProperties
 import com.labijie.application.configuration.HttpClientProperties
 import com.labijie.application.httpclient.HttpClientLoggingInterceptor
 import com.labijie.application.jackson.DescribeEnumDeserializer
 import com.labijie.application.jackson.DescribeEnumSerializer
+import com.labijie.application.localization.ILocalizationResourceBundle
+import com.labijie.application.localization.LocalizationMessageSource
+import com.labijie.application.service.ILocalizationService
+import com.labijie.application.service.impl.LocalizationService
+import com.labijie.application.validation.LocalizationMessageInterpolator
 import com.labijie.infra.getApplicationName
 import com.labijie.infra.json.JacksonHelper
 import com.labijie.infra.utils.ifNullOrBlank
 import com.labijie.infra.utils.logger
 import com.labijie.infra.utils.toLocalDateTime
+import jakarta.validation.Validation
+import org.apache.commons.lang3.LocaleUtils
 import org.springframework.beans.BeansException
 import org.springframework.beans.factory.ObjectProvider
 import org.springframework.boot.context.event.ApplicationReadyEvent
@@ -27,14 +35,17 @@ import org.springframework.context.ApplicationListener
 import org.springframework.context.ConfigurableApplicationContext
 import org.springframework.context.MessageSource
 import org.springframework.context.event.EventListener
+import org.springframework.context.support.MessageSourceResourceBundle
 import org.springframework.core.Ordered
 import org.springframework.core.env.Environment
 import org.springframework.util.ClassUtils
+import org.springframework.validation.beanvalidation.MessageSourceResourceBundleLocator
 import org.springframework.web.context.WebApplicationContext
 import java.lang.reflect.Method
 import java.lang.reflect.ParameterizedType
 import kotlin.concurrent.thread
 import kotlin.reflect.KClass
+import kotlin.streams.toList
 import kotlin.system.exitProcess
 
 /**
@@ -61,8 +72,12 @@ class ApplicationInitializationRunner<T : ConfigurableApplicationContext>(
         applicationContext.getBean(LOGGING_SYSTEM_BEAN_NAME, LoggingSystem::class.java)
     }
 
-    private val messageSource by lazy {
-        applicationContext.getBean(MessageSource::class.java)
+    private val localizationService by lazy {
+        applicationContext.getBean(ILocalizationService::class.java)
+    }
+
+    private val applicationCoreProperties by lazy {
+        applicationContext.getBean(ApplicationCoreProperties::class.java)
     }
 
     private var httpClientProperties: HttpClientProperties? = null
@@ -91,9 +106,48 @@ class ApplicationInitializationRunner<T : ConfigurableApplicationContext>(
         JacksonHelper.defaultObjectMapper.registerModule(enumModule)
     }
 
+    private fun initLocalization() {
+
+        val locales = applicationCoreProperties.preloadLocales
+        val messageSource =
+            applicationContext.getBeanProvider(MessageSource::class.java).ifAvailable as? LocalizationMessageSource
+        if(locales.isNotBlank() && messageSource != null) {
+            val localeList = locales.split(",").mapNotNull {
+                try {
+                    LocaleUtils.toLocale(it.trim())
+                } catch (_: IllegalArgumentException) {
+                    null
+                }
+            }
+
+
+            val bundleList = applicationContext.getBeanProvider(ILocalizationResourceBundle::class.java).orderedStream().toList().flatMap {
+                b->
+                b.getResources()
+            }.toTypedArray()
+
+            messageSource.loadResourceBundle(*bundleList)
+            messageSource.preloadMessages(*localeList.toTypedArray())
+        }
+    }
+
     private fun initHttpClientLogger() {
         if(httpClientProperties?.loggerEnabled == true){
             loggingSystem.setLogLevel(HttpClientLoggingInterceptor::class.java.name, LogLevel.DEBUG)
+        }
+    }
+
+    private fun initErrorRegistrations() {
+        try {
+            loadModules()
+            thread {
+                errorRegistrations.orderedStream().forEach {
+                    it.register(errorRegistry, localizationService)
+                }
+            }
+        } catch (e: Throwable) {
+            logger.error("Application '$applicationName' initialize fault.", e)
+            exitProcess(-3333)
         }
     }
 
@@ -104,17 +158,8 @@ class ApplicationInitializationRunner<T : ConfigurableApplicationContext>(
         }
         this.initJackson()
         this.initHttpClientLogger()
-        try {
-            loadModules()
-            thread {
-                errorRegistrations.orderedStream().forEach {
-                    it.register(errorRegistry, messageSource)
-                }
-            }
-        } catch (e: Throwable) {
-            logger.error("Application '$applicationName' initialize fault.", e)
-            exitProcess(-3333)
-        }
+        this.initLocalization()
+        initErrorRegistrations()
 
     }
 

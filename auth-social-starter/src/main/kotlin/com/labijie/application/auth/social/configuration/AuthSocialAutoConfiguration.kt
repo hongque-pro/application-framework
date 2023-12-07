@@ -1,6 +1,6 @@
 package com.labijie.application.auth.social.configuration
 
-import com.labijie.application.auth.configuration.AuthServerAutoConfiguration
+import com.labijie.application.auth.configuration.ApplicationAuthServerAutoConfiguration
 import com.labijie.application.auth.social.AuthSocialErrorsRegistration
 import com.labijie.application.auth.social.providers.alipay.AlipayMiniOptions
 import com.labijie.application.auth.social.providers.alipay.AlipayMiniProgramProvider
@@ -26,7 +26,7 @@ import org.springframework.web.client.RestTemplate
 
 @Configuration(proxyBeanMethods = false)
 @EnableConfigurationProperties(AuthSocialProperties::class)
-@AutoConfigureBefore(AuthServerAutoConfiguration::class)
+@AutoConfigureBefore(ApplicationAuthServerAutoConfiguration::class)
 @AutoConfigureAfter(IdentityAutoConfiguration::class)
 class AuthSocialAutoConfiguration : IResourceAuthorizationConfigurer {
     companion object{

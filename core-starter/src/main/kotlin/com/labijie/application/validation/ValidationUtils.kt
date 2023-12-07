@@ -13,7 +13,7 @@ internal object ValidationUtils {
     fun localeMessage(message: String, defaultMessage: String): String {
         return if(messageCodePattern.matches(message)){
             val code = message.trim('{', '}')
-            localeMessage("Invalid parameter format.", code, LocaleContextHolder.getLocale())
+            localeMessage(defaultMessage, code, LocaleContextHolder.getLocale())
         }else {
             message
         }

@@ -9,7 +9,10 @@ import java.util.*
  */
 class ResourceBundleMessagesLoader : ReloadableResourceBundleMessageSource() {
     fun loadAllMessages(locale: Locale): Properties {
+        this.clearCache()
         val properties = getMergedProperties(locale)
-        return properties.properties ?: Properties()
+        val props = properties.properties ?: Properties()
+        this.clearCache()
+        return props
     }
 }

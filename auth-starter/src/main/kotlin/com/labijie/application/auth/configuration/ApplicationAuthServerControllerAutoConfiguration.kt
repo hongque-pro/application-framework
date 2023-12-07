@@ -16,19 +16,9 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer
  */
 @Configuration(proxyBeanMethods = false)
 @AutoConfigureAfter(OAuth2ServerAutoConfiguration::class)
-class AuthServerControllerAutoConfiguration : WebMvcConfigurer{
+class ApplicationAuthServerControllerAutoConfiguration : WebMvcConfigurer{
 
     @ConditionalOnBean(TwoFactorSignInHelper::class)
     @Import(AccountController::class)
     protected class AccountControllerImport
-
-//    override fun extendMessageConverters(converters: MutableList<HttpMessageConverter<*>>) {
-//        super.extendMessageConverters(converters)
-//        val index = converters.indexOfFirst {
-//            it is OAuth2AccessTokenResponseHttpMessageConverter
-//        }
-//        if (index < 0) {
-//            converters.add(0, OAuth2AccessTokenResponseHttpMessageConverter())
-//        }
-//    }
 }

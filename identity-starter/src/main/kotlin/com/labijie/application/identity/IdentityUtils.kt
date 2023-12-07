@@ -50,6 +50,6 @@ object IdentityUtils {
 
 
 val User.isNullEmail
-    get() = this.email.endsWith("@null.null") ?: true
+    get() = this.email.endsWith("@null.null")
 
 fun User.isEnabled(): Boolean = !this.lockoutEnabled || this.lockoutEnd < System.currentTimeMillis()

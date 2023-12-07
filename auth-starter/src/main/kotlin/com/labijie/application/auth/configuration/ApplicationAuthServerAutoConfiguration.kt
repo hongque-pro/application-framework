@@ -9,6 +9,7 @@ import com.labijie.application.identity.configuration.IdentityAutoConfiguration
 import com.labijie.application.identity.service.IUserService
 import com.labijie.infra.oauth2.IIdentityService
 import com.labijie.infra.oauth2.configuration.OAuth2DependenciesAutoConfiguration
+import com.labijie.infra.oauth2.configuration.OAuth2ServerAutoConfiguration
 import com.labijie.infra.oauth2.resource.IResourceAuthorizationConfigurer
 import org.springframework.boot.autoconfigure.AutoConfigureAfter
 import org.springframework.boot.autoconfigure.AutoConfigureBefore
@@ -18,7 +19,6 @@ import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Import
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configurers.AuthorizeHttpRequestsConfigurer
-import org.springframework.security.config.annotation.web.configurers.ExpressionUrlAuthorizationConfigurer
 
 /**
  * Created with IntelliJ IDEA.
@@ -29,7 +29,7 @@ import org.springframework.security.config.annotation.web.configurers.Expression
 @AutoConfigureAfter(IdentityAutoConfiguration::class)
 @AutoConfigureBefore(OAuth2DependenciesAutoConfiguration::class)
 @Import(AuthDocConfiguration::class)
-class AuthServerAutoConfiguration : IResourceAuthorizationConfigurer {
+class ApplicationAuthServerAutoConfiguration : IResourceAuthorizationConfigurer {
 
     override fun configure(registry: AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry) {
         registry.requestMatchers(

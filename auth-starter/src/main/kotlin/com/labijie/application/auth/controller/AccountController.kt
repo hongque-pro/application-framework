@@ -85,7 +85,7 @@ class AccountController @Autowired constructor(
      */
     @PostMapping("/forgot-password")
     fun resetPassword(@RequestBody @Validated request: SetPasswordRequest): SimpleValue<Boolean> {
-        val u = userService.getUserById(request.userId) ?: throw  UserNotFoundException()
+        userService.getUserById(request.userId) ?: throw  UserNotFoundException()
 
         messageService.verifySmsCode(request, true)
         val succeed = userService.resetPassword(request.userId, request.password)

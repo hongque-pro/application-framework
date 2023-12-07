@@ -11,14 +11,11 @@ import com.labijie.application.jackson.DescribeEnumSerializer
 import com.labijie.application.localization.ILocalizationResourceBundle
 import com.labijie.application.localization.LocalizationMessageSource
 import com.labijie.application.service.ILocalizationService
-import com.labijie.application.service.impl.LocalizationService
-import com.labijie.application.validation.LocalizationMessageInterpolator
 import com.labijie.infra.getApplicationName
 import com.labijie.infra.json.JacksonHelper
 import com.labijie.infra.utils.ifNullOrBlank
 import com.labijie.infra.utils.logger
 import com.labijie.infra.utils.toLocalDateTime
-import jakarta.validation.Validation
 import org.apache.commons.lang3.LocaleUtils
 import org.springframework.beans.BeansException
 import org.springframework.beans.factory.ObjectProvider
@@ -29,23 +26,16 @@ import org.springframework.boot.logging.LogLevel
 import org.springframework.boot.logging.LoggingSystem
 import org.springframework.boot.web.context.WebServerInitializedEvent
 import org.springframework.boot.web.server.WebServer
-import org.springframework.context.ApplicationContext
-import org.springframework.context.ApplicationContextAware
-import org.springframework.context.ApplicationListener
-import org.springframework.context.ConfigurableApplicationContext
-import org.springframework.context.MessageSource
+import org.springframework.context.*
 import org.springframework.context.event.EventListener
-import org.springframework.context.support.MessageSourceResourceBundle
 import org.springframework.core.Ordered
 import org.springframework.core.env.Environment
 import org.springframework.util.ClassUtils
-import org.springframework.validation.beanvalidation.MessageSourceResourceBundleLocator
 import org.springframework.web.context.WebApplicationContext
 import java.lang.reflect.Method
 import java.lang.reflect.ParameterizedType
 import kotlin.concurrent.thread
 import kotlin.reflect.KClass
-import kotlin.streams.toList
 import kotlin.system.exitProcess
 
 /**
@@ -87,7 +77,7 @@ class ApplicationInitializationRunner<T : ConfigurableApplicationContext>(
         SpringContext.current = applicationContext
         environment = applicationContext.environment
         this.applicationContext = applicationContext
-        applicationName = environment.getApplicationName(false) ?: "NoneName"
+        applicationName = environment.getApplicationName(false)
         profiles = applicationContext.environment.activeProfiles.joinToString()
         errorRegistrations = applicationContext.getBeanProvider(IErrorRegistration::class.java)
         errorRegistry = applicationContext.getBean(IErrorRegistry::class.java)

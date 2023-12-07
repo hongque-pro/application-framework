@@ -1,6 +1,8 @@
+import org.gradle.internal.impldep.com.fasterxml.jackson.databind.ObjectMapper
 
 infra {
     useInfraOrmGenerator(Versions.infraOrm)
+    processSpringMessageSource("com/labijie/application")
 }
 
 dependencies {

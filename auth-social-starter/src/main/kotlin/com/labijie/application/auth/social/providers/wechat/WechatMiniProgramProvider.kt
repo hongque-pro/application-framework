@@ -50,11 +50,11 @@ class WechatMiniProgramProvider(
         val entity = HttpEntity(null, headers)
         val result = restTemplate.exchangeForString(fullUrl, HttpMethod.GET, entity)
         val response = JacksonHelper.deserializeFromString(result.body ?: "{}", Code2SessionResponse::class, true)
-        if (result.statusCodeValue == 200 && response.sessionKey.isNotBlank()) {
+        if (result.statusCode.value() == 200 && response.sessionKey.isNotBlank()) {
             return PlatformAccessToken(response.unionId.ifNullOrBlank { response.openId }, response.sessionKey, appId =  options.appId, appOpenId =  response.openId)
         }
         val error = """Request wechat code2Session interface fault.
-                 http status: ${result.statusCodeValue}
+                 http status: ${result.statusCode.value()}
                  error code: ${response.errorCode}
                  error message:${response.errorMessage} """
         logger.error(error)

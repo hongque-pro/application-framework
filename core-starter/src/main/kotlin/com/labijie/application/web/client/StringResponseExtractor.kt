@@ -31,9 +31,8 @@ object StringResponseExtractor : ResponseExtractor<ResponseEntity<String?>> {
             if (logger.isDebugEnabled) {
                 logger.debug("No content-type, using 'application/octet-stream'")
             }
-            contentType = MediaType.APPLICATION_OCTET_STREAM
         }
-        return contentType
+        return contentType ?: MediaType.APPLICATION_OCTET_STREAM
     }
 
 }

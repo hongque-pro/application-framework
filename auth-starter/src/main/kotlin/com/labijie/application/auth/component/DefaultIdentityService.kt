@@ -1,12 +1,13 @@
 package com.labijie.application.auth.component
 
 import com.labijie.application.ErrorCodedException
-import com.labijie.application.auth.AuthErrors
 import com.labijie.application.identity.IdentityErrors
 import com.labijie.application.identity.data.pojo.User
 import com.labijie.application.identity.service.IUserService
 import com.labijie.application.web.roleAuthority
-import com.labijie.infra.oauth2.*
+import com.labijie.infra.oauth2.IIdentityService
+import com.labijie.infra.oauth2.ITwoFactorUserDetails
+import com.labijie.infra.oauth2.SimpleTwoFactorUserDetails
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.security.core.userdetails.UsernameNotFoundException
 
@@ -30,13 +31,13 @@ open class DefaultIdentityService constructor(
 
     override fun getUserByName(userName: String): ITwoFactorUserDetails {
         val user = getUser(userName)
-        val userLocked = (user.lockoutEnabled ?: false && (user.lockoutEnd ?: 0) > System.currentTimeMillis())
+        val userLocked = (user.lockoutEnabled && (user.lockoutEnd) > System.currentTimeMillis())
 
         if (userLocked) throw ErrorCodedException(error = IdentityErrors.ACCOUNT_LOCKED)
 
         val roles = ArrayList(
-                userService.getUserRoles(user.id ?: 0).map {
-                    roleAuthority(it.name.orEmpty())
+                userService.getUserRoles(user.id).map {
+                    roleAuthority(it.name)
                 })
 
         return SimpleTwoFactorUserDetails(

@@ -23,7 +23,7 @@ class DefaultResourceSecurityConfiguration : IResourceAuthorizationConfigurer {
         )
 
         val permitAllPaths = mutableListOf(
-            "/sms",
+            "/sms/**",
             "/application/public/**",
             "/swagger-ui.html",
             "/swagger",

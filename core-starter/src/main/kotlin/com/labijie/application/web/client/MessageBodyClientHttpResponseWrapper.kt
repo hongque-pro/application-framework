@@ -103,7 +103,7 @@ internal class MessageBodyClientHttpResponseWrapper(response: ClientHttpResponse
     @Deprecated("Deprecated in Spring 6.0")
     @Throws(IOException::class)
     override fun getRawStatusCode(): Int {
-        return response.rawStatusCode
+        return response.statusCode.value()
     }
 
     @Throws(IOException::class)

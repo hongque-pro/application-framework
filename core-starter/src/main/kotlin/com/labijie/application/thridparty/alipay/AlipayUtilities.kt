@@ -95,7 +95,7 @@ object AlipayUtilities {
             val prettyBody  = if(!bodyString.isNullOrBlank()) JacksonHelper.defaultObjectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(jsonNode ?: bodyString) else "<null>"
             val error = """Invoke $PLATFORM_NAME payment api fault.
                 Request URL: $url
-                HTTP STATUS: ${response.statusCodeValue}, 
+                HTTP STATUS: ${response.statusCode.value()}, 
                 Alipay Response: $prettyBody
                 Doc URL: https://docs.open.alipay.com/api_1/alipay.trade.create/ """
 

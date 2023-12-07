@@ -1,2 +1,2 @@
-com.labijie.application.auth.configuration.AuthServerAutoConfiguration
-com.labijie.application.auth.configuration.AuthServerControllerAutoConfiguration
+com.labijie.application.auth.configuration.ApplicationAuthServerAutoConfiguration
+com.labijie.application.auth.configuration.ApplicationAuthServerControllerAutoConfiguration

@@ -8,6 +8,7 @@ import com.labijie.application.auth.toHttpResponse
 import com.labijie.application.auth.toPrincipal
 import com.labijie.application.component.IMessageService
 import com.labijie.application.component.impl.NoneMessageService
+import com.labijie.application.identity.isEnabled
 import com.labijie.application.identity.model.SocialRegisterInfo
 import com.labijie.application.identity.model.SocialUserAndRoles
 import com.labijie.application.identity.service.ISocialUserService
@@ -66,7 +67,7 @@ class AccountSocialController(
         val u = userRoles.user
 
         //账号是否锁定
-        val userLocked = (u.lockoutEnabled ?: false && (u.lockoutEnd ?: 0) > System.currentTimeMillis())
+        val userLocked = !u.isEnabled()
         if (userLocked) throw SocialUserLockedException(userRoles.loginProvider)
 
         val principal = userRoles.toPrincipal {

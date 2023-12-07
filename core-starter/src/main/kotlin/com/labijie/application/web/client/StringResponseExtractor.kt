@@ -20,7 +20,7 @@ object StringResponseExtractor : ResponseExtractor<ResponseEntity<String?>> {
         }
         val contentType = getContentType(responseWrapper)
 
-        val bodyString = responseWrapper.body.readBytes().toString(contentType?.charset ?: Charsets.UTF_8)
+        val bodyString = responseWrapper.body.readBytes().toString(contentType.charset ?: Charsets.UTF_8)
 
         return ResponseEntity.status(response.statusCode).headers(response.headers).body(bodyString)
     }

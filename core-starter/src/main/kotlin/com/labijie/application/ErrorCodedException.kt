@@ -8,9 +8,17 @@ package com.labijie.application
 open class ErrorCodedException(
     val error: String,
     message: String? = null,
-    cause: Throwable? = null
-) : ApplicationRuntimeException(localeErrorMessage(error, message), cause){
+    cause: Throwable? = null,
+    localizedMessage: String? = null
+) : ApplicationRuntimeException(message, cause){
+
+    private val locMessage: String = localizedMessage ?: localeErrorMessage(error)
     open fun getDetails():Map<String, Any>? {
         return null
     }
+
+    override fun getLocalizedMessage(): String = locMessage
+
+    override val message: String?
+        get() = super.message ?: localizedMessage
 }

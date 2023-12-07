@@ -142,13 +142,13 @@ class ControllerExceptionHandler(private val messageSource: MessageSource) : Ord
 
     @ExceptionHandler(ErrorCodedStatusException::class)
     fun handleErrorCodedStatusException(request: HttpServletRequest, e: ErrorCodedStatusException): ResponseEntity<ErrorResponse> {
-        return ResponseEntity(ErrorResponse(e.error, e.message), e.status)
+        return ResponseEntity(ErrorResponse(e.error, e.localizedMessage), e.status)
     }
 
     @ExceptionHandler(ErrorCodedException::class)
     @ResponseStatus(HttpStatus.OK)
     fun handleCodedException(request: HttpServletRequest, e: ErrorCodedException): ErrorResponse {
-        return ErrorResponse(e.error, e.message, e.getDetails())
+        return ErrorResponse(e.error, e.localizedMessage, e.getDetails())
     }
 
     @ExceptionHandler(HttpMessageNotReadableException::class)

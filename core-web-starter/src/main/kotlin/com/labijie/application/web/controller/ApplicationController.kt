@@ -1,25 +1,31 @@
 package com.labijie.application.web.controller
 
 import com.labijie.application.IErrorRegistry
-import com.labijie.application.model.LocalizationMessages
 import com.labijie.application.service.ILocalizationService
+import com.labijie.infra.json.JacksonHelper
+import jakarta.servlet.http.HttpServletResponse
 import org.springframework.context.ApplicationContext
 import org.springframework.context.ApplicationContextAware
 import org.springframework.context.MessageSource
 import org.springframework.context.i18n.LocaleContextHolder
-import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.RequestParam
-import org.springframework.web.bind.annotation.RestController
-import java.util.Locale
+import org.springframework.http.MediaType
+import org.springframework.web.bind.annotation.*
+import java.util.*
 
 /**
  * Created with IntelliJ IDEA.
  * @author Anders Xiao
  * @date 2019-12-14
  */
-@RestController("/application")
-class ApplicationController: ApplicationContextAware {
+@RestController
+@RequestMapping("/application/public")
+class ApplicationController : ApplicationContextAware {
     private lateinit var applicationContext: ApplicationContext
+
+    enum class LocalizationMessageFormat {
+        Json,
+        Text
+    }
 
     private val errorRegistry by lazy {
         applicationContext.getBean(IErrorRegistry::class.java)
@@ -37,15 +43,37 @@ class ApplicationController: ApplicationContextAware {
     fun errors(): Map<String, String> {
         val locale = LocaleContextHolder.getLocale()
         val mesages = errorRegistry.errorMessageCodes.map {
-            it.key to  (messageSource.getMessage(it.value, null, locale) ?: "")
+            it.key to (messageSource.getMessage(it.value, null, locale) ?: "")
         }
         return mesages.toMap()
     }
 
     @GetMapping("/locale-messages")
-    fun localeMessages(@RequestParam locale: Locale? = null): LocalizationMessages {
+    @ResponseBody
+    fun localeMessages(
+        @RequestParam locale: Locale? = null,
+        @RequestParam(
+            defaultValue = "text",
+            required = false
+        ) format: LocalizationMessageFormat = LocalizationMessageFormat.Text,
+        httpServletResponse: HttpServletResponse
+    ) {
+        httpServletResponse.characterEncoding = Charsets.UTF_8.name()
+
         val l = locale ?: LocaleContextHolder.getLocale()
-        return localizationService.getLocaleMessages(l)
+        val messages = localizationService.getLocaleMessages(l)
+        if (format == LocalizationMessageFormat.Text) {
+            httpServletResponse.characterEncoding = Charsets.UTF_8.name()
+            httpServletResponse.contentType = MediaType.TEXT_PLAIN_VALUE
+            val b = StringBuilder()
+            messages.messages.forEach {
+                b.appendLine("${it.key}=${it.value}")
+            }
+            httpServletResponse.outputStream.write(b.toString().toByteArray(Charsets.UTF_8))
+        } else {
+            httpServletResponse.contentType = MediaType.APPLICATION_JSON_VALUE
+            httpServletResponse.outputStream.write(JacksonHelper.serialize(messages, true))
+        }
     }
 
 

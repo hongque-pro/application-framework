@@ -53,4 +53,7 @@ object ApplicationErrors {
 
     @ErrorDescription("文件索引已经存在")
     const val FileIndexAlreadyExisted  = "file_index_existed"
+
+    @ErrorDescription("文件不存在")
+    const val FileIndexNotFound  = "file_index_not_found"
 }

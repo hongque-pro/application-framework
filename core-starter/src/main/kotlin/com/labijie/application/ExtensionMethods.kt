@@ -486,9 +486,14 @@ fun localeMessage(defaultMessage: String, locale: Locale, code: String, vararg a
 }
 
 fun localeErrorMessage(errorCode: String, defaultMessage: String? = null): String {
+    return localeErrorMessage(errorCode, null, defaultMessage)
+}
+
+fun localeErrorMessage(errorCode: String, args: Collection<Any>? = null, defaultMessage: String? = null): String {
     val e = if(SpringContext.isInitialized){
-        SpringContext.current.getMessage("app.err.${errorCode}", null, defaultMessage, LocaleContextHolder.getLocale()) ?: defaultMessage
+        SpringContext.current.getMessage("app.err.${errorCode}", args?.toTypedArray(), defaultMessage, LocaleContextHolder.getLocale()) ?: defaultMessage
     } else defaultMessage
 
     return e?: errorCode.replace("_", " ")
 }
+

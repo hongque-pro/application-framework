@@ -16,7 +16,8 @@ import kotlin.reflect.jvm.kotlinFunction
  * @author Anders Xiao
  * @date 2023-12-04
  */
-@Component
+//TODO: use number for parameter, but spring doc is not support enum well
+@Suppress("unused")
 class DocParameterCustomizer : ParameterCustomizer, Ordered {
     override fun customize(parameterModel: Parameter?, methodParameter: MethodParameter): Parameter? {
 

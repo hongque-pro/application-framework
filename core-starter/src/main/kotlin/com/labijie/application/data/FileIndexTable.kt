@@ -9,6 +9,6 @@ import com.labijie.infra.orm.SimpleLongIdTable
 object FileIndexTable : SimpleLongIdTable("file_indices") {
     val path = varchar("path", 256).uniqueIndex()
     val timeCreated = long("time_created").index()
-    val fileType = varchar("file_type", 16)
+    val fileType = varchar("file_type", 32)
     val entityId = long("entity_id").default(0).index()
 }

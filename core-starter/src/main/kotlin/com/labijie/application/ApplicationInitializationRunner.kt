@@ -16,6 +16,7 @@ import com.labijie.infra.json.JacksonHelper
 import com.labijie.infra.utils.ifNullOrBlank
 import com.labijie.infra.utils.logger
 import com.labijie.infra.utils.toLocalDateTime
+import com.sun.management.OperatingSystemMXBean
 import org.apache.commons.lang3.LocaleUtils
 import org.springframework.beans.BeansException
 import org.springframework.beans.factory.ObjectProvider
@@ -32,11 +33,13 @@ import org.springframework.core.Ordered
 import org.springframework.core.env.Environment
 import org.springframework.util.ClassUtils
 import org.springframework.web.context.WebApplicationContext
+import java.lang.management.ManagementFactory
 import java.lang.reflect.Method
 import java.lang.reflect.ParameterizedType
 import kotlin.concurrent.thread
 import kotlin.reflect.KClass
 import kotlin.system.exitProcess
+
 
 /**
  * Created with IntelliJ IDEA.
@@ -101,7 +104,7 @@ class ApplicationInitializationRunner<T : ConfigurableApplicationContext>(
         val locales = applicationCoreProperties.preloadLocales
         val messageSource =
             applicationContext.getBeanProvider(MessageSource::class.java).ifAvailable as? LocalizationMessageSource
-        if(locales.isNotBlank() && messageSource != null) {
+        if (locales.isNotBlank() && messageSource != null) {
             val localeList = locales.split(",").mapNotNull {
                 try {
                     LocaleUtils.toLocale(it.trim())
@@ -111,10 +114,11 @@ class ApplicationInitializationRunner<T : ConfigurableApplicationContext>(
             }
 
 
-            val bundleList = applicationContext.getBeanProvider(ILocalizationResourceBundle::class.java).orderedStream().toList().flatMap {
-                b->
-                b.getResources()
-            }.toTypedArray()
+            val bundleList =
+                applicationContext.getBeanProvider(ILocalizationResourceBundle::class.java).orderedStream().toList()
+                    .flatMap { b ->
+                        b.getResources()
+                    }.toTypedArray()
 
             messageSource.loadResourceBundle(*bundleList)
             messageSource.preloadMessages(*localeList.toTypedArray())
@@ -122,7 +126,7 @@ class ApplicationInitializationRunner<T : ConfigurableApplicationContext>(
     }
 
     private fun initHttpClientLogger() {
-        if(httpClientProperties?.loggerEnabled == true){
+        if (httpClientProperties?.loggerEnabled == true) {
             loggingSystem.setLogLevel(HttpClientLoggingInterceptor::class.java.name, LogLevel.DEBUG)
         }
     }
@@ -204,8 +208,50 @@ class ApplicationInitializationRunner<T : ConfigurableApplicationContext>(
         webServer = event.webServer
     }
 
-    private fun printComponentImplements(vararg beanTypes: KClass<*>): String{
-        if(beanTypes.isNotEmpty()) {
+    private fun printSystemInfo(): String {
+
+        val byteToMB = (1024 * 1024)
+        val rt = Runtime.getRuntime()
+        val vmTotal = rt.totalMemory() / byteToMB
+        val vmFree = rt.freeMemory() / byteToMB
+        val vmMax = rt.maxMemory() / byteToMB
+        val vmUse = vmTotal - vmFree
+
+        val osmxb = ManagementFactory.getOperatingSystemMXBean() as OperatingSystemMXBean
+        val os = System.getProperty("os.name")
+        val physicalFree: Long = osmxb.freeMemorySize / byteToMB
+        val physicalTotal: Long = osmxb.totalMemorySize / byteToMB
+        val physicalUse = physicalTotal - physicalFree
+
+        val keyPadding = 16
+        val valuePadding = 24
+        val len = keyPadding + valuePadding
+        val osMap = mapOf(
+            "Host OS: " to os,
+            "Host in used:".padEnd(keyPadding) to "$physicalUse MB (${String.format("%.2f", physicalUse / 1024.0)} GB)".padStart(valuePadding),
+            "Host free:".padEnd(keyPadding) to "$physicalFree MB (${String.format("%.2f", physicalFree / 1024.0)} GB)".padStart(valuePadding),
+            "Host totals:".padEnd(keyPadding) to "$physicalUse MB (${String.format("%.2f", physicalTotal / 1024.0)} GB)".padStart(valuePadding)
+        )
+
+        val jvm = mapOf(
+            "JVM in used:".padEnd(keyPadding) to "$vmUse MB (${String.format("%.2f", vmUse / 1024.0)} GB)".padStart(valuePadding),
+            "JVM free:".padEnd(keyPadding) to "$vmFree MB (${String.format("%.2f", vmFree / 1024.0)} GB)".padStart(valuePadding),
+            "JVM max:".padEnd(keyPadding) to "$vmMax MB (${String.format("%.2f", vmMax / 1024.0)} GB)".padStart(valuePadding),
+            "JVM totals:".padEnd(keyPadding) to "$vmTotal MB (${String.format("%.2f", vmTotal / 1024.0)} GB)".padStart(valuePadding)
+        )
+        val osTitle = " HOST MEMORY INFO "
+        val jvmTitle = " JVM MEMORY INFO "
+        return StringBuilder().apply {
+            appendLine(osTitle.paddingLeftAndRight(len, '-'))
+            appendLine(osMap.map { "${it.key}${it.value}" }.joinToString(System.lineSeparator()))
+            appendLine()
+            appendLine(jvmTitle.paddingLeftAndRight(len, '-'))
+            appendLine(jvm.map { "${it.key}${it.value}" }.joinToString(System.lineSeparator()))
+        }.toString()
+    }
+
+    private fun printComponentImplements(vararg beanTypes: KClass<*>): String {
+        if (beanTypes.isNotEmpty()) {
             return StringBuilder().apply {
                 appendLine("framework components: ")
                 beanTypes.forEach {
@@ -221,7 +267,10 @@ class ApplicationInitializationRunner<T : ConfigurableApplicationContext>(
         val moduleList = modules.joinToString { it.simpleName.substringBefore("ModuleInitializer") }
         println(
             """
-[${this.applicationName}] has been started !! 
+Application '${this.applicationName}' has been started !! 
+
+${printSystemInfo()}
+
 framework ver: ${gitProperties?.get("build.version")}   
 framework commit: ${gitProperties?.commitTime?.toLocalDateTime()?.toLocalDate()}  
 ${printComponentImplements(IHumanChecker::class, IObjectStorage::class, IMessageService::class)}

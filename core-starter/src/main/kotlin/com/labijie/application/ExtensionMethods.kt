@@ -117,12 +117,21 @@ fun String.toKebabCase(): String {
     }
 }
 
-fun Any.toMap(): Map<String, Any?> {
+public fun String.paddingLeftAndRight(totalLength: Int, padChar: Char = ' '): String {
+    if(this.length >= totalLength){
+        return this
+    }
+    val sideLen = (totalLength - length) / 2
+    val str = this.padStart(this.length + sideLen, padChar)
+    return str.padEnd(str.length + sideLen, padChar)
+}
+
+fun Any.toObjectMap(): Map<String, Any?> {
     val map = this as? Map<*, *>
     if (map != null) {
         return map.entries.map {
             it.key.toString() to it.value
-        }.toMap()
+        }.toObjectMap()
     }
     return JacksonHelper.defaultObjectMapper.convertValue(
         this,
@@ -130,7 +139,7 @@ fun Any.toMap(): Map<String, Any?> {
 }
 
 fun Any.formUrlEncode(urlSafeValue: Boolean = true): String {
-    val map = (this as? Map<*, *>) ?: this.toMap()
+    val map = (this as? Map<*, *>) ?: this.toObjectMap()
     return map.entries.filter { !(it.value?.toString().isNullOrBlank()) && !(it.value?.toString().isNullOrEmpty()) }
         .joinToString("&") {
             "${it.key}=${
@@ -143,7 +152,7 @@ fun Any.formUrlEncode(urlSafeValue: Boolean = true): String {
 }
 
 fun Any.queryStringEncode(): String {
-    val map = (this as? Map<*, *>) ?: this.toMap()
+    val map = (this as? Map<*, *>) ?: this.toObjectMap()
     return QueryStringEncoder(null).apply {
         map.forEach {
             val name = it.key?.toString()

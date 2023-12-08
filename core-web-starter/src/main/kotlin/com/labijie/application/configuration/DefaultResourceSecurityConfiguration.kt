@@ -2,6 +2,7 @@ package com.labijie.application.configuration
 
 import com.labijie.application.web.antMatchers
 import com.labijie.infra.oauth2.resource.IResourceAuthorizationConfigurer
+import org.springframework.boot.autoconfigure.ImportAutoConfiguration
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Import
@@ -14,7 +15,7 @@ import org.springframework.security.config.annotation.web.configurers.AuthorizeH
  * @date 2019-09-06
  */
 @ConditionalOnWebApplication
-@Import(AllowAllCorsAutoConfiguration::class)
+@ImportAutoConfiguration(AllowAllCorsAutoConfiguration::class)
 @Configuration(proxyBeanMethods = false)
 class DefaultResourceSecurityConfiguration : IResourceAuthorizationConfigurer {
     override fun configure(registry: AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry) {

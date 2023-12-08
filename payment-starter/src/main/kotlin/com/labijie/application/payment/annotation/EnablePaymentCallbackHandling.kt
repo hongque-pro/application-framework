@@ -11,5 +11,5 @@ import java.lang.annotation.Inherited
 @Target(AnnotationTarget.FUNCTION, AnnotationTarget.CLASS)
 @Inherited
 @Retention(AnnotationRetention.RUNTIME)
-@Import(PaymentCallbackAutoConfiguration::class)
+@ImportAutoConfiguration(PaymentCallbackAutoConfiguration::class)
 annotation class EnablePaymentCallbackHandling

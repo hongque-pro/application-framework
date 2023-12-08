@@ -6,13 +6,14 @@ import com.labijie.application.open.configuration.OpenApiAutoConfiguration
 import com.labijie.infra.impl.DebugIdGenerator
 import org.mockito.Mockito
 import org.mockito.Mockito.mock
+import org.springframework.boot.autoconfigure.ImportAutoConfiguration
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Import
 import org.springframework.transaction.annotation.EnableTransactionManagement
 
 @Configuration(proxyBeanMethods = false)
-@Import(OpenApiAutoConfiguration::class)
+@ImportAutoConfiguration(OpenApiAutoConfiguration::class)
 class UnitTestConfiguration {
 
     @Bean

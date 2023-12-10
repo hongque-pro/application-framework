@@ -25,6 +25,7 @@ import org.springframework.boot.web.servlet.context.AnnotationConfigServletWebSe
 import org.springframework.context.ConfigurableApplicationContext
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.context.annotation.Lazy
 import org.springframework.http.client.ReactorNettyClientRequestFactory
 import org.springframework.transaction.support.TransactionTemplate
 import org.springframework.web.client.RestTemplate
@@ -109,6 +110,7 @@ class ApplicationCoreAutoConfiguration {
 
         @ConditionalOnMissingBean(RestTemplate::class)
         @Bean
+        @Lazy
         fun restTemplate(
             nettyHttpClient: HttpClient,
             nettyHttpClientProperties: HttpClientProperties,
@@ -122,6 +124,7 @@ class ApplicationCoreAutoConfiguration {
 
 
         @Bean
+        @Lazy
         @ConditionalOnMissingBean(MultiRestTemplates::class)
         fun multiRestTemplates(
             okHttpClientProperties: HttpClientProperties,

@@ -1,7 +1,7 @@
-package com.labijie.appliation.dapr.testing
+package com.labijie.application.dapr.testing
 
-import com.labijie.appliation.dapr.testing.context.DaprTestContext
-import com.labijie.appliation.dapr.testing.context.TestDaprSecretsStore
+import com.labijie.application.dapr.testing.context.DaprTestContext
+import com.labijie.application.dapr.testing.context.TestDaprSecretsStore
 import com.labijie.application.ApplicationRuntimeException
 import com.labijie.application.dapr.configuration.DaprProperties
 import com.labijie.infra.utils.logger

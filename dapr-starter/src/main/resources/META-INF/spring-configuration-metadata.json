@@ -8,74 +8,65 @@
     {
       "name": "application.dapr.message-service",
       "type": "com.labijie.application.dapr.configuration.MessageServiceConfig",
-      "sourceType": "com.labijie.application.dapr.configuration.MessageServiceConfig"
+      "sourceType": "com.labijie.application.dapr.configuration.DaprProperties",
+      "sourceMethod": "getMessageService()"
     },
     {
       "name": "application.dapr.secrets-store",
       "type": "com.labijie.application.dapr.configuration.SecretsStoreConfig",
-      "sourceType": "com.labijie.application.dapr.configuration.SecretsStoreConfig"
+      "sourceType": "com.labijie.application.dapr.configuration.DaprProperties",
+      "sourceMethod": "getSecretsStore()"
     }
   ],
   "properties": [
     {
-      "name": "application.dapr.secrets-store.default-secrets-store-name",
-      "type": "java.lang.String",
-      "sourceType": "com.labijie.application.dapr.configuration.DaprProperties"
-    },
-    {
-      "name": "application.dapr.secrets-store.db-password-store",
-      "type": "java.lang.String",
-      "sourceType": "com.labijie.application.dapr.configuration.SecretsStoreConfig"
-    },
-    {
-      "name": "application.dapr.secrets-store.db-password",
-      "type": "java.lang.String",
-      "sourceType": "com.labijie.application.dapr.configuration.SecretsStoreConfig"
-    },
-    {
-      "name": "application.dapr.secrets-store.oauth2-store",
-      "type": "java.lang.String",
-      "sourceType": "com.labijie.application.dapr.configuration.SecretsStoreConfig"
-    },
-    {
-      "name": "application.dapr.secrets-store.oauth2-server-private-key",
-      "type": "java.lang.String",
-      "sourceType": "com.labijie.application.dapr.configuration.SecretsStoreConfig"
-    },
-    {
-      "name": "application.dapr.secrets-store.oauth2-server-public-key",
-      "type": "java.lang.String",
-      "sourceType": "com.labijie.application.dapr.configuration.SecretsStoreConfig"
-    },
-    {
-      "name": "application.dapr.secrets-store.resource-server-public-key",
-      "type": "java.lang.String",
-      "sourceType": "com.labijie.application.dapr.configuration.SecretsStoreConfig"
-    },
-
-    {
       "name": "application.dapr.message-service.sms-pubsub-name",
       "type": "java.lang.String",
-      "sourceType": "com.labijie.application.dapr.configuration.MessageServiceConfig",
-      "defaultValue": "smspubsub"
+      "sourceType": "com.labijie.application.dapr.configuration.MessageServiceConfig"
     },
     {
       "name": "application.dapr.message-service.sms-topic",
       "type": "java.lang.String",
-      "sourceType": "com.labijie.application.dapr.configuration.MessageServiceConfig",
-      "defaultValue": "sms"
+      "sourceType": "com.labijie.application.dapr.configuration.MessageServiceConfig"
     },
     {
       "name": "application.dapr.pub-service-enabled",
       "type": "java.lang.Boolean",
-      "sourceType": "com.labijie.application.dapr.configuration.DaprProperties",
-      "defaultValue": false
+      "sourceType": "com.labijie.application.dapr.configuration.DaprProperties"
+    },
+    {
+      "name": "application.dapr.secrets-store.application-des-secret",
+      "type": "java.lang.Boolean",
+      "description": "Replace application.des-secret with the value stored in the dapr secrets store.",
+      "sourceType": "com.labijie.application.dapr.configuration.SecretsStoreConfig"
+    },
+    {
+      "name": "application.dapr.secrets-store.datasource-password",
+      "type": "java.lang.Boolean",
+      "description": "Replace spring.datasource.password with the value stored in the dapr secrets store.",
+      "sourceType": "com.labijie.application.dapr.configuration.SecretsStoreConfig"
+    },
+    {
+      "name": "application.dapr.secrets-store.name",
+      "type": "java.lang.String",
+      "sourceType": "com.labijie.application.dapr.configuration.SecretsStoreConfig"
+    },
+    {
+      "name": "application.dapr.secrets-store.oauth2-server-rsa-keys",
+      "type": "java.lang.Boolean",
+      "description": "Replace infra.oauth2.token.jwt.rsa.private-key and infra.oauth2.token.jwt.rsa.public-key with stored in the dapr secrets store.",
+      "sourceType": "com.labijie.application.dapr.configuration.SecretsStoreConfig"
+    },
+    {
+      "name": "application.dapr.secrets-store.resource-server-rsa-keys",
+      "type": "java.lang.Boolean",
+      "description": "Replace infra.oauth2.resource-server.jwt.rsa-pub-key with the value stored in the dapr secrets store.",
+      "sourceType": "com.labijie.application.dapr.configuration.SecretsStoreConfig"
     },
     {
       "name": "application.dapr.sub-service-enabled",
       "type": "java.lang.Boolean",
-      "sourceType": "com.labijie.application.dapr.configuration.DaprProperties",
-      "defaultValue": false
+      "sourceType": "com.labijie.application.dapr.configuration.DaprProperties"
     }
   ],
   "hints": []

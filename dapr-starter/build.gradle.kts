@@ -1,5 +1,5 @@
 //infra {
-//    useKaptPlugin("org.springframework.boot:spring-boot-configuration-processor:${Versions.springBoot}")
+//    useSpringConfigurationProcessor(Versions.springBoot)
 //}
 
 dependencies {

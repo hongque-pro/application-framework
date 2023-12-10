@@ -1,2 +1,2 @@
 org.springframework.boot.env.EnvironmentPostProcessor=\
-  com.labijie.application.dapr.components.DaprDbEnvironmentPostProcessor
+  com.labijie.application.dapr.components.DaprSecretsPostProcessor

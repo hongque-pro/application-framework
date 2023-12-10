@@ -1,4 +1,4 @@
-package com.labijie.appliation.dapr.testing.context
+package com.labijie.application.dapr.testing.context
 
 import com.labijie.application.dapr.components.DaprSecretsStoreBase
 import com.labijie.application.dapr.configuration.DaprProperties

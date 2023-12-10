@@ -3,6 +3,7 @@ package com.labijie.application.dapr.configuration
 import com.labijie.infra.utils.ifNullOrBlank
 import io.dapr.config.Properties
 import org.springframework.boot.context.properties.ConfigurationProperties
+import org.springframework.boot.context.properties.NestedConfigurationProperty
 
 /**
  * @author Anders Xiao
@@ -16,10 +17,11 @@ class DaprProperties {
     var pubServiceEnabled: Boolean = false
     var subServiceEnabled: Boolean = false
 
+    @NestedConfigurationProperty
     val secretsStore: SecretsStoreConfig = SecretsStoreConfig()
-    val messageService: MessageServiceConfig = MessageServiceConfig()
 
-    var defaultSecretsStoreName = ""
+    @NestedConfigurationProperty
+    val messageService: MessageServiceConfig = MessageServiceConfig()
 
 
     val appId: String by lazy {

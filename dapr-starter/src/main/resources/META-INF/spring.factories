@@ -1,3 +1,2 @@
-
 org.springframework.boot.env.EnvironmentPostProcessor=\
-  com.labijie.application.WebDefaultConfigurationProcessor
+  com.labijie.application.dapr.components.DaprDbEnvironmentPostProcessor

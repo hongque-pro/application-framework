@@ -16,9 +16,11 @@ class DaprProperties {
     var pubServiceEnabled: Boolean = false
     var subServiceEnabled: Boolean = false
 
-    val defaultSecretsStore: String = ""
     val secretsStore: SecretsStoreConfig = SecretsStoreConfig()
     val messageService: MessageServiceConfig = MessageServiceConfig()
+
+    var defaultSecretsStoreName = ""
+
 
     val appId: String by lazy {
         System.getenv("APP_ID").ifNullOrBlank { "" }

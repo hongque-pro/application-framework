@@ -11,7 +11,7 @@ import io.dapr.client.DaprClient
  */
 class DaprResourceServerSecretsStore(daprClient: DaprClient, private val daprProperties: DaprProperties) : DaprSecretsStoreBase(daprClient), IResourceServerSecretsStore {
     override fun getRsaPublicKey(): String {
-        val storeName = daprProperties.secretsStore.oauth2Store.ifNullOrBlank { daprProperties.defaultSecretsStore }
+        val storeName = daprProperties.secretsStore.oauth2Store.ifNullOrBlank { daprProperties.defaultSecretsStoreName }
         val key = daprProperties.secretsStore.oauth2ServerPublicKey
 
         return getSecret(storeName, key)

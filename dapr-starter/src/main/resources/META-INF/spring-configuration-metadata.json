@@ -7,21 +7,60 @@
     },
     {
       "name": "application.dapr.message-service",
-      "type": "com.labijie.application.dapr.configuration.DaprMessageServiceProperties",
-      "sourceType": "com.labijie.application.dapr.configuration.DaprMessageServiceProperties"
+      "type": "com.labijie.application.dapr.configuration.MessageServiceConfig",
+      "sourceType": "com.labijie.application.dapr.configuration.MessageServiceConfig"
+    },
+    {
+      "name": "application.dapr.secrets-store",
+      "type": "com.labijie.application.dapr.configuration.SecretsStoreConfig",
+      "sourceType": "com.labijie.application.dapr.configuration.SecretsStoreConfig"
     }
   ],
   "properties": [
     {
+      "name": "application.dapr.secrets-store.oauth2-server-enabled",
+      "type": "java.lang.Boolean",
+      "sourceType": "com.labijie.application.dapr.configuration.SecretsStoreConfig",
+      "defaultValue": true
+    },
+    {
+      "name": "application.dapr.secrets-store.resource-server-enabled",
+      "type": "java.lang.Boolean",
+      "sourceType": "com.labijie.application.dapr.configuration.SecretsStoreConfig",
+      "defaultValue": true
+    },
+    {
+      "name": "application.dapr.secrets-store.oauth2-server-private-key",
+      "type": "java.lang.String",
+      "sourceType": "com.labijie.application.dapr.configuration.SecretsStoreConfig"
+    },
+    {
+      "name": "application.dapr.secrets-store.oauth2-server-public-key",
+      "type": "java.lang.String",
+      "sourceType": "com.labijie.application.dapr.configuration.SecretsStoreConfig"
+    },
+    {
+      "name": "application.dapr.secrets-store.resource-server-public-key",
+      "type": "java.lang.String",
+      "sourceType": "com.labijie.application.dapr.configuration.SecretsStoreConfig"
+    },
+    {
+      "name": "application.dapr.secrets-store.resource-server-enabled",
+      "type": "java.lang.Boolean",
+      "sourceType": "com.labijie.application.dapr.configuration.SecretsStoreConfig",
+      "defaultValue": true
+    },
+
+    {
       "name": "application.dapr.message-service.sms-pubsub-name",
       "type": "java.lang.String",
-      "sourceType": "com.labijie.application.dapr.configuration.DaprMessageServiceProperties",
+      "sourceType": "com.labijie.application.dapr.configuration.MessageServiceConfig",
       "defaultValue": "smspubsub"
     },
     {
       "name": "application.dapr.message-service.sms-topic",
       "type": "java.lang.String",
-      "sourceType": "com.labijie.application.dapr.configuration.DaprMessageServiceProperties",
+      "sourceType": "com.labijie.application.dapr.configuration.MessageServiceConfig",
       "defaultValue": "sms"
     },
     {

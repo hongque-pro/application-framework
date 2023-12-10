@@ -133,7 +133,6 @@ class ApplicationInitializationRunner<T : ConfigurableApplicationContext>(
 
     private fun initErrorRegistrations() {
         try {
-            loadModules()
             thread {
                 errorRegistrations.orderedStream().forEach {
                     it.register(errorRegistry, localizationService)
@@ -154,7 +153,7 @@ class ApplicationInitializationRunner<T : ConfigurableApplicationContext>(
         this.initHttpClientLogger()
         this.initLocalization()
         initErrorRegistrations()
-
+        loadModules()
     }
 
     private fun loadModules() {
@@ -182,7 +181,7 @@ class ApplicationInitializationRunner<T : ConfigurableApplicationContext>(
                     throw RuntimeException(error, e)
                 }
             }
-            moduleClass
+            it
         }
 
         val list = modules.toList()
@@ -263,8 +262,8 @@ class ApplicationInitializationRunner<T : ConfigurableApplicationContext>(
         return ""
     }
 
-    private fun reportApplicationStatus(modules: List<Class<*>>) {
-        val moduleList = modules.joinToString { it.simpleName.substringBefore("ModuleInitializer") }
+    private fun reportApplicationStatus(modules: List<IModuleInitializer>) {
+        val moduleList = modules.joinToString { it.getModuleName() }
         println(
             """
 Application '${this.applicationName}' has been started !! 

@@ -70,7 +70,7 @@ class AwsV4Signer private constructor() {
         internal var serviceName: String? = null
         internal var httpMethodName: String? = null
         internal var canonicalURI: String = "/"
-        internal var queryParametes: TreeMap<String, SortedSet<String>> = TreeMap()
+        internal var queryParameters: TreeMap<String, SortedSet<String>> = TreeMap()
         internal var awsHeaders = TreeMap<Ns, String>(NsComparator)
         internal var payload: String? = null
         internal var queryStringUsed: Boolean = false
@@ -98,7 +98,7 @@ class AwsV4Signer private constructor() {
             val self = this
             uriObj.queryParams.forEach { (name, values) ->
                 val n = name.removePrefix("/").removePrefix("?")
-                val set = self.queryParametes.getOrPut(n) { TreeSet() }
+                val set = self.queryParameters.getOrPut(n) { TreeSet() }
                 if (!values.isNullOrEmpty()) {
                     set.addAll(values)
                 }
@@ -168,7 +168,7 @@ class AwsV4Signer private constructor() {
         serviceName = builder.serviceName
         httpMethodName = builder.httpMethodName
         canonicalURI = builder.canonicalURI
-        queryParametes = builder.queryParametes
+        queryParametes = builder.queryParameters
         awsHeaders = builder.awsHeaders
         payload = builder.payload
         queryStringUsed = builder.queryStringUsed
@@ -294,7 +294,7 @@ class AwsV4Signer private constructor() {
         val signatureKey = getSignatureKey(secretAccessKey, date, regionName, serviceName)
 
         /* Step 3.2 计算签名. */
-        val signature = HmacSHA256(signatureKey, stringToSign)
+        val signature = hmacSHA256(signatureKey, stringToSign)
 
         /* Step 3.2.1 对签名编码处理 */
         return bytesToHex(signature)
@@ -428,8 +428,7 @@ class AwsV4Signer private constructor() {
      * @reference:
      * http://docs.aws.amazon.com/general/latest/gr/signature-v4-examples.html#signature-v4-examples-java
      */
-    @Throws(Exception::class)
-    private fun HmacSHA256(key: ByteArray, data: String?): ByteArray {
+    private fun hmacSHA256(key: ByteArray, data: String?): ByteArray {
         val algorithm = "HmacSHA256"
         val mac: Mac = Mac.getInstance(algorithm)
         mac.init(SecretKeySpec(key, algorithm))
@@ -456,10 +455,10 @@ class AwsV4Signer private constructor() {
         serviceName: String?
     ): ByteArray {
         val kSecret = "AWS4$key".toByteArray(charset("UTF8"))
-        val kDate = HmacSHA256(kSecret, date)
-        val kRegion = HmacSHA256(kDate, regionName)
-        val kService = HmacSHA256(kRegion, serviceName)
-        return HmacSHA256(kService, aws4Request)
+        val kDate = hmacSHA256(kSecret, date)
+        val kRegion = hmacSHA256(kDate, regionName)
+        val kService = hmacSHA256(kRegion, serviceName)
+        return hmacSHA256(kService, aws4Request)
     }
 
     /**

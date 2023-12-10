@@ -1,1 +1,2 @@
 com.labijie.application.dapr.configuration.ApplicationDaprAutoConfiguration
+com.labijie.application.dapr.configuration.DaprOAuthSecretsStoreAutoConfiguration

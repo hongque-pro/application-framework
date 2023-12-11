@@ -19,7 +19,7 @@ interface IObjectStorage {
     ): Boolean
 
     fun deleteObject(key: String, bucketPolicy: BucketPolicy = BucketPolicy.PRIVATE): Boolean
-    fun generateObjectUrl(key: String, bucketPolicy: BucketPolicy = BucketPolicy.PRIVATE): URL
+    fun generateObjectUrl(key: String, bucketPolicy: BucketPolicy = BucketPolicy.PRIVATE, purpose: GenerationURLPurpose = GenerationURLPurpose.Read): URL
     fun uploadObject(
         key: String,
         stream: InputStream,
@@ -28,4 +28,9 @@ interface IObjectStorage {
     )
 
     fun getObject(key: String, bucketPolicy: BucketPolicy = BucketPolicy.PRIVATE): ByteArray
+}
+
+enum class GenerationURLPurpose {
+    Read,
+    Write
 }

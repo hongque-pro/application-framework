@@ -39,7 +39,11 @@ class FileController : ApplicationContextAware {
         val bucketPolicy = if(modifier == FileModifier.Public) BucketPolicy.PUBLIC else BucketPolicy.PRIVATE
         val fileIndex = fileIndexService.touchFile(filePath, modifier)
         val url = objectStorage.generateObjectUrl(filePath, bucketPolicy, GenerationURLPurpose.Write)
-        TouchFileResponse(fileIndex.id, filePath, url.url, url.timeoutMills)
+        TouchFileResponse(
+            fileIndexId =  fileIndex.id,
+            filePath = filePath,
+            uploadUrl = url.url,
+            urlTimeoutMills = url.timeoutMills)
     }
 
     override fun setApplicationContext(applicationContext: ApplicationContext) {

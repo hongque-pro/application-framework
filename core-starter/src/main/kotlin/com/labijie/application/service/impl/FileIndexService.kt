@@ -1,8 +1,9 @@
 package com.labijie.application.service.impl
 
 import com.labijie.application.ApplicationRuntimeException
+import com.labijie.application.BucketPolicy
+import com.labijie.application.component.GenerationURLPurpose
 import com.labijie.application.component.IObjectStorage
-import com.labijie.application.configure
 import com.labijie.application.data.FileIndexTable
 import com.labijie.application.data.pojo.FileIndex
 import com.labijie.application.data.pojo.dsl.FileIndexDSL.deleteByPrimaryKey
@@ -14,12 +15,12 @@ import com.labijie.application.exception.FileIndexAlreadyExistedException
 import com.labijie.application.exception.StoredObjectNotFoundException
 import com.labijie.application.model.FileModifier
 import com.labijie.application.service.IFileIndexService
+import com.labijie.application.service.TouchedFile
 import com.labijie.infra.IIdGenerator
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.inList
 import org.jetbrains.exposed.sql.andWhere
 import org.jetbrains.exposed.sql.deleteWhere
 import org.springframework.transaction.support.TransactionTemplate
-import java.util.UUID
 
 /**
  * @author Anders Xiao
@@ -30,12 +31,12 @@ class FileIndexService(
     private val idGenerator: IIdGenerator,
     private val objectStorage: IObjectStorage) : IFileIndexService {
 
-    override fun touchFile(filePath: String, modifier: FileModifier): FileIndex {
+    override fun touchFile(filePath: String, modifier: FileModifier): TouchedFile {
         if(filePath.isBlank()) {
             throw ApplicationRuntimeException("File path can not be null or empty string.")
         }
 
-        return transactionTemplate.execute {
+        val fileIndex = transactionTemplate.execute {
             val file = FileIndexTable.selectOne(FileIndexTable.id) {
                 andWhere { FileIndexTable.path eq filePath }
             }
@@ -52,6 +53,14 @@ class FileIndexService(
                 FileIndexTable.insert(this)
             }
         } ?: throw ApplicationRuntimeException("A database error has occurred while touching file.")
+
+        val bucketPolicy = if(modifier == FileModifier.Public) BucketPolicy.PUBLIC else BucketPolicy.PRIVATE
+        val url = objectStorage.generateObjectUrl(filePath, bucketPolicy, GenerationURLPurpose.Write)
+        return TouchedFile(
+            fileIndexId =  fileIndex.id,
+            filePath = filePath,
+            uploadUrl = url.url,
+            timeoutMills = url.timeoutMills)
     }
 
     override fun saveFile(filePath: String, fileType: String, entityId: Long?): FileIndex? {

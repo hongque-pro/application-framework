@@ -14,7 +14,7 @@ interface IFileIndexService {
         const val TEMP_FILE_TYPE = "temp"
     }
 
-    fun touchFile(filePath: String, modifier: FileModifier): FileIndex
+    fun touchFile(filePath: String, modifier: FileModifier): TouchedFile
     fun saveFile(filePath: String, fileType:String, entityId: Long? = null): FileIndex?
     fun checkFileInStorage(filePath:String, throwIfNotStored: Boolean) : Boolean
     fun deleteFile(filePath: String, deleteObject:Boolean = false):Boolean

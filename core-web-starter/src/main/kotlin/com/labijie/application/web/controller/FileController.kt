@@ -4,12 +4,10 @@
  */
 package com.labijie.application.web.controller
 
-import com.labijie.application.BucketPolicy
-import com.labijie.application.component.GenerationURLPurpose
 import com.labijie.application.component.IObjectStorage
 import com.labijie.application.model.FileModifier
-import com.labijie.application.model.TouchFileResponse
 import com.labijie.application.service.IFileIndexService
+import com.labijie.application.service.TouchedFile
 import org.springframework.context.ApplicationContext
 import org.springframework.context.ApplicationContextAware
 import org.springframework.web.bind.annotation.PostMapping
@@ -23,10 +21,6 @@ import org.springframework.web.bind.annotation.RestController
 class FileController : ApplicationContextAware {
     private lateinit var context:ApplicationContext
 
-    private val objectStorage by lazy {
-        context.getBean(IObjectStorage::class.java)
-    }
-
     private val fileIndexService by lazy {
         context.getBean(IFileIndexService::class.java)
     }
@@ -35,15 +29,9 @@ class FileController : ApplicationContextAware {
     fun touch(
         @RequestParam("filePath", required = true) filePath: String,
         @RequestParam("modifier", required = true) modifier: FileModifier
-    ) {
-        val bucketPolicy = if(modifier == FileModifier.Public) BucketPolicy.PUBLIC else BucketPolicy.PRIVATE
-        val fileIndex = fileIndexService.touchFile(filePath, modifier)
-        val url = objectStorage.generateObjectUrl(filePath, bucketPolicy, GenerationURLPurpose.Write)
-        TouchFileResponse(
-            fileIndexId =  fileIndex.id,
-            filePath = filePath,
-            uploadUrl = url.url,
-            urlTimeoutMills = url.timeoutMills)
+    ): TouchedFile {
+
+        return fileIndexService.touchFile(filePath, modifier)
     }
 
     override fun setApplicationContext(applicationContext: ApplicationContext) {

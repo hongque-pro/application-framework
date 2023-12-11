@@ -1,5 +1,6 @@
 package com.labijie.application.data
 
+import com.labijie.application.model.FileModifier
 import com.labijie.infra.orm.SimpleLongIdTable
 
 /**
@@ -11,4 +12,5 @@ object FileIndexTable : SimpleLongIdTable("file_indices") {
     val timeCreated = long("time_created").index()
     val fileType = varchar("file_type", 32)
     val entityId = long("entity_id").default(0).index()
+    val fileAccess = enumeration<FileModifier>("modifier").index()
 }

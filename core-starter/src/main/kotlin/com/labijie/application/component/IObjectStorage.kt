@@ -2,8 +2,8 @@ package com.labijie.application.component
 
 import com.labijie.application.BucketPolicy
 import com.labijie.application.exception.StoredObjectNotFoundException
+import com.labijie.application.model.ObjectPreSignUrl
 import java.io.InputStream
-import java.net.URL
 
 /**
  * Created with IntelliJ IDEA.
@@ -19,7 +19,7 @@ interface IObjectStorage {
     ): Boolean
 
     fun deleteObject(key: String, bucketPolicy: BucketPolicy = BucketPolicy.PRIVATE): Boolean
-    fun generateObjectUrl(key: String, bucketPolicy: BucketPolicy = BucketPolicy.PRIVATE, purpose: GenerationURLPurpose = GenerationURLPurpose.Read): URL
+    fun generateObjectUrl(key: String, bucketPolicy: BucketPolicy = BucketPolicy.PRIVATE, purpose: GenerationURLPurpose = GenerationURLPurpose.Read): ObjectPreSignUrl
     fun uploadObject(
         key: String,
         stream: InputStream,

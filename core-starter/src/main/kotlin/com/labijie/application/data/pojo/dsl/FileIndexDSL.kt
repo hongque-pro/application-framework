@@ -4,11 +4,13 @@ package com.labijie.application.`data`.pojo.dsl
 
 import com.labijie.application.`data`.FileIndexTable
 import com.labijie.application.`data`.FileIndexTable.entityId
+import com.labijie.application.`data`.FileIndexTable.fileAccess
 import com.labijie.application.`data`.FileIndexTable.fileType
 import com.labijie.application.`data`.FileIndexTable.id
 import com.labijie.application.`data`.FileIndexTable.path
 import com.labijie.application.`data`.FileIndexTable.timeCreated
 import com.labijie.application.`data`.pojo.FileIndex
+import com.labijie.application.model.FileModifier
 import com.labijie.infra.orm.OffsetList
 import com.labijie.infra.orm.OffsetList.Companion.decodeToken
 import com.labijie.infra.orm.OffsetList.Companion.encodeToken
@@ -73,6 +75,7 @@ public object FileIndexDSL {
     timeCreated,
     fileType,
     entityId,
+    fileAccess,
     id,
     )
   }
@@ -84,6 +87,7 @@ public object FileIndexDSL {
     plain.timeCreated = raw[timeCreated]
     plain.fileType = raw[fileType]
     plain.entityId = raw[entityId]
+    plain.fileAccess = raw[fileAccess]
     plain.id = raw[id]
     return plain
   }
@@ -102,6 +106,9 @@ public object FileIndexDSL {
     if(row.hasValue(entityId)) {
       plain.entityId = row[entityId]
     }
+    if(row.hasValue(fileAccess)) {
+      plain.fileAccess = row[fileAccess]
+    }
     if(row.hasValue(id)) {
       plain.id = row[id]
     }
@@ -113,6 +120,7 @@ public object FileIndexDSL {
     timeCreated->Long::class
     fileType->String::class
     entityId->Long::class
+    fileAccess->FileModifier::class
     id->Long::class
     else->throw IllegalArgumentException("""Unknown column <${column.name}> for 'FileIndex'""")
   }
@@ -123,6 +131,7 @@ public object FileIndexDSL {
     FileIndexTable.timeCreated->this.timeCreated as T
     FileIndexTable.fileType->this.fileType as T
     FileIndexTable.entityId->this.entityId as T
+    FileIndexTable.fileAccess->this.fileAccess as T
     FileIndexTable.id->this.id as T
     else->throw IllegalArgumentException("""Unknown column <${column.name}> for 'FileIndex'""")
   }
@@ -142,6 +151,8 @@ public object FileIndexDSL {
       builder[fileType] = raw.fileType
     if((list == null || list.contains(entityId)) && !ignore.contains(entityId))
       builder[entityId] = raw.entityId
+    if((list == null || list.contains(fileAccess)) && !ignore.contains(fileAccess))
+      builder[fileAccess] = raw.fileAccess
     if((list == null || list.contains(id)) && !ignore.contains(id))
       builder[id] = raw.id
   }

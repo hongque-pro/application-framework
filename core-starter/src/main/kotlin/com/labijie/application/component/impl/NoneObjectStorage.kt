@@ -4,6 +4,7 @@ import com.labijie.application.BucketPolicy
 import com.labijie.application.component.GenerationURLPurpose
 import com.labijie.application.component.IObjectStorage
 import com.labijie.application.exception.StoredObjectNotFoundException
+import com.labijie.application.model.ObjectPreSignUrl
 import java.io.InputStream
 import java.net.URL
 
@@ -17,8 +18,8 @@ open class NoneObjectStorage : IObjectStorage {
 
     }
 
-    override fun generateObjectUrl(key: String, bucketPolicy: BucketPolicy, purpose: GenerationURLPurpose): URL {
-        return URL("")
+    override fun generateObjectUrl(key: String, bucketPolicy: BucketPolicy, purpose: GenerationURLPurpose): ObjectPreSignUrl {
+        return ObjectPreSignUrl(url = "", 0)
     }
 
     override fun deleteObject(key: String, bucketPolicy: BucketPolicy): Boolean {

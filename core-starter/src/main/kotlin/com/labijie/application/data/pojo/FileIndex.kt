@@ -2,6 +2,7 @@
 
 package com.labijie.application.`data`.pojo
 
+import com.labijie.application.model.FileModifier
 import kotlin.Long
 import kotlin.String
 
@@ -23,6 +24,8 @@ public open class FileIndex {
   public var fileType: String = ""
 
   public var entityId: Long = 0L
+
+  public var fileAccess: FileModifier = FileModifier.Public
 
   public var id: Long = 0L
 }

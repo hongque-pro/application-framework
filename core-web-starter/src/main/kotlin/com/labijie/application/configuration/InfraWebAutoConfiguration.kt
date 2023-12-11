@@ -7,6 +7,7 @@ import com.labijie.application.web.controller.SmsController
 import com.labijie.application.service.CaptchaHumanChecker
 import com.labijie.application.web.WrappedResponseBodyAdvice
 import com.labijie.application.web.controller.ApplicationController
+import com.labijie.application.web.controller.FileController
 import com.labijie.application.web.converter.EnhanceStringToEnumConverterFactory
 import com.labijie.application.web.handler.ControllerExceptionHandler
 import com.labijie.application.web.interceptor.HttpCacheInterceptor
@@ -48,7 +49,8 @@ import org.springframework.web.servlet.config.annotation.*
     DefaultResourceSecurityConfiguration::class,
     ApplicationController::class,
     SpringDocAutoConfiguration::class,
-    SmsController::class
+    SmsController::class,
+    FileController::class
 )
 @AutoConfigureAfter(Environment::class)
 @AutoConfigureBefore(DefaultsAutoConfiguration::class)

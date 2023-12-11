@@ -12,6 +12,7 @@ import com.labijie.application.data.pojo.dsl.FileIndexDSL.selectOne
 import com.labijie.application.data.pojo.dsl.FileIndexDSL.updateByPrimaryKey
 import com.labijie.application.exception.FileIndexAlreadyExistedException
 import com.labijie.application.exception.StoredObjectNotFoundException
+import com.labijie.application.model.FileModifier
 import com.labijie.application.service.IFileIndexService
 import com.labijie.infra.IIdGenerator
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.inList
@@ -29,7 +30,7 @@ class FileIndexService(
     private val idGenerator: IIdGenerator,
     private val objectStorage: IObjectStorage) : IFileIndexService {
 
-    override fun touchFile(filePath: String): FileIndex {
+    override fun touchFile(filePath: String, modifier: FileModifier): FileIndex {
         if(filePath.isBlank()) {
             throw ApplicationRuntimeException("File path can not be null or empty string.")
         }
@@ -47,6 +48,7 @@ class FileIndexService(
                 this.path = filePath
                 this.fileType = IFileIndexService.TEMP_FILE_TYPE
                 this.timeCreated = System.currentTimeMillis()
+                this.fileAccess = modifier
                 FileIndexTable.insert(this)
             }
         } ?: throw ApplicationRuntimeException("A database error has occurred while touching file.")

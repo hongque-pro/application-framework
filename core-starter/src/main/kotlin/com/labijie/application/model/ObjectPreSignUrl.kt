@@ -5,4 +5,4 @@
 package com.labijie.application.model
 
 
-data class ObjectPreSignUrl(val url: String, val timeoutMills: Long)
+data class ObjectPreSignUrl(val url: String, val timeoutMills: Long? = null)

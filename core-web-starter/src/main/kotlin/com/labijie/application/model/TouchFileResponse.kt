@@ -5,4 +5,4 @@
 package com.labijie.application.model
 
 
-class TouchFileResponse(var fileIndexId: Long, var filePath: String, uploadUrl: String, urlTimeoutMills: Long)
+class TouchFileResponse(var fileIndexId: Long, var filePath: String, uploadUrl: String, urlTimeoutMills: Long?)

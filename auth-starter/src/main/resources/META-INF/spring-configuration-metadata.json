@@ -1,0 +1,36 @@
+{
+  "groups": [
+    {
+      "name": "application.default-user-creation",
+      "type": "com.labijie.application.auth.configuration.DefaultUserCreationProperties",
+      "sourceType": "com.labijie.application.auth.configuration.DefaultUserCreationProperties"
+    }
+  ],
+  "properties": [
+    {
+      "name": "application.default-user-creation.enabled",
+      "type": "java.lang.Boolean",
+      "sourceType": "com.labijie.application.auth.configuration.DefaultUserCreationProperties",
+      "defaultValue": false
+    },
+    {
+      "name": "application.default-user-creation.username",
+      "type": "java.lang.String",
+      "sourceType": "com.labijie.application.auth.configuration.DefaultUserCreationProperties",
+      "defaultValue": "admin"
+    },
+    {
+      "name": "application.default-user-creation.password",
+      "type": "java.lang.String",
+      "sourceType": "com.labijie.application.auth.configuration.DefaultUserCreationProperties"
+    },
+    {
+      "name": "application.default-user-creation.roles",
+      "type": "java.lang.String",
+      "sourceType": "com.labijie.application.auth.configuration.DefaultUserCreationProperties",
+      "description": "Assign multiple roles by comma (,) splitting, e.g. \"admin, users\"",
+      "defaultValue": "admin"
+    }
+  ],
+  "hints": []
+}

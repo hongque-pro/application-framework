@@ -64,6 +64,12 @@
       "sourceType": "com.labijie.application.dapr.configuration.SecretsStoreConfig"
     },
     {
+      "name": "application.dapr.secrets-store.default-user-password",
+      "type": "java.lang.Boolean",
+      "description": "Replace application.default-user-creation.password with the value stored in the dapr secrets store.",
+      "sourceType": "com.labijie.application.dapr.configuration.SecretsStoreConfig"
+    },
+    {
       "name": "application.dapr.sub-service-enabled",
       "type": "java.lang.Boolean",
       "sourceType": "com.labijie.application.dapr.configuration.DaprProperties"

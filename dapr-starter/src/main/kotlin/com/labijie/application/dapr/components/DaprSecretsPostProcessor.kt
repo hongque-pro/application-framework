@@ -38,6 +38,7 @@ class DaprSecretsPostProcessor : EnvironmentPostProcessor, Ordered {
 
         val dbPasswordEnabled = environment.isSecretsStoreEnabled("datasource-password")
         val desEnabled = environment.isSecretsStoreEnabled("application-des-secret")
+        val defaultUserPasswordEnabled = environment.isSecretsStoreEnabled("default-user-password")
 
         val defaultStore = environment["application.dapr.secrets-store.name"]
         if(defaultStore.isNullOrBlank()){
@@ -52,13 +53,16 @@ class DaprSecretsPostProcessor : EnvironmentPostProcessor, Ordered {
 
         ProcessContext(defaultStore, DaprClientBuilder().build(), environment).use {
 
-
             if(dbPasswordEnabled){
                 it.setPropertiesBySecretsValue("spring.datasource.password", properties)
             }
             if(desEnabled){
                 it.setPropertiesBySecretsValue("application.des-secret", properties)
             }
+            if(defaultUserPasswordEnabled) {
+                it.setPropertiesBySecretsValue("application.default-user-creation.password", properties)
+            }
+
         }
         val propertySource = MapPropertySource(
             "dapr-secrets-store-apply", properties

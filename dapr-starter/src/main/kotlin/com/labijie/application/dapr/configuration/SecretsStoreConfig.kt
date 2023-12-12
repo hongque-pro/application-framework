@@ -21,5 +21,10 @@ class SecretsStoreConfig(
     /**
      * Replace spring.datasource.password with the value stored in the dapr secrets store.
      */
-    var datasourcePassword: Boolean = false
+    var datasourcePassword: Boolean = false,
+
+    /**
+     * Replace application.default-user-creation.password with the value stored in the dapr secrets store.
+     */
+    var defaultUserPassword: Boolean = false
 )

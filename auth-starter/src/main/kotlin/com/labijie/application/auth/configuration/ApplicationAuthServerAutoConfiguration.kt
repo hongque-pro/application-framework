@@ -1,24 +1,28 @@
 package com.labijie.application.auth.configuration
 
 import com.labijie.application.auth.AuthErrorsRegistration
-import com.labijie.application.auth.component.DefaultIdentityService
-import com.labijie.application.auth.component.DefaultSignInPlatformDetection
-import com.labijie.application.auth.component.ISignInPlatformDetection
+import com.labijie.application.auth.component.*
 import com.labijie.application.auth.event.UserSignInEventListener
 import com.labijie.application.identity.configuration.IdentityAutoConfiguration
+import com.labijie.application.identity.service.IOAuth2ClientService
 import com.labijie.application.identity.service.IUserService
+import com.labijie.infra.IIdGenerator
 import com.labijie.infra.oauth2.IIdentityService
 import com.labijie.infra.oauth2.configuration.OAuth2DependenciesAutoConfiguration
 import com.labijie.infra.oauth2.configuration.OAuth2ServerAutoConfiguration
 import com.labijie.infra.oauth2.resource.IResourceAuthorizationConfigurer
 import org.springframework.boot.autoconfigure.AutoConfigureAfter
 import org.springframework.boot.autoconfigure.AutoConfigureBefore
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
+import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Import
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configurers.AuthorizeHttpRequestsConfigurer
+import org.springframework.security.oauth2.server.authorization.client.RegisteredClientRepository
 
 /**
  * Created with IntelliJ IDEA.
@@ -29,6 +33,7 @@ import org.springframework.security.config.annotation.web.configurers.AuthorizeH
 @AutoConfigureAfter(IdentityAutoConfiguration::class)
 @AutoConfigureBefore(OAuth2DependenciesAutoConfiguration::class)
 @Import(AuthDocConfiguration::class)
+@EnableConfigurationProperties(DefaultUserCreationProperties::class)
 class ApplicationAuthServerAutoConfiguration : IResourceAuthorizationConfigurer {
 
     override fun configure(registry: AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry) {
@@ -38,12 +43,6 @@ class ApplicationAuthServerAutoConfiguration : IResourceAuthorizationConfigurer 
             "/account/set-password",
         ).permitAll()
     }
-
-//    @Bean
-//    @ConditionalOnMissingBean(RegisteredClientRepository::class)
-//    fun defaultClientRepository(clientService: IOAuth2ClientService): DefaultClientRepository {
-//        return DefaultClientRepository(clientService)
-//    }
 
 
     @Bean
@@ -81,5 +80,16 @@ class ApplicationAuthServerAutoConfiguration : IResourceAuthorizationConfigurer 
 //    }
 
 
+    @Bean
+    @ConditionalOnMissingBean(RegisteredClientRepository::class)
+    fun defaultClientRepository(clientService: IOAuth2ClientService): DefaultClientRepository {
+        return DefaultClientRepository(clientService)
+    }
 
+    @Bean
+    @ConditionalOnProperty(prefix = "application.default-user-creation", name = ["enabled"], havingValue = "true", matchIfMissing = false)
+    @ConditionalOnMissingBean(DefaultUserInitializer::class)
+    fun defaultUserInitializer(idGenerator: IIdGenerator, properties: DefaultUserCreationProperties, userService: IUserService): DefaultUserInitializer {
+        return DefaultUserInitializer(properties)
+    }
 }

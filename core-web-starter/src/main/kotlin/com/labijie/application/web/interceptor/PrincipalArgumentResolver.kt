@@ -25,6 +25,9 @@ class PrincipalArgumentResolver : HandlerMethodArgumentResolver {
         webRequest: NativeWebRequest,
         binderFactory: WebDataBinderFactory?
     ): Any? {
+        if(parameter.isOptional){
+            return OAuth2Utils.currentTwoFactorPrincipalOrNull()
+        }
         return OAuth2Utils.currentTwoFactorPrincipal()
     }
 }

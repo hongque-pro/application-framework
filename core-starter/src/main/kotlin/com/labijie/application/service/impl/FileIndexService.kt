@@ -2,6 +2,7 @@ package com.labijie.application.service.impl
 
 import com.labijie.application.ApplicationRuntimeException
 import com.labijie.application.BucketPolicy
+import com.labijie.application.MimeUtils
 import com.labijie.application.component.GenerationURLPurpose
 import com.labijie.application.component.IObjectStorage
 import com.labijie.application.data.FileIndexTable
@@ -22,6 +23,8 @@ import org.jetbrains.exposed.sql.SqlExpressionBuilder.inList
 import org.jetbrains.exposed.sql.andWhere
 import org.jetbrains.exposed.sql.deleteWhere
 import org.springframework.transaction.support.TransactionTemplate
+import kotlin.io.path.Path
+import kotlin.io.path.extension
 
 /**
  * @author Anders Xiao
@@ -69,6 +72,7 @@ class FileIndexService(
             fileIndexId =  fileIndex.id,
             filePath = filePath,
             uploadUrl = url.url,
+            mime = MimeUtils.getMimeByExtensions(Path(filePath).extension),
             timeoutMills = url.timeoutMills)
     }
 

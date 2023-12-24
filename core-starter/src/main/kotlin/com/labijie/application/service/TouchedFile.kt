@@ -6,4 +6,9 @@ package com.labijie.application.service
 
 
 
-class TouchedFile(val fileIndexId: Long, val filePath: String, val uploadUrl: String, val timeoutMills: Long?)
+class TouchedFile(
+    val fileIndexId: Long,
+    val filePath: String,
+    val uploadUrl: String,
+    val mime: String,
+    val timeoutMills: Long?)

@@ -14,6 +14,7 @@ import com.labijie.application.data.pojo.dsl.FileIndexDSL.updateByPrimaryKey
 import com.labijie.application.exception.FileIndexAlreadyExistedException
 import com.labijie.application.exception.StoredObjectNotFoundException
 import com.labijie.application.model.FileModifier
+import com.labijie.application.model.ObjectPreSignUrl
 import com.labijie.application.service.IFileIndexService
 import com.labijie.application.service.TouchedFile
 import com.labijie.infra.IIdGenerator
@@ -30,6 +31,14 @@ class FileIndexService(
     private val transactionTemplate: TransactionTemplate,
     private val idGenerator: IIdGenerator,
     private val objectStorage: IObjectStorage) : IFileIndexService {
+
+    override fun getFileUrl(filePath: String, modifier: FileModifier): ObjectPreSignUrl {
+        if(filePath.isBlank()) {
+            throw ApplicationRuntimeException("File path can not be null or empty string.")
+        }
+        val bucket = if(modifier == FileModifier.Public) BucketPolicy.PUBLIC else BucketPolicy.PRIVATE
+        return objectStorage.generateObjectUrl(filePath,  bucket)
+    }
 
     override fun touchFile(filePath: String, modifier: FileModifier): TouchedFile {
         if(filePath.isBlank()) {

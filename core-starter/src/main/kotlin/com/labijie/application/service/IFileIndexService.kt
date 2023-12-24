@@ -6,6 +6,7 @@ package com.labijie.application.service
 
 import com.labijie.application.data.pojo.FileIndex
 import com.labijie.application.model.FileModifier
+import com.labijie.application.model.ObjectPreSignUrl
 
 
 interface IFileIndexService {
@@ -13,7 +14,7 @@ interface IFileIndexService {
     companion object {
         const val TEMP_FILE_TYPE = "temp"
     }
-
+    fun getFileUrl(filePath: String, modifier: FileModifier): ObjectPreSignUrl
     fun touchFile(filePath: String, modifier: FileModifier): TouchedFile
     fun saveFile(filePath: String, fileType:String, entityId: Long? = null): FileIndex?
     fun checkFileInStorage(filePath:String, throwIfNotStored: Boolean) : Boolean

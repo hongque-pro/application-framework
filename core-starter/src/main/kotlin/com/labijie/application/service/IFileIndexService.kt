@@ -17,7 +17,7 @@ interface IFileIndexService {
     fun getFileUrl(filePath: String, modifier: FileModifier): ObjectPreSignUrl
     fun touchFile(filePath: String, modifier: FileModifier): TouchedFile
 
-    fun setToTemp(filePath: String, throwIfNotStored: Boolean): Boolean
+    fun setToTemp(filePath: String, throwIfNotStored: Boolean): FileIndex?
     fun saveFile(filePath: String, fileType:String, entityId: Long? = null): FileIndex?
     fun checkFileInStorage(filePath:String, throwIfNotStored: Boolean) : Boolean
     fun deleteFile(filePath: String, deleteObject:Boolean = false):Boolean

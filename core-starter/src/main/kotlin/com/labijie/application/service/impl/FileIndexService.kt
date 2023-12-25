@@ -110,7 +110,7 @@ class FileIndexService(
         }
     }
 
-    override fun setToTemp(filePath: String, throwIfNotStored: Boolean): Boolean {
+    override fun setToTemp(filePath: String, throwIfNotStored: Boolean): FileIndex? {
         return transactionTemplate.execute {
 
             val existedFile = FileIndexTable.selectOne {
@@ -120,15 +120,15 @@ class FileIndexService(
                 if(throwIfNotStored) {
                     throw FileIndexNotFoundException(filePath)
                 }
-                false
+                null
             }else {
                 existedFile.fileType = IFileIndexService.TEMP_FILE_TYPE
                 existedFile.entityId = 0
                 existedFile.timeCreated = System.currentTimeMillis()
                 val count = FileIndexTable.updateByPrimaryKey(existedFile)
-                count > 0
+                if(count > 0) existedFile else null
             }
-        } ?: false
+        }
     }
 
     override fun checkFileInStorage(filePath: String, throwIfNotStored: Boolean): Boolean {

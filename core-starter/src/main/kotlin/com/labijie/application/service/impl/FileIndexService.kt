@@ -13,6 +13,7 @@ import com.labijie.application.data.pojo.dsl.FileIndexDSL.selectMany
 import com.labijie.application.data.pojo.dsl.FileIndexDSL.selectOne
 import com.labijie.application.data.pojo.dsl.FileIndexDSL.updateByPrimaryKey
 import com.labijie.application.exception.FileIndexAlreadyExistedException
+import com.labijie.application.exception.FileIndexNotFoundException
 import com.labijie.application.exception.StoredObjectNotFoundException
 import com.labijie.application.model.FileModifier
 import com.labijie.application.model.ObjectPreSignUrl
@@ -107,6 +108,26 @@ class FileIndexService(
                 if(count > 0) existedFile else null
             }
         }
+    }
+
+    override fun setToTemp(filePath: String, throwIfNotStored: Boolean): Boolean {
+        return transactionTemplate.execute {
+
+            val existedFile = FileIndexTable.selectOne {
+                andWhere { FileIndexTable.path eq filePath }
+            }
+            if(existedFile == null){
+                if(throwIfNotStored) {
+                    throw FileIndexNotFoundException(filePath)
+                }
+                false
+            }else {
+                existedFile.fileType = IFileIndexService.TEMP_FILE_TYPE
+                existedFile.entityId = 0
+                val count = FileIndexTable.updateByPrimaryKey(existedFile)
+                count > 0
+            }
+        } ?: false
     }
 
     override fun checkFileInStorage(filePath: String, throwIfNotStored: Boolean): Boolean {

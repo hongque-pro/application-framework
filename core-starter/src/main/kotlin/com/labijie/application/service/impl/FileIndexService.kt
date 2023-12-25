@@ -124,6 +124,7 @@ class FileIndexService(
             }else {
                 existedFile.fileType = IFileIndexService.TEMP_FILE_TYPE
                 existedFile.entityId = 0
+                existedFile.timeCreated = System.currentTimeMillis()
                 val count = FileIndexTable.updateByPrimaryKey(existedFile)
                 count > 0
             }

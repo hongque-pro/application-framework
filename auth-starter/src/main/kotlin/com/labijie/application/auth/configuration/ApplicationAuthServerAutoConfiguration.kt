@@ -81,6 +81,7 @@ class ApplicationAuthServerAutoConfiguration : IResourceAuthorizationConfigurer 
 
 
     @Bean
+    @ConditionalOnProperty(prefix = "infra.oauth2", name = ["client-repository"], havingValue = "jdbc", matchIfMissing = true)
     @ConditionalOnMissingBean(RegisteredClientRepository::class)
     fun defaultClientRepository(clientService: IOAuth2ClientService): DefaultClientRepository {
         return DefaultClientRepository(clientService)

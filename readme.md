@@ -1,7 +1,7 @@
 # Application Framework 文档目录
 
 ![maven central version](https://img.shields.io/maven-central/v/com.labijie.application/framework-core?style=flat-square)
-![workflow status](https://img.shields.io/github/workflow/status/hongque-pro/application-framework/Gradle%20Build%20And%20Release?label=CI%20publish&style=flat-square)
+![workflow status](https://img.shields.io/github/actions/workflow/status/hongque-pro/application-framework/build.yml?branch=main)
 ![license](https://img.shields.io/github/license/hongque-pro/application-framework?style=flat-square)
 
 业务开发基础结构，以统一的技术栈快速开始一个应用。

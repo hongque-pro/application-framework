@@ -1,6 +1,6 @@
 # Application Framework 文档目录
 
-![maven central version](https://img.shields.io/maven-central/v/com.labijie.application/framework-core?style=flat-square)
+![maven central version](https://img.shields.io/maven-central/v/com.labijie.application/framework-core-starter?style=flat-square)
 ![workflow status](https://img.shields.io/github/actions/workflow/status/hongque-pro/application-framework/build.yml?branch=main)
 ![license](https://img.shields.io/github/license/hongque-pro/application-framework?style=flat-square)
 

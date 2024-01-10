@@ -8,7 +8,7 @@ import org.slf4j.LoggerFactory
  * @author Anders Xiao
  * @date 2023-12-10
  */
-abstract class DaprSecretsStoreBase(protected val daprClient: DaprClient) {
+abstract class DaprSecretsStoreSupport(protected val daprClient: DaprClient) {
 
     @Suppress("HasPlatformType")
     protected val logger by lazy {

@@ -8,5 +8,5 @@ import org.springframework.boot.context.properties.ConfigurationProperties
  */
 class MessageServiceConfig {
     var smsTopic: String = "sms"
-    var smsPubsubName: String = "smspubsub"
+    var smsPubsubName: String = "sms_pubsub"
 }

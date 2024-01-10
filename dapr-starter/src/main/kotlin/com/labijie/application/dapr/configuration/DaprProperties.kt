@@ -17,8 +17,6 @@ class DaprProperties {
     var pubServiceEnabled: Boolean = false
     var subServiceEnabled: Boolean = false
 
-    @NestedConfigurationProperty
-    val secretsStore: SecretsStoreConfig = SecretsStoreConfig()
 
     @NestedConfigurationProperty
     val messageService: MessageServiceConfig = MessageServiceConfig()

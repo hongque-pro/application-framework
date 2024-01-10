@@ -5,7 +5,7 @@ plugins {
 
 allprojects {
     group = "com.labijie.application"
-    version = "3.0.0"
+    version = "3.0.1"
 }
 
 allprojects {
@@ -15,6 +15,7 @@ allprojects {
             includeDocument = true
             infraBomVersion = Versions.infraBom
             kotlinVersion = Versions.kotlin
+            useMavenProxy = false
         }
     }
 }

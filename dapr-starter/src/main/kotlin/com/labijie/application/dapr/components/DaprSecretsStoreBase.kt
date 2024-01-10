@@ -14,6 +14,7 @@ abstract class DaprSecretsStoreBase(protected val daprClient: DaprClient) {
     protected val logger by lazy {
         LoggerFactory.getLogger(this::class.java)
     }
+
     protected fun getSecret(storeName: String, keyName: String): String {
         if (storeName.isBlank()) {
             throw ApplicationRuntimeException("Dapr secrets store name can not ne blank.")

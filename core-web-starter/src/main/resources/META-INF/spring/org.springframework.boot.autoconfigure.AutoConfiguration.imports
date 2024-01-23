@@ -1,1 +1,2 @@
-com.labijie.application.configuration.InfraWebAutoConfiguration
+com.labijie.application.configuration.ApplicationWebAutoConfiguration
+com.labijie.application.configuration.DefaultControllersAutoConfiguration

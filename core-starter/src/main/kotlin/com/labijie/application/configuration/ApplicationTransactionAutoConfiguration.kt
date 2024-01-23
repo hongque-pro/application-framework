@@ -2,6 +2,7 @@ package com.labijie.application.configuration
 
 import com.labijie.infra.utils.logger
 import org.springframework.boot.autoconfigure.AutoConfigureBefore
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.transaction.TransactionAutoConfiguration
@@ -13,6 +14,7 @@ import org.springframework.transaction.interceptor.RollbackRuleAttribute
 import org.springframework.transaction.interceptor.RuleBasedTransactionAttribute
 import org.springframework.transaction.support.TransactionOperations
 import org.springframework.transaction.support.TransactionTemplate
+import javax.sql.DataSource
 
 /**
  *
@@ -23,6 +25,7 @@ import org.springframework.transaction.support.TransactionTemplate
 @ConditionalOnClass(PlatformTransactionManager::class)
 @AutoConfigureBefore(TransactionAutoConfiguration::class)
 @Configuration(proxyBeanMethods = false)
+@ConditionalOnBean(DataSource::class)
 class ApplicationTransactionAutoConfiguration {
 
     @Bean

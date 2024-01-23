@@ -1,6 +1,7 @@
 package com.labijie.application.localization
 
 import com.labijie.application.service.ILocalizationService
+import com.labijie.application.service.impl.NoneLocalizationService
 import org.slf4j.LoggerFactory
 import org.springframework.context.*
 import org.springframework.context.support.MessageSourceAccessor
@@ -50,9 +51,15 @@ class LocalizationMessageSource(private val loader: ResourceBundleMessagesLoader
         val svc = this.localizationService ?: return defaultMessage
         var msg = svc.getMessage(code, locale)
         if(msg == null) {
-            msg = (loader as MessageSource).getMessage(code, null, defaultMessage, locale)
-            svc.setMessage(code, msg ?: "", locale, false)
-            logger.info("New localization message added: $code (${locale.toLanguageTag()})")
+            msg = try {
+                (loader as MessageSource).getMessage(code, null, defaultMessage, locale)
+            }catch (e: NoSuchMessageException) {
+                null
+            }
+            if(msg != null) {
+                svc.setMessage(code, msg ?: "", locale, false)
+                logger.info("New localization message added: $code (${locale.toLanguageTag()})")
+            }
         }
         if(msg == null) {
             return null
@@ -77,6 +84,9 @@ class LocalizationMessageSource(private val loader: ResourceBundleMessagesLoader
 
     override fun setApplicationContext(applicationContext: ApplicationContext) {
         this.applicationContext = applicationContext
-        this.localizationService = applicationContext.getBeanProvider(ILocalizationService::class.java).ifAvailable
+        val service = applicationContext.getBeanProvider(ILocalizationService::class.java).ifAvailable
+        if(service !is NoneLocalizationService) {
+            this.localizationService = service
+        }
     }
 }

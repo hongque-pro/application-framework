@@ -1,0 +1,14 @@
+{
+  "group": [
+    {
+      "name": "application.web.service-controllers"
+    }
+  ],
+  "properties": [
+    {
+      "name": "application.web.service-controllers.enabled",
+      "description": "Enable built-in controllers: ApplicationController, SmsController, FileController, etc",
+      "type": "java.lang.Boolean"
+    }
+  ]
+}

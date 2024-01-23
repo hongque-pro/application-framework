@@ -6,8 +6,6 @@ import com.labijie.application.ErrorRegistry
 import com.labijie.application.IErrorRegistry
 import com.labijie.application.data.LocalizationMessageTable
 import com.labijie.application.httpclient.NettyUtils
-import com.labijie.application.service.ILocalizationService
-import com.labijie.application.service.impl.LocalizationService
 import com.labijie.application.web.client.MultiRestTemplates
 import com.labijie.infra.orm.annotation.TableScan
 import com.labijie.infra.utils.logger
@@ -27,7 +25,6 @@ import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Lazy
 import org.springframework.http.client.ReactorNettyClientRequestFactory
-import org.springframework.transaction.support.TransactionTemplate
 import org.springframework.web.client.RestTemplate
 import reactor.netty.http.client.HttpClient
 

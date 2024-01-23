@@ -22,14 +22,9 @@ import com.labijie.application.service.ILocalizationService
 import com.labijie.caching.getOrSet
 import com.labijie.caching.getOrSetSliding
 import com.labijie.caching.memory.MemoryCacheManager
-import com.labijie.infra.IIdGenerator
-import com.labijie.infra.utils.ifNullOrBlank
 import com.labijie.infra.utils.logger
 import org.apache.commons.lang3.LocaleUtils
 import org.jetbrains.exposed.sql.*
-import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
-import org.springframework.context.MessageSourceResolvable
-import org.springframework.context.NoSuchMessageException
 import org.springframework.transaction.support.TransactionTemplate
 import java.time.Duration
 import java.util.*
@@ -38,7 +33,7 @@ import java.util.*
  * @author Anders Xiao
  * @date 2023-12-06
  */
-class LocalizationService(
+class JdbcLocalizationService(
     private val transactionTemplate: TransactionTemplate,
 ) : ILocalizationService {
     private fun Locale.getId() = this.toLanguageTag()

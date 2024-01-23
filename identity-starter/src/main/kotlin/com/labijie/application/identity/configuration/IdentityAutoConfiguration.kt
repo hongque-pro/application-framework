@@ -11,6 +11,7 @@ import com.labijie.application.identity.social.ISocialUserGenerator
 import com.labijie.caching.ICacheManager
 import com.labijie.infra.IIdGenerator
 import com.labijie.infra.orm.annotation.TableScan
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean
@@ -18,6 +19,7 @@ import org.springframework.context.annotation.Configuration
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.transaction.support.TransactionTemplate
+import javax.sql.DataSource
 
 /**
  *
@@ -39,38 +41,12 @@ class IdentityAutoConfiguration {
         return IdentityErrorsRegistration()
     }
 
-    @Bean
-    @ConditionalOnMissingBean(IOAuth2ClientService::class)
-    fun oath2ClientService(
-        cacheManager: ICacheManager,
-        identityProperties: IdentityProperties,
-        transactionTemplate: TransactionTemplate
-    ): DefaultOAuth2ClientService {
-        return DefaultOAuth2ClientService(transactionTemplate, identityProperties, cacheManager)
-    }
+
 
     @Bean
     @ConditionalOnMissingBean(PasswordEncoder::class)
     fun identityPasswordEncoder(): PasswordEncoder {
         return passwordEncoder
-    }
-
-    @Bean
-    @ConditionalOnMissingBean(IUserService::class)
-    fun defaultUserService(
-        passwordEncoder: PasswordEncoder,
-        identityProperties: IdentityProperties,
-        idGenerator: IIdGenerator,
-        cacheManager: ICacheManager,
-        transactionTemplate: TransactionTemplate
-    ): DefaultUserService {
-        return DefaultUserService(
-            identityProperties,
-            idGenerator,
-            passwordEncoder,
-            cacheManager,
-            transactionTemplate
-        )
     }
 
     @Bean

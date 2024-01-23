@@ -272,8 +272,9 @@ ${printSystemInfo()}
 
 framework ver: ${gitProperties?.get("build.version")}   
 framework commit: ${gitProperties?.commitTime?.toLocalDateTime()?.toLocalDate()}  
+localization: ${localizationService::class.simpleName}  
 ${printComponentImplements(IHumanChecker::class, IObjectStorage::class, IMessageService::class)}
-module loaded:  ${moduleList.ifNullOrBlank("none module")}
+module loaded:  ${moduleList.ifNullOrBlank("<none>")}
 current profiles: $profiles
 --------------------------------------------------------------------
 ${if (isWebEnvironment) this.buildWebServerInfo() else "Command line application"}

@@ -10,6 +10,8 @@ import io.swagger.v3.oas.annotations.Parameter
 import jakarta.validation.constraints.NotBlank
 import org.hibernate.validator.constraints.Length
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.context.ApplicationContext
+import org.springframework.context.ApplicationContextAware
 import org.springframework.validation.annotation.Validated
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
@@ -24,9 +26,15 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 @RequestMapping("/sms")
 class SmsController @Autowired constructor(
-    private val userService: IUserService,
+
     private val messageService: IMessageService
-) {
+): ApplicationContextAware {
+
+    protected lateinit var springContext: ApplicationContext
+
+    private val userService by lazy {
+        springContext.getBean(IUserService::class.java)
+    }
 
     @PostMapping("/send")
     fun send(@RequestBody @Validated request: SmsSendRequest): SmsToken {
@@ -45,5 +53,9 @@ class SmsController @Autowired constructor(
     fun verify(@NotBlank @Length(max=6) code: String, @NotBlank token: String): SimpleValue<Boolean> {
         messageService.verifySmsCode(code, token, true)
         return true.toSimpleValue()
+    }
+
+    override fun setApplicationContext(applicationContext: ApplicationContext) {
+        this.springContext = applicationContext
     }
 }

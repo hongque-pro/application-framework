@@ -3,15 +3,11 @@ package com.labijie.application.configuration
 import com.labijie.application.service.ILocalizationService
 import com.labijie.application.localization.LocalizationMessageSource
 import com.labijie.application.localization.ResourceBundleMessagesLoader
-import com.labijie.application.service.impl.LocalizationService
+import com.labijie.application.service.impl.JdbcLocalizationService
 import com.labijie.application.service.impl.NoneLocalizationService
-import com.labijie.infra.isProduction
-import com.labijie.infra.utils.logger
-import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.NoSuchBeanDefinitionException
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.autoconfigure.AutoConfigureBefore
-import org.springframework.boot.autoconfigure.AutoConfigureOrder
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.context.MessageSourceAutoConfiguration
 import org.springframework.boot.autoconfigure.context.MessageSourceProperties
@@ -21,12 +17,11 @@ import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Lazy
 import org.springframework.context.support.AbstractApplicationContext
-import org.springframework.core.Ordered
 import org.springframework.core.env.Environment
 import org.springframework.transaction.support.TransactionTemplate
 import org.springframework.util.StringUtils
 import java.nio.charset.StandardCharsets
-import java.util.*
+import javax.sql.DataSource
 
 /**
  * @author Anders Xiao
@@ -41,17 +36,15 @@ class LocalizationAutoConfiguration {
     @ConditionalOnMissingBean(ILocalizationService::class)
     fun localizationService(
         environment: Environment,
+        @Autowired(required = false) dataSource: DataSource?,
         @Autowired(required = false) transactionTemplate: TransactionTemplate?) : ILocalizationService {
-        return if(transactionTemplate != null) {
-            LocalizationService(transactionTemplate)
+        return if(transactionTemplate != null && dataSource != null) {
+            JdbcLocalizationService(transactionTemplate)
         }else {
-            //just for unit test
-            if(environment.isProduction) {
-                throw NoSuchBeanDefinitionException(TransactionTemplate::class.java)
-            }
             NoneLocalizationService()
         }
     }
+
 
     @Bean
     @ConfigurationProperties(prefix = "spring.messages")
@@ -85,6 +78,7 @@ class LocalizationAutoConfiguration {
     }
 
     @Bean(AbstractApplicationContext.MESSAGE_SOURCE_BEAN_NAME)
+    @ConditionalOnBean(ILocalizationService::class)
     fun localizationMessageSource(properties: MessageSourceProperties) : MessageSource {
 
         val springSource = createSpringSource(properties)

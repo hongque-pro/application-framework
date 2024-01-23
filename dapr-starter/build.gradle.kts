@@ -7,8 +7,10 @@ dependencies {
         exclude(group="org.springframework")
         exclude(group="org.springframework.boot")
     }
-    api(project(":core-web-starter"))
+    api("org.springframework.boot:spring-boot-starter-web")
+    api(project(":core-starter"))
 
+    compileOnly(project(":core-web-starter"))
     compileOnly("com.labijie.infra:oauth2-authorization-server-starter:${Versions.infraOAuth2}")
 }
 

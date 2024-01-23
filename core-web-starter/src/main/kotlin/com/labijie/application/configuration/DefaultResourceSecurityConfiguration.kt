@@ -31,7 +31,7 @@ class DefaultResourceSecurityConfiguration : IResourceAuthorizationConfigurer {
             "/v2/api-docs/**",
             "/v3/api-docs/**",
             "/swagger-resources/**",
-            "/swagger-ui/**",
+            "/swagger-ui/**"
         )
         registry.antMatchers(*authenticatedPaths.toTypedArray()).authenticated()
         registry.antMatchers(*permitAllPaths.toTypedArray()).permitAll()

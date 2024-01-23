@@ -30,6 +30,10 @@ object SpringContext {
         current.getBeanProvider(ILocalizationService::class.java)
     }
 
+    val errorRegistry: IErrorRegistry by lazy {
+        current.getBean(IErrorRegistry::class.java)
+    }
+
     val messageSourceAccessor by lazy {
         MessageSourceAccessor(current)
     }

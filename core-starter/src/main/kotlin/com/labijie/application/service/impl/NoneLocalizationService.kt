@@ -30,6 +30,6 @@ class NoneLocalizationService : ILocalizationService {
     }
 
     override fun reload() {
-        TODO("Not yet implemented")
+
     }
 }

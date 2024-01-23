@@ -45,17 +45,11 @@ import org.springframework.web.servlet.config.annotation.*
  */
 @EnableWebMvc
 @Configuration(proxyBeanMethods = false)
-@Import(
-    DefaultResourceSecurityConfiguration::class,
-    ApplicationController::class,
-    SpringDocAutoConfiguration::class,
-    SmsController::class,
-    FileController::class
-)
+@Import(DefaultResourceSecurityConfiguration::class, SpringDocAutoConfiguration::class)
 @AutoConfigureAfter(Environment::class)
 @AutoConfigureBefore(DefaultsAutoConfiguration::class)
 @ConditionalOnWebApplication
-class InfraWebAutoConfiguration : WebMvcConfigurer {
+class ApplicationWebAutoConfiguration : WebMvcConfigurer {
 
     @Autowired(required = false)
     private var humanChecker: IHumanChecker? = null

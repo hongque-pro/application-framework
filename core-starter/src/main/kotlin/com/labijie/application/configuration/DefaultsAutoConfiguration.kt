@@ -12,11 +12,13 @@ import com.labijie.caching.ICacheManager
 import com.labijie.infra.IIdGenerator
 import com.labijie.infra.security.Rfc6238TokenService
 import org.springframework.boot.autoconfigure.AutoConfigureOrder
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.core.Ordered
 import org.springframework.transaction.support.TransactionTemplate
+import javax.sql.DataSource
 
 @Configuration(proxyBeanMethods = false)
 @AutoConfigureOrder(Ordered.LOWEST_PRECEDENCE)
@@ -43,6 +45,7 @@ class DefaultsAutoConfiguration {
     }
 
     @Bean
+    @ConditionalOnBean(TransactionTemplate::class, DataSource::class)
     @ConditionalOnMissingBean(IFileIndexService::class)
     fun fileIndexService(
         objectStorage: IObjectStorage,

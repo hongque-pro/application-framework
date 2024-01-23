@@ -23,6 +23,7 @@ import org.springframework.context.annotation.Import
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configurers.AuthorizeHttpRequestsConfigurer
 import org.springframework.security.oauth2.server.authorization.client.RegisteredClientRepository
+import javax.sql.DataSource
 
 /**
  * Created with IntelliJ IDEA.

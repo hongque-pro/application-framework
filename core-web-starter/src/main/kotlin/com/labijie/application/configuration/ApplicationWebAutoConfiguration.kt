@@ -23,6 +23,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.autoconfigure.AutoConfigureAfter
 import org.springframework.boot.autoconfigure.AutoConfigureBefore
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication
 import org.springframework.context.MessageSource
 import org.springframework.context.annotation.Bean
@@ -151,6 +152,7 @@ class ApplicationWebAutoConfiguration : WebMvcConfigurer {
         }
 
         @Bean
+        @ConditionalOnProperty(prefix = "application.web.service-controllers", name = ["enabled"], havingValue = "true", matchIfMissing = true)
         fun captchaController(applicationProperties: ApplicationCoreProperties, captchaHumanChecker: CaptchaHumanChecker): CaptchaController {
             return CaptchaController(applicationProperties, captchaHumanChecker)
         }

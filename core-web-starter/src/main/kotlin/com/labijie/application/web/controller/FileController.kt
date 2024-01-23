@@ -23,12 +23,7 @@ import java.util.UUID
 
 @RestController
 @RequestMapping("/files")
-class FileController : ApplicationContextAware {
-    private lateinit var context:ApplicationContext
-
-    private val fileIndexService by lazy {
-        context.getBean(IFileIndexService::class.java)
-    }
+class FileController(private val fileIndexService: IFileIndexService) {
 
     @GetMapping("/pre-sign")
     fun preSignRead(
@@ -53,7 +48,4 @@ class FileController : ApplicationContextAware {
         return fileIndexService.touchFile(fullPath, modifier)
     }
 
-    override fun setApplicationContext(applicationContext: ApplicationContext) {
-        context = applicationContext
-    }
 }

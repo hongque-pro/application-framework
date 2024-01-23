@@ -26,15 +26,12 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 @RequestMapping("/sms")
 class SmsController @Autowired constructor(
-
+    private val userService: IUserService,
     private val messageService: IMessageService
 ): ApplicationContextAware {
 
     protected lateinit var springContext: ApplicationContext
 
-    private val userService by lazy {
-        springContext.getBean(IUserService::class.java)
-    }
 
     @PostMapping("/send")
     fun send(@RequestBody @Validated request: SmsSendRequest): SmsToken {

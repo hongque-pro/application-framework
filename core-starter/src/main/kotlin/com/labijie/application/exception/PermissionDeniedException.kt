@@ -2,6 +2,8 @@ package com.labijie.application.exception
 
 import com.labijie.application.ApplicationErrors
 import com.labijie.application.ErrorCodedException
+import com.labijie.application.ErrorCodedStatusException
+import org.springframework.http.HttpStatus
 
 /**
  *
@@ -10,4 +12,7 @@ import com.labijie.application.ErrorCodedException
  * @since JDK1.8
  */
 class PermissionDeniedException(message:String? = null)
-    : ErrorCodedException(ApplicationErrors.PermissionDenied, message?:"Permission Denied")
+    : ErrorCodedStatusException(ApplicationErrors.PermissionDenied, message?:"Permission Denied") {
+    override val status: HttpStatus
+        get() = HttpStatus.FORBIDDEN
+    }

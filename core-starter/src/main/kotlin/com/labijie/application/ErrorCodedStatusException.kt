@@ -10,7 +10,7 @@ import org.springframework.http.HttpStatus
  */
 open class ErrorCodedStatusException(
     error: String,
-    message: String,
+    message: String? = null,
     cause: Throwable? = null
 ) : ErrorCodedException(error, message, cause) {
 

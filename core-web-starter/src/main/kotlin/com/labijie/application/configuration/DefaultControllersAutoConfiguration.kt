@@ -19,7 +19,7 @@ import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Import
 
 
-@AutoConfigureAfter(ApplicationWebAutoConfiguration::class)
+@AutoConfigureAfter(ApplicationWebAutoConfiguration::class, DefaultsAutoConfiguration::class)
 @Configuration(proxyBeanMethods = false)
 @ConditionalOnWebApplication
 @ConditionalOnProperty(prefix = "application.web.service-controllers", name = ["enabled"], havingValue = "true", matchIfMissing = true)
@@ -30,7 +30,6 @@ class DefaultControllersAutoConfiguration {
     }
 
     @Bean
-    @ConditionalOnBean(IUserService::class, IMessageService::class)
     fun smsController(
         userService: IUserService,
         messageService: IMessageService
@@ -39,7 +38,6 @@ class DefaultControllersAutoConfiguration {
     }
 
     @Bean
-    @ConditionalOnBean(IFileIndexService::class)
     fun fileController(fileIndexService: IFileIndexService): FileController {
         return FileController(fileIndexService)
     }

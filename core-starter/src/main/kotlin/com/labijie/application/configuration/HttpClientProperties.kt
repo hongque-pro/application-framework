@@ -7,7 +7,7 @@ import java.time.Duration
  * @author Anders Xiao
  * @date 2023-11-28
  */
-@ConfigurationProperties("application.httpclient")
+
 class HttpClientProperties {
     var connectTimeout: Duration = Duration.ofSeconds(2)
     var readTimeout: Duration = Duration.ofSeconds(5)

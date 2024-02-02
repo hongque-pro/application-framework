@@ -1,4 +1,5 @@
-com.labijie.application.configuration.HttpClientAutoConfiguration
+com.labijie.application.configuration.RestTemplateAutoConfiguration
+com.labijie.application.configuration.RestClientAutoConfiguration
 com.labijie.application.configuration.ApplicationCoreAutoConfiguration
 com.labijie.application.configuration.DefaultsAutoConfiguration
 com.labijie.application.configuration.ApplicationTransactionAutoConfiguration

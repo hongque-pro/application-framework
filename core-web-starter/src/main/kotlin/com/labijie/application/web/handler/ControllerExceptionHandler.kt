@@ -1,8 +1,10 @@
 package com.labijie.application.web.handler
 
 import com.fasterxml.jackson.core.JacksonException
+import com.fasterxml.jackson.databind.JsonMappingException
 import com.labijie.application.*
 import com.labijie.application.ApplicationErrors.UnhandledError
+import com.labijie.infra.utils.ifNullOrBlank
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.validation.ConstraintViolationException
 import org.slf4j.LoggerFactory
@@ -43,8 +45,11 @@ class ControllerExceptionHandler(private val messageSource: MessageSource) : Ord
     @ExceptionHandler(AuthenticationException::class)
     @ResponseStatus(HttpStatus.UNAUTHORIZED)
     fun handleAuthenticationException(request: HttpServletRequest, e: AuthenticationException): ErrorResponse {
-        if(e is OAuth2AuthenticationException){
-            return ErrorResponse(e.error.errorCode, localeErrorMessage(e.error.errorCode, e.error.description ?: e.error.errorCode))
+        if (e is OAuth2AuthenticationException) {
+            return ErrorResponse(
+                e.error.errorCode,
+                localeErrorMessage(e.error.errorCode, e.error.description ?: e.error.errorCode)
+            )
         }
         return ErrorResponse(OAuth2ErrorCodes.ACCESS_DENIED)
     }
@@ -74,7 +79,8 @@ class ControllerExceptionHandler(private val messageSource: MessageSource) : Ord
         val argErrors = violations.map {
             val field = it as? FieldError
             if (field != null) {
-                val key = if (field.objectName == e.bindingResult.objectName) field.field else "${field.objectName}.${field.field}"
+                val key =
+                    if (field.objectName == e.bindingResult.objectName) field.field else "${field.objectName}.${field.field}"
                 key to it.defaultMessage.orEmpty()
             } else {
                 it.objectName to it.defaultMessage.orEmpty()
@@ -141,7 +147,10 @@ class ControllerExceptionHandler(private val messageSource: MessageSource) : Ord
     }
 
     @ExceptionHandler(ErrorCodedStatusException::class)
-    fun handleErrorCodedStatusException(request: HttpServletRequest, e: ErrorCodedStatusException): ResponseEntity<ErrorResponse> {
+    fun handleErrorCodedStatusException(
+        request: HttpServletRequest,
+        e: ErrorCodedStatusException
+    ): ResponseEntity<ErrorResponse> {
         return ResponseEntity(ErrorResponse(e.error, e.localizedMessage), e.status)
     }
 
@@ -152,9 +161,18 @@ class ControllerExceptionHandler(private val messageSource: MessageSource) : Ord
     }
 
     @ExceptionHandler(HttpMessageNotReadableException::class)
-    fun handleHttpMessageNotReadableExceptionHandler(request: HttpServletRequest, e: HttpMessageNotReadableException): ResponseEntity<ErrorResponse> {
-        if(e.getCauseFromChain(JacksonException::class) != null) {
-            val error = ErrorResponse(ApplicationErrors.InvalidRequestFormat)
+    fun handleHttpMessageNotReadableExceptionHandler(
+        request: HttpServletRequest,
+        e: HttpMessageNotReadableException
+    ): ResponseEntity<ErrorResponse> {
+        val jsonException = e.getCauseFromChain(JacksonException::class)
+        if (jsonException != null) {
+            val details = if (jsonException is JsonMappingException) {
+                mutableMapOf(
+                    jsonException.pathReference to jsonException.localizedMessage.ifNullOrBlank { jsonException.message ?: "Json deserialize failed." }
+                )
+            } else null
+            val error = ErrorResponse(ApplicationErrors.InvalidRequestFormat, details = details)
             return ResponseEntity(error, HttpStatus.BAD_REQUEST)
         }
 
@@ -175,18 +193,20 @@ class ControllerExceptionHandler(private val messageSource: MessageSource) : Ord
     @ExceptionHandler(Throwable::class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     fun handleUnhandledException(request: HttpServletRequest, e: Throwable): ErrorResponse {
-        val error = when(e){
+        val error = when (e) {
             is UndeclaredThrowableException -> e.undeclaredThrowable ?: e
             else -> e
         }
 
-        logger.error("""
+        logger.error(
+            """
             ------------------------------------------------------
             ------------ Controller Unhandled Error ------------
             ------------------------------------------------------
             HTTP Method: ${request.method} 
             Request URI: ${request.requestURI}
-            """, error)
+            """, error
+        )
         return ErrorResponse(UnhandledError)
     }
 }

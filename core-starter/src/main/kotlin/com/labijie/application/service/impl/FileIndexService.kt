@@ -143,7 +143,14 @@ class FileIndexService(
             FileIndexTable.selectOne {
                 andWhere { FileIndexTable.path eq filePath }
             }
-        } ?: throw FileIndexNotFoundException(filePath)
+        }
+
+        if(file == null) {
+            if(throwIfNotStored) {
+                throw FileIndexNotFoundException(filePath)
+            }
+            return false
+        }
 
         val bucket = if(file.fileAccess == FileModifier.Private) BucketPolicy.PRIVATE else BucketPolicy.PUBLIC
         return objectStorage.existObject(filePath, throwIfNotStored, bucket)

@@ -15,6 +15,7 @@ import com.labijie.application.data.pojo.dsl.FileIndexDSL.updateByPrimaryKey
 import com.labijie.application.exception.FileIndexAlreadyExistedException
 import com.labijie.application.exception.FileIndexNotFoundException
 import com.labijie.application.exception.StoredObjectNotFoundException
+import com.labijie.application.executeReadOnly
 import com.labijie.application.model.FileModifier
 import com.labijie.application.model.ObjectPreSignUrl
 import com.labijie.application.service.IFileIndexService
@@ -77,12 +78,12 @@ class FileIndexService(
             timeoutMills = url.timeoutMills)
     }
 
-    override fun saveFile(filePath: String, fileType: String, entityId: Long?): FileIndex? {
-
-        checkFileInStorage(filePath, true)
+    override fun saveFile(filePath: String, fileType: String, entityId: Long?, checkFileExisted: Boolean): FileIndex? {
+        if(checkFileExisted) {
+            checkFileInStorage(filePath, true)
+        }
 
         return transactionTemplate.execute {
-
             val existedFile = FileIndexTable.selectOne {
                 andWhere { FileIndexTable.path eq filePath }
             }
@@ -138,7 +139,14 @@ class FileIndexService(
             }
             return false
         }
-        return objectStorage.existObject(filePath, throwIfNotStored)
+        val file = transactionTemplate.executeReadOnly {
+            FileIndexTable.selectOne {
+                andWhere { FileIndexTable.path eq filePath }
+            }
+        } ?: throw FileIndexNotFoundException(filePath)
+
+        val bucket = if(file.fileAccess == FileModifier.Private) BucketPolicy.PRIVATE else BucketPolicy.PUBLIC
+        return objectStorage.existObject(filePath, throwIfNotStored, bucket)
     }
 
     override fun deleteFile(filePath: String, deleteObject: Boolean): Boolean {

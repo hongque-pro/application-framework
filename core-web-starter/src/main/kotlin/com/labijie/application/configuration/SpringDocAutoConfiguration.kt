@@ -14,6 +14,7 @@ import org.springdoc.core.models.GroupedOpenApi
 import org.springdoc.core.utils.SpringDocUtils
 import org.springframework.beans.factory.InitializingBean
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.boot.autoconfigure.AutoConfigureOrder
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.info.GitProperties
@@ -22,7 +23,9 @@ import org.springframework.context.ApplicationContextAware
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.ComponentScan
 import org.springframework.context.annotation.Configuration
+import org.springframework.context.annotation.Lazy
 import org.springframework.context.annotation.Profile
+import org.springframework.core.Ordered
 import org.springframework.core.env.Environment
 import java.time.format.DateTimeFormatter
 
@@ -35,6 +38,7 @@ import java.time.format.DateTimeFormatter
  */
 @Configuration(proxyBeanMethods = false)
 @ComponentScan(basePackageClasses = [DocPropertyCustomizer::class])
+@AutoConfigureOrder(Ordered.LOWEST_PRECEDENCE)
 class SpringDocAutoConfiguration(private val environment: Environment): InitializingBean, ApplicationContextAware {
 
     private lateinit var applicationContext: ApplicationContext
@@ -67,12 +71,24 @@ class SpringDocAutoConfiguration(private val environment: Environment): Initiali
     @Bean
     @ConditionalOnClass(name = ["com.labijie.application.dapr.configuration.ApplicationDaprAutoConfiguration"])
     @Profile("!prod", "!production")
-    fun infraApi(): GroupedOpenApi {
+    fun daprApi(): GroupedOpenApi {
         return GroupedOpenApi.builder()
             .group("Dapr")
             .packagesToScan("io.dapr")
             .build()
     }
+
+//    @Bean
+//    @ConditionalOnClass(name = ["com.labijie.application.dapr.configuration.ApplicationDaprAutoConfiguration"])
+//    @Lazy
+//    @Profile("!prod", "!production")
+//    fun daprUserApi(): GroupedOpenApi {
+//        return GroupedOpenApi.builder()
+//            .group("Dapr")
+//            .pathsToMatch("/dapr/**")
+//            .packagesToScan()
+//            .build()
+//    }
 
 
     @Bean

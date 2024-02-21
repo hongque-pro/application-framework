@@ -9,8 +9,10 @@ import com.jayway.jsonpath.spi.mapper.JacksonMappingProvider
 import com.labijie.application.IDescribeEnum
 import com.labijie.application.jackson.DescribeEnumDeserializer
 import com.labijie.application.jackson.DescribeEnumSerializer
+import com.labijie.infra.json.JacksonHelper
 import org.junit.jupiter.api.Assertions
 import kotlin.test.Test
+import kotlin.test.assertTrue
 
 
 class EnumSerializerTester {
@@ -38,7 +40,8 @@ class EnumSerializerTester {
 
     data class TestObject(
         var enumValue: SimpleTestingEnum = SimpleTestingEnum.Two,
-        var stringValue: String = "12334"
+        var stringValue: String = "12334",
+        var isEnabled: Boolean = true
     )
 
 
@@ -139,5 +142,11 @@ class EnumSerializerTester {
 
         Assertions.assertEquals(v1, DescribedTestingEnum.Two)
         Assertions.assertEquals(v2, DescribedTestingEnum.Two)
+    }
+
+    @Test
+    fun jsTest() {
+       val string = JacksonHelper.serializeAsString(TestObject())
+        assertTrue { string.isNotBlank() }
     }
 }

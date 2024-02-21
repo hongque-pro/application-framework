@@ -14,6 +14,12 @@
   ],
   "properties": [
     {
+      "name": "application.dapr.json-mode",
+      "type": "com.labijie.application.configuration.JsonMode",
+      "sourceType": "com.labijie.application.dapr.configuration.DaprProperties",
+      "defaultValue": "normal"
+    },
+    {
       "name": "application.dapr.message-service.sms-pubsub-name",
       "type": "java.lang.String",
       "sourceType": "com.labijie.application.dapr.configuration.MessageServiceConfig"

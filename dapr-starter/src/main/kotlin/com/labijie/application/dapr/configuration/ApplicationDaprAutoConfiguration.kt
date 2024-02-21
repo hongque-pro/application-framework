@@ -2,11 +2,14 @@ package com.labijie.application.dapr.configuration
 
 import com.labijie.application.component.IMessageService
 import com.labijie.application.configuration.DefaultsAutoConfiguration
+import com.labijie.application.configuration.JsonMode
 import com.labijie.application.dapr.IDaprClientBuildCustomizer
 import com.labijie.application.dapr.PubsubSide
+import com.labijie.application.dapr.components.DaprJsonSerializer
 import com.labijie.application.dapr.components.DaprMessagePubService
 import com.labijie.application.dapr.condition.ConditionalOnDaprPubsub
 import com.labijie.caching.ICacheManager
+import com.labijie.infra.json.JacksonHelper
 import com.labijie.infra.oauth2.resource.IResourceAuthorizationConfigurer
 import com.labijie.infra.security.Rfc6238TokenService
 import io.dapr.client.DaprClient
@@ -59,9 +62,11 @@ class ApplicationDaprAutoConfiguration {
     @Bean
     @Lazy
     @ConditionalOnMissingBean(DaprClient::class)
-    fun daprClient(customizers: ObjectProvider<IDaprClientBuildCustomizer>) : DaprClient {
-        val builder = DaprClientBuilder()
+    fun daprClient(properties: DaprProperties, customizers: ObjectProvider<IDaprClientBuildCustomizer>) : DaprClient {
+        val objectMapper = if(properties.jsonMode == JsonMode.JAVASCRIPT) JacksonHelper.webCompatibilityMapper else JacksonHelper.defaultObjectMapper
 
+        val objectSerializer = DaprJsonSerializer(objectMapper)
+        val builder = DaprClientBuilder().withObjectSerializer(objectSerializer)
         customizers.orderedStream().forEach {
             it.customize(builder)
         }

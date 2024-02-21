@@ -4,6 +4,7 @@ import com.labijie.application.BucketPolicy
 import com.labijie.application.exception.StoredObjectNotFoundException
 import com.labijie.application.model.ObjectPreSignUrl
 import java.io.InputStream
+import java.io.OutputStream
 
 /**
  * Created with IntelliJ IDEA.
@@ -28,6 +29,8 @@ interface IObjectStorage {
     )
 
     fun getObject(key: String, bucketPolicy: BucketPolicy = BucketPolicy.PRIVATE): ByteArray
+
+    fun getObject(key: String, outputStream: OutputStream, bucketPolicy: BucketPolicy = BucketPolicy.PRIVATE)
 }
 
 enum class GenerationURLPurpose {

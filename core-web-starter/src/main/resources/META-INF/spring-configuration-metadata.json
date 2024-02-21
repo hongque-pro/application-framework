@@ -1,6 +1,10 @@
 {
   "group": [
     {
+      "name": "application.web",
+      "type": "com.labijie.application.configuration.ApplicationWebProperties"
+    },
+    {
       "name": "application.web.service-controllers"
     }
   ],
@@ -9,6 +13,12 @@
       "name": "application.web.service-controllers.enabled",
       "description": "Enable built-in controllers: ApplicationController, SmsController, FileController, etc",
       "type": "java.lang.Boolean"
+    },
+    {
+      "name": "application.web.json-mode",
+      "description": "If use javascript mode, web server will serialize int64, double to string in json, as same as deserialization",
+      "type": "com.labijie.application.configuration.JsonMode",
+      "defaultValue": "javascript"
     }
   ]
 }

@@ -25,6 +25,7 @@ import org.springframework.boot.autoconfigure.AutoConfigureBefore
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication
+import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.MessageSource
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -49,8 +50,9 @@ import org.springframework.web.servlet.config.annotation.*
 @Import(DefaultResourceSecurityConfiguration::class, SpringDocAutoConfiguration::class)
 @AutoConfigureAfter(Environment::class)
 @AutoConfigureBefore(DefaultsAutoConfiguration::class)
+@EnableConfigurationProperties(ApplicationWebProperties::class)
 @ConditionalOnWebApplication
-class ApplicationWebAutoConfiguration : WebMvcConfigurer {
+class ApplicationWebAutoConfiguration(private val properties: ApplicationWebProperties) : WebMvcConfigurer {
 
     @Autowired(required = false)
     private var humanChecker: IHumanChecker? = null
@@ -79,11 +81,12 @@ class ApplicationWebAutoConfiguration : WebMvcConfigurer {
         val index = converters.indexOfFirst {
             it is MappingJackson2HttpMessageConverter
         }
+        val mapper = if(properties.jsonMode == JsonMode.JAVASCRIPT) JacksonHelper.webCompatibilityMapper else JacksonHelper.defaultObjectMapper
         if (index >= 0) {
             converters.removeAt(index)
-            converters.add(index, MappingJackson2HttpMessageConverter(JacksonHelper.webCompatibilityMapper))
+            converters.add(index, MappingJackson2HttpMessageConverter(mapper))
         } else {
-            converters.add(converters.size, MappingJackson2HttpMessageConverter(JacksonHelper.webCompatibilityMapper))
+            converters.add(converters.size, MappingJackson2HttpMessageConverter(mapper))
             super.configureMessageConverters(converters)
         }
     }

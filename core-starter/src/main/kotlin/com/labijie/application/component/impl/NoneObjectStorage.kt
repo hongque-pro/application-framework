@@ -6,6 +6,7 @@ import com.labijie.application.component.IObjectStorage
 import com.labijie.application.exception.StoredObjectNotFoundException
 import com.labijie.application.model.ObjectPreSignUrl
 import java.io.InputStream
+import java.io.OutputStream
 import java.net.URL
 
 /**
@@ -33,5 +34,9 @@ open class NoneObjectStorage : IObjectStorage {
 
     override fun getObject(key: String, bucketPolicy: BucketPolicy): ByteArray {
         return ByteArray(0)
+    }
+
+    override fun getObject(key: String, outputStream: OutputStream, bucketPolicy: BucketPolicy) {
+
     }
 }

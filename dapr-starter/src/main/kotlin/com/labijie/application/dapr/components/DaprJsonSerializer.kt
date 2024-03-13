@@ -16,6 +16,7 @@ import kotlin.ByteArray
 
 
 class DaprJsonSerializer(private val objectMapper: ObjectMapper) : DaprObjectSerializer {
+
     @Throws(IOException::class)
     override fun serialize(data: Any?): ByteArray? {
         return if (data == null) {

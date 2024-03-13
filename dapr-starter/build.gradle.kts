@@ -12,6 +12,7 @@ dependencies {
 
     compileOnly(project(":core-web-starter"))
     compileOnly("com.labijie.infra:oauth2-authorization-server-starter:${Versions.infraOAuth2}")
+
 }
 
 //tasks.compileKotlin {

@@ -4,6 +4,7 @@
  */
 package com.labijie.application.configuration
 
+import com.labijie.application.JsonMode
 import org.springframework.boot.context.properties.ConfigurationProperties
 
 

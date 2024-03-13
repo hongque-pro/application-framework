@@ -1,13 +1,11 @@
 package com.labijie.application.configuration
 
+import com.labijie.application.JsonMode
 import com.labijie.application.component.IHumanChecker
 import com.labijie.application.component.impl.NoneHumanChecker
 import com.labijie.application.web.controller.CaptchaController
-import com.labijie.application.web.controller.SmsController
 import com.labijie.application.service.CaptchaHumanChecker
 import com.labijie.application.web.WrappedResponseBodyAdvice
-import com.labijie.application.web.controller.ApplicationController
-import com.labijie.application.web.controller.FileController
 import com.labijie.application.web.converter.EnhanceStringToEnumConverterFactory
 import com.labijie.application.web.handler.ControllerExceptionHandler
 import com.labijie.application.web.interceptor.HttpCacheInterceptor

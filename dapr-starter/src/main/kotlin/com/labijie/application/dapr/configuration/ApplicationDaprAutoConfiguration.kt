@@ -1,8 +1,9 @@
 package com.labijie.application.dapr.configuration
 
+import com.labijie.application.JsonMode
 import com.labijie.application.component.IMessageService
 import com.labijie.application.configuration.DefaultsAutoConfiguration
-import com.labijie.application.configuration.JsonMode
+import com.labijie.application.dapr.DaprDisposable
 import com.labijie.application.dapr.IDaprClientBuildCustomizer
 import com.labijie.application.dapr.PubsubSide
 import com.labijie.application.dapr.components.DaprJsonSerializer
@@ -43,22 +44,6 @@ class ApplicationDaprAutoConfiguration {
         }
     }
 
-    @ConditionalOnClass(name = ["com.labijie.application.component.IMessageService"])
-    @Configuration(proxyBeanMethods = false)
-    protected class DaprMessageAutoConfiguration {
-        @Bean
-        @ConditionalOnMissingBean(IMessageService::class)
-        @ConditionalOnDaprPubsub(side = PubsubSide.Pub)
-        fun daprMessagePublisher(
-            daprProperties: DaprProperties,
-            cacheManager: ICacheManager,
-            @Autowired(required = false)
-            rfc6238TokenService: Rfc6238TokenService? = null
-        ): DaprMessagePubService {
-            return DaprMessagePubService(daprProperties, cacheManager, rfc6238TokenService ?: Rfc6238TokenService())
-        }
-    }
-
     @Bean
     @Lazy
     @ConditionalOnMissingBean(DaprClient::class)
@@ -71,5 +56,29 @@ class ApplicationDaprAutoConfiguration {
             it.customize(builder)
         }
         return builder.build()
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(DaprDisposable::class)
+    fun daprModuleInitializer(daprClient: DaprClient, properties: DaprProperties): DaprDisposable {
+        return DaprDisposable(daprClient, properties)
+    }
+
+    @ConditionalOnClass(name = ["com.labijie.application.component.IMessageService"])
+    @Configuration(proxyBeanMethods = false)
+    protected class DaprMessageAutoConfiguration {
+        @Bean
+        @Lazy
+        @ConditionalOnMissingBean(IMessageService::class)
+        @ConditionalOnDaprPubsub(side = PubsubSide.Pub)
+        fun daprMessagePublisher(
+            daprClient: DaprClient,
+            properties: DaprProperties,
+            cacheManager: ICacheManager,
+            @Autowired(required = false)
+            rfc6238TokenService: Rfc6238TokenService? = null
+        ): DaprMessagePubService {
+            return DaprMessagePubService(daprClient, properties, cacheManager, rfc6238TokenService ?: Rfc6238TokenService())
+        }
     }
 }

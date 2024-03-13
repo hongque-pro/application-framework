@@ -1,6 +1,6 @@
 package com.labijie.application.dapr.configuration
 
-import com.labijie.application.configuration.JsonMode
+import com.labijie.application.JsonMode
 import com.labijie.infra.utils.ifNullOrBlank
 import io.dapr.config.Properties
 import org.springframework.boot.context.properties.ConfigurationProperties
@@ -18,6 +18,7 @@ class DaprProperties {
     var pubServiceEnabled: Boolean = false
     var subServiceEnabled: Boolean = false
     var jsonMode: JsonMode = JsonMode.NORMAL
+    var shutdownDaprOnExit: Boolean = true
 
 
     @NestedConfigurationProperty

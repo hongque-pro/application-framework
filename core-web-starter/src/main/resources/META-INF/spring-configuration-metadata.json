@@ -17,7 +17,7 @@
     {
       "name": "application.web.json-mode",
       "description": "If use javascript mode, web server will serialize int64, double to string in json, as same as deserialization",
-      "type": "com.labijie.application.configuration.JsonMode",
+      "type": "com.labijie.application.JsonMode",
       "defaultValue": "javascript"
     }
   ]

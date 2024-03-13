@@ -3,7 +3,10 @@ package com.labijie.application.dapr.testing
 import com.labijie.application.dapr.testing.context.DaprTestContext
 import com.labijie.application.dapr.testing.context.TestDaprSecretsStore
 import com.labijie.application.ApplicationRuntimeException
+import com.labijie.application.dapr.components.DaprJsonSerializer
 import com.labijie.application.dapr.configuration.DaprProperties
+import com.labijie.application.toUTF8StringOrEmpty
+import com.labijie.infra.json.JacksonHelper
 import com.labijie.infra.utils.logger
 import io.dapr.client.DaprClient
 import io.dapr.exceptions.DaprException
@@ -11,6 +14,8 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.test.context.ContextConfiguration
 import kotlin.test.Test
+import kotlin.test.assertNotNull
+import kotlin.test.assertTrue
 
 /**
  * @author Anders Xiao
@@ -27,6 +32,7 @@ class DaprSpringBootStarterTester {
     @Autowired(required = false)
     private var daprProperties: DaprProperties = DaprProperties()
 
+
     @Test
     fun daprSecretsStore() {
         logger.info("get")
@@ -42,4 +48,6 @@ class DaprSpringBootStarterTester {
             }
         }
     }
+
+
 }

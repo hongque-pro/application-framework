@@ -191,4 +191,47 @@ class FileIndexService(
             }
         } ?: 0
     }
+
+    override fun getIndex(filePath: String): FileIndex? {
+        return transactionTemplate.executeReadOnly {
+            FileIndexTable.selectOne {
+                andWhere { FileIndexTable.path.eq(filePath) }
+            }
+        }
+    }
+
+    override fun copyFile(
+        sourceFilePath: String,
+        destFilePath: String,
+        destModifier: FileModifier?,
+        destFileType: String?,
+        destEntityId: Long?
+    ): FileIndex {
+        val index = getIndex(sourceFilePath) ?: throw FileIndexNotFoundException(sourceFilePath)
+        val sourceBucket = if(index.fileAccess === FileModifier.Private) BucketPolicy.PRIVATE else BucketPolicy.PUBLIC
+        val destModifierValue = destModifier ?: index.fileAccess
+        val destBucket = if(destModifierValue === FileModifier.Private) BucketPolicy.PRIVATE else BucketPolicy.PUBLIC
+        val dest = getIndex(destFilePath)
+        if(dest != null) {
+            throw FileIndexAlreadyExistedException(dest.path)
+        }
+        objectStorage.copyObject(index.path, sourceBucket, destFilePath, destBucket)
+        return try {
+             transactionTemplate.execute {
+                val file = FileIndex().apply {
+                    id = idGenerator.newId()
+                    path = destFilePath
+                    fileType = destFileType ?: IFileIndexService.TEMP_FILE_TYPE
+                    entityId = destEntityId ?: 0
+                    fileAccess = destModifierValue
+                    timeCreated = System.currentTimeMillis()
+                }
+                 FileIndexTable.insert(file)
+                 file
+            }!!
+        } catch (e: Throwable) {
+            objectStorage.deleteObject(destFilePath, destBucket)
+            throw e
+        }
+    }
 }

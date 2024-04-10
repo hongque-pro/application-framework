@@ -39,4 +39,8 @@ open class NoneObjectStorage : IObjectStorage {
     override fun getObject(key: String, outputStream: OutputStream, bucketPolicy: BucketPolicy) {
 
     }
+
+    override fun copyObject(sourceKey: String, sourceBucket: BucketPolicy, destKey: String, destBucket: BucketPolicy?) {
+
+    }
 }

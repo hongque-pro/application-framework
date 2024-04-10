@@ -14,6 +14,8 @@ interface IFileIndexService {
     companion object {
         const val TEMP_FILE_TYPE = "temp"
     }
+
+    fun getIndex(filePath: String): FileIndex?
     fun getFileUrl(filePath: String, modifier: FileModifier): ObjectPreSignUrl
     fun touchFile(filePath: String, modifier: FileModifier): TouchedFile
 
@@ -22,4 +24,5 @@ interface IFileIndexService {
     fun checkFileInStorage(filePath:String, throwIfNotStored: Boolean) : Boolean
     fun deleteFile(filePath: String, deleteObject:Boolean = false):Boolean
     fun deleteFiles(filePaths: List<String>, deleteObject: Boolean = false): Int
+    fun copyFile(sourceFilePath: String, destFilePath: String, destModifier: FileModifier? = null, destFileType: String? = null, destEntityId: Long? = null): FileIndex
 }

@@ -12,7 +12,6 @@ data class OpenPartnerCreation(
     var name: String = "",
 
     @get:Length(max=16)
-    @get:ConfigurablePattern(ValidationProperties.PHONE_NUMBER)
     var phoneNumber: String? = null,
 
     @get:Length(max=6)

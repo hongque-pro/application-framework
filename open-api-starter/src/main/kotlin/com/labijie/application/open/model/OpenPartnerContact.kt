@@ -7,7 +7,6 @@ import org.hibernate.validator.constraints.Length
 
 data class OpenPartnerContact(
     @get:Length(max=16)
-    @get:ConfigurablePattern(ValidationProperties.PHONE_NUMBER)
     var phoneNumber: String? = null,
 
     @get:Length(max=6)

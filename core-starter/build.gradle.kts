@@ -7,7 +7,8 @@ infra {
 
 dependencies {
     api("com.labijie.infra:commons-springboot-starter:${Versions.infraCommons}")
-
+    api("commons-validator:commons-validator:${ApacheVersions.commonsValidator}")
+    api("com.googlecode.libphonenumber:libphonenumber:${Versions.libphonenumber}")
     api("org.jsoup:jsoup:${Versions.jsoup}")
     api("org.springframework:spring-tx")
     api("com.labijie:caching-kotlin-core-starter:${Versions.infraCaching}")

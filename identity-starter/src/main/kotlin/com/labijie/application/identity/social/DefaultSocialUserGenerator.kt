@@ -17,6 +17,9 @@ open class DefaultSocialUserGenerator : ISocialUserGenerator {
     ): User {
         val id = context.idGenerator.newId()
         val username = context.username.ifNullOrBlank { "u${id}" }
-        return IdentityUtils.createUser(id, username, context.phoneNumber, userType)
+        val u = IdentityUtils.createUser(id, username, userType)
+        u.phoneNumber = context.phoneNumber
+        u.email = context.email
+        return u
     }
 }

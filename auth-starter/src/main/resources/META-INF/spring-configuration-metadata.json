@@ -4,9 +4,20 @@
       "name": "application.default-user-creation",
       "type": "com.labijie.application.auth.configuration.DefaultUserCreationProperties",
       "sourceType": "com.labijie.application.auth.configuration.DefaultUserCreationProperties"
+    },
+    {
+      "name": "application.auth",
+      "type": "com.labijie.application.auth.configuration.AuthProperties",
+      "sourceType": "com.labijie.application.auth.configuration.AuthProperties"
     }
   ],
   "properties": [
+    {
+      "name": "application.register-by",
+      "type": "com.labijie.application.identity.model.RegisterBy",
+      "sourceType": "com.labijie.application.auth.configuration.AuthProperties",
+      "defaultValue": "Phone"
+    },
     {
       "name": "application.default-user-creation.enabled",
       "type": "java.lang.Boolean",

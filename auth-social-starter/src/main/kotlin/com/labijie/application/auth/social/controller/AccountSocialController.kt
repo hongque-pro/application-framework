@@ -1,5 +1,6 @@
 package com.labijie.application.auth.social.controller
 
+import com.labijie.application.auth.configuration.AuthProperties
 import com.labijie.application.auth.social.OAuth2SocialConstants
 import com.labijie.application.auth.social.exception.BadSocialCredentialsException
 import com.labijie.application.auth.social.exception.SocialUserLockedException
@@ -35,6 +36,7 @@ class AccountSocialController(
     private val userService: ISocialUserService,
     private val signInHelper: TwoFactorSignInHelper,
     private val messageService: IMessageService,
+    private val authProperties: AuthProperties,
 ) {
 
     @PostMapping("/register")
@@ -45,7 +47,7 @@ class AccountSocialController(
     ): Map<String, Any> {
 
         messageService.verifySmsCode(info, true)
-        val userRoles = userService.registerSocialUser(info)
+        val userRoles = userService.registerSocialUser(info, authProperties.registerBy)
         return signInUser(userRoles, clientDetails)
     }
 

@@ -2,6 +2,7 @@ package com.labijie.application.identity.service
 
 import com.labijie.application.identity.data.pojo.Role
 import com.labijie.application.identity.data.pojo.User
+import com.labijie.application.identity.model.RegisterBy
 import com.labijie.application.identity.model.RegisterInfo
 import com.labijie.application.identity.model.UserAndRoles
 import com.labijie.application.model.OrderBy
@@ -26,13 +27,15 @@ interface IUserService {
         newPlainPassword: String
     ): Boolean
 
-    fun changePhone(userId: Long, phoneNumber: String, confirmed: Boolean = true): Boolean
+    fun changePhone(userId: Long, dialingCode: Short, phoneNumber: String, confirmed: Boolean = true): Boolean
     fun setUserEnabled(userId: Long, enabled: Boolean): Boolean
     fun getUsers(pageSize: Int, lastUserId: Long? = null, order: OrderBy = OrderBy.Descending): List<User>
 
     fun getOrCreateRole(roleName: String): Role
     fun createUser(user: User, plainPassword: String, vararg roles: String): UserAndRoles
-    fun registerUser(register: RegisterInfo): UserAndRoles
+    fun registerUser(register: RegisterInfo, by: RegisterBy = RegisterBy.Phone): UserAndRoles
+
+
     fun updateUser(userId: Long, user: User): Boolean
 
     fun updateUserLastLogin(

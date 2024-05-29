@@ -11,10 +11,10 @@ import jakarta.validation.constraints.NotBlank
  * @date 2019-10-19
  */
 class ChangePhoneRequest : SmsAssociated() {
-    @get:NotBlank
-    @get:ConfigurablePattern(ValidationProperties.PHONE_NUMBER)
-    var phoneNumber: String = ""
+    var dialingCode: Short = 86
 
+    @get:NotBlank
+    var phoneNumber: String = ""
 
     @get:NotBlank
     var token: String = ""

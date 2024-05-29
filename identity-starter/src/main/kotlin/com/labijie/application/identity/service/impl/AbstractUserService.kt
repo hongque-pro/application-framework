@@ -8,6 +8,10 @@ import com.labijie.application.executeReadOnly
 import com.labijie.application.identity.IdentityCacheKeys
 import com.labijie.application.identity.IdentityCacheKeys.getUserCacheKey
 import com.labijie.application.identity.IdentityUtils
+import com.labijie.application.component.impl.NationalPhoneValidator
+import com.labijie.application.component.impl.EmailAddressValidator
+import com.labijie.application.component.IEmailAddressValidator
+import com.labijie.application.component.IPhoneValidator
 import com.labijie.application.identity.configuration.IdentityProperties
 import com.labijie.application.identity.data.RoleTable
 import com.labijie.application.identity.data.UserRoleTable
@@ -25,10 +29,8 @@ import com.labijie.application.identity.data.pojo.dsl.UserDSL.toUserList
 import com.labijie.application.identity.data.pojo.dsl.UserDSL.updateByPrimaryKey
 import com.labijie.application.identity.data.pojo.dsl.UserRoleDSL.insert
 import com.labijie.application.identity.data.pojo.dsl.UserRoleDSL.selectMany
-import com.labijie.application.identity.exception.InvalidPasswordException
-import com.labijie.application.identity.exception.PhoneAlreadyExistedException
-import com.labijie.application.identity.exception.RoleNotFoundException
-import com.labijie.application.identity.exception.UserAlreadyExistedException
+import com.labijie.application.identity.exception.*
+import com.labijie.application.identity.model.RegisterBy
 import com.labijie.application.identity.model.RegisterInfo
 import com.labijie.application.identity.model.UserAndRoles
 import com.labijie.application.identity.service.IUserService
@@ -87,6 +89,14 @@ abstract class AbstractUserService(
             validationConfig = value
         }
 
+    protected open val emailValidator: IEmailAddressValidator by lazy {
+        this.context?.getBeansOfType(IEmailAddressValidator::class.java)?.values?.firstOrNull() ?: EmailAddressValidator()
+    }
+
+    protected open val phoneNumberValidator: IPhoneValidator by lazy {
+        this.context?.getBeansOfType(IPhoneValidator::class.java)?.values?.firstOrNull() ?: NationalPhoneValidator()
+    }
+
     protected fun getUserAndRoles(
         phoneNumber: String,
         loginProvider: String? = null
@@ -111,9 +121,10 @@ abstract class AbstractUserService(
         return UserAndRoles(user, roles)
     }
 
-    override fun changePhone(userId: Long, phoneNumber: String, confirmed: Boolean): Boolean {
+    override fun changePhone(userId: Long, dialingCode: Short, phoneNumber: String, confirmed: Boolean): Boolean {
         val u = User()
         u.id = userId
+        u.phoneCountryCode = dialingCode
         u.phoneNumber = phoneNumber
         u.phoneNumberConfirmed = confirmed
         u.concurrencyStamp = ShortId.newId()
@@ -131,22 +142,61 @@ abstract class AbstractUserService(
 
     protected open fun onUserRegisteredAfterTranscationCommitted(user: UserAndRoles, addition:String?) {}
 
-    override fun registerUser(register: RegisterInfo): UserAndRoles {
-        val u = this.transactionTemplate.configure(isReadOnly = true).execute {
-            val p = UserTable.selectOne {
-                andWhere { UserTable.phoneNumber eq register.phoneNumber }
-            }
-            if (p != null) {
-                throw PhoneAlreadyExistedException()
-            }
-            val id = idGenerator.newId()
+    override fun registerUser(register: RegisterInfo, by: RegisterBy): UserAndRoles {
 
-            val user = IdentityUtils.createUser(
-                idGenerator.newId(),
-                register.username.ifNullOrBlank { "u${id}" },
-                register.phoneNumber,
-                getDefaultUserType()
-            )
+        val phoneCountry = register.dialingCode ?: 86
+        register.email = register.email.trim()
+        register.phoneNumber = register.phoneNumber.trim()
+
+        val isByEmail = by == RegisterBy.Email || by == RegisterBy.Both
+        val isByPhone = by == RegisterBy.Phone || by == RegisterBy.Both
+
+        if(isByEmail){
+            emailValidator.validate(register.email, true)
+        }
+
+        if(isByPhone) {
+            phoneNumberValidator.validate(phoneCountry, register.phoneNumber, true)
+        }
+
+        val id = idGenerator.newId()
+
+        val user = IdentityUtils.createUser(
+            idGenerator.newId(),
+            register.username.ifNullOrBlank { "u${id}" },
+            getDefaultUserType()
+        )
+        if(isByPhone){
+            user.phoneCountryCode = phoneCountry
+            user.phoneNumber = register.phoneNumber
+            user.phoneNumberConfirmed = true
+        }
+
+        if(isByEmail){
+            user.email = register.email
+            user.emailConfirmed = true
+        }
+
+
+        val u = this.transactionTemplate.execute {
+            if(isByPhone) {
+                val p1 = UserTable.selectOne {
+                    andWhere { UserTable.phoneNumber.eq(user.phoneNumber) }
+                }
+                if (p1 != null) {
+                    throw PhoneAlreadyExistedException()
+                }
+            }
+
+            if(isByEmail) {
+                val p2 = UserTable.selectOne {
+                    andWhere { UserTable.email.eq(user.email) }
+                }
+                if (p2 != null) {
+                    throw EmailAlreadyExistedException()
+                }
+            }
+
             val userAndRoles = this.createUser(user, register.password, *this.getDefaultUserRoles())
             this.onUserRegisteredInTranscation(userAndRoles, register.addition)
             userAndRoles

@@ -14,18 +14,17 @@ import org.hibernate.validator.constraints.Length
 data class RegisterInfo(
     @get:Length(min=3, max = 16)
     @get: ConfigurablePattern(ValidationProperties.USER_NAME)
-    var username: String?,
+    var username: String? = null,
 
-    @get: NotBlank
-    @get: ConfigurablePattern(ValidationProperties.PHONE_NUMBER)
-    var phoneNumber: String,
+    var phoneNumber: String = "",
 
     @get:Length(min=6)
     @get: NotBlank
-    var password: String,
+    var password: String = "",
 
-    var phoneAreaCode: String = "",
-
+    var dialingCode: Short? = null,
 
     var addition: String? = null,
+
+    var email: String = "",
 ) : SmsAssociated()

@@ -14,4 +14,5 @@ data class UserGenerationContext(
     val idGenerator: IIdGenerator,
     val loginProvider:String,
     val phoneNumber: String,
+    val email: String,
     val socialToken: PlatformAccessToken)

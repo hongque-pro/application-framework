@@ -7,6 +7,7 @@ import com.labijie.application.exception.InvalidPhoneNumberException
 import com.labijie.application.exception.OperationConcurrencyException
 import com.labijie.application.exception.UserNotFoundException
 import com.labijie.application.executeReadOnly
+import com.labijie.application.identity.IdentityUtils
 import com.labijie.application.identity.configuration.IdentityProperties
 import com.labijie.application.identity.data.UserLoginTable
 import com.labijie.application.identity.data.UserOpenIdTable
@@ -23,6 +24,7 @@ import com.labijie.application.identity.exception.LoginProviderKeyAlreadyExisted
 import com.labijie.application.identity.exception.UnsupportedLoginProviderException
 import com.labijie.application.identity.exception.UserAlreadyExistedException
 import com.labijie.application.identity.model.PlatformAccessToken
+import com.labijie.application.identity.model.RegisterBy
 import com.labijie.application.identity.model.SocialRegisterInfo
 import com.labijie.application.identity.model.SocialUserAndRoles
 import com.labijie.application.identity.service.ISocialUserService
@@ -217,8 +219,13 @@ abstract class AbstractSocialUserService(
 
     override fun registerSocialUser(
         socialRegisterInfo: SocialRegisterInfo,
+        by: RegisterBy,
         throwIfExisted: Boolean,
     ): SocialUserAndRoles {
+
+        socialRegisterInfo.phoneNumber = socialRegisterInfo.phoneNumber.trim()
+        socialRegisterInfo.email = socialRegisterInfo.email.trim()
+
         //解密用的向量为空，如果空认为电话号码为明文
         val iv = socialRegisterInfo.iv ?: ""
 
@@ -229,16 +236,19 @@ abstract class AbstractSocialUserService(
             throw UserAlreadyExistedException("user with login provider '${socialRegisterInfo.provider}' already existed")
         }
 
-        var phoneNumber = socialRegisterInfo.phoneNumber
-
         if (miniProvider != null && iv.isNotBlank()) {
-            phoneNumber = miniProvider.decryptPhoneNumber(socialRegisterInfo.phoneNumber, r.token, iv)
+            socialRegisterInfo.phoneNumber = miniProvider.decryptPhoneNumber(socialRegisterInfo.phoneNumber, r.token, iv)
         }
 
-        val valid =
-            Pattern.matches(this.validationConfiguration.regex[ValidationProperties.PHONE_NUMBER]!!, phoneNumber)
-        if (!valid) {
-            throw InvalidPhoneNumberException()
+        val isByPhone = (by == RegisterBy.Phone || by == RegisterBy.Both)
+        val isByEmail = (by == RegisterBy.Email || by == RegisterBy.Both)
+
+        if (isByPhone) {
+            phoneNumberValidator.validate(socialRegisterInfo.dialingCode, socialRegisterInfo.phoneNumber, true)
+        }
+
+        if (isByEmail) {
+            emailValidator.validate(socialRegisterInfo.email, true)
         }
 
 
@@ -250,7 +260,7 @@ abstract class AbstractSocialUserService(
                     getUserAndRoles(r.userId, loginProvider)
                 } else {
                     //不存在创建绑定或者创建账号
-                    val (u, context) = createNewSocialUserOrLogin(socialRegisterInfo, phoneNumber, r.provider, r.token)
+                    val (u, context) = createNewSocialUserOrLogin(socialRegisterInfo, by, r.provider, r.token)
                     registrationContext = context
                     u
                 }
@@ -301,15 +311,24 @@ abstract class AbstractSocialUserService(
 
     private fun createNewSocialUserOrLogin(
         socialRegisterInfo: SocialRegisterInfo,
-        phoneNumber: String,
+        by: RegisterBy,
         provider: ILoginProvider,
         token: PlatformAccessToken,
     ): Pair<SocialUserAndRoles, SocialUserRegistrationContext?> {
         val loginProvider = provider.name
 
+        val byPhone = by == RegisterBy.Phone || by == RegisterBy.Both
+        val byEmail = by == RegisterBy.Email || by == RegisterBy.Both
+
         //不存在第三方绑定，考虑手机号可能存在
-        val user = if (phoneNumber.isBlank()) null else UserTable.selectOne {
-            andWhere { UserTable.phoneNumber eq  phoneNumber.trim() }
+        val user = if (byPhone)  {
+            UserTable.selectOne {
+                andWhere { UserTable.phoneNumber eq  socialRegisterInfo.phoneNumber }
+            }
+        } else {
+            UserTable.selectOne {
+                andWhere { UserTable.email eq  socialRegisterInfo.email }
+            }
         }
         if (user != null) {
             this.addUserLogin(user.id, loginProvider, token)
@@ -322,7 +341,8 @@ abstract class AbstractSocialUserService(
                         socialRegisterInfo.username,
                         idGenerator,
                         loginProvider,
-                        phoneNumber,
+                        if(byPhone) socialRegisterInfo.phoneNumber else "N_${idGenerator.newId()}",
+                        if(byEmail) socialRegisterInfo.email else "${idGenerator.newId()}@null.null",
                         token
                     )
                 val u =

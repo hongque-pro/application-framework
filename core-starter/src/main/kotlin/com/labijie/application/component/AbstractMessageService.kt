@@ -44,9 +44,9 @@ abstract class AbstractMessageService(
         this.applicationContext = applicationContext
     }
 
-    private fun sendSmsCodeCore(phoneNumber: String, type: SmsCodeType, securityStamp: String) {
+    private fun sendSmsCodeCore(dialingCode: Short, phoneNumber: String, type: SmsCodeType, securityStamp: String) {
         val key = securityStamp.ifBlank { null }
-        val code = rfc6238TokenService.generateCodeString(key, phoneNumber, smsBaseSettings.messageExpire)
+        val code = rfc6238TokenService.generateCodeString(key, "$dialingCode${phoneNumber}", smsBaseSettings.messageExpire)
         sendCode(phoneNumber, type, code)
     }
 
@@ -81,27 +81,28 @@ abstract class AbstractMessageService(
         try {
             val str = DesUtils.decrypt(token, applicationProperties.desSecret)
             val segments = str.split(":")
-            if(segments.size != 2){
+            if(segments.size != 3){
                 return false
             }
             val clientStamp = segments[0]
-            val phoneNumber = segments[1]
-            return verify(phoneNumber, code, clientStamp, throwIfMissMatched)
+            val dialingCode = segments[1].toShort()
+            val phoneNumber = segments[2]
+            return verify("$dialingCode$phoneNumber", code, clientStamp, throwIfMissMatched)
 
         }catch (e:AesException){
             return false
         }
     }
 
-    final override fun sendSmsCode(phoneNumber: String, type: SmsCodeType): SmsToken {
+    final override fun sendSmsCode(dialingCode: Short, phoneNumber: String, type: SmsCodeType): SmsToken {
         val clientStamp = ShortId.newId().replace(":", "_")
-        val token = SmsToken(token = DesUtils.encrypt("${clientStamp}:${phoneNumber}", applicationProperties.desSecret))
+        val token = SmsToken(token = DesUtils.encrypt("${clientStamp}:${dialingCode}:${phoneNumber}", applicationProperties.desSecret))
         if (frequencyLimited) {
             limitFrequency(type, phoneNumber) {
-                sendSmsCodeCore(phoneNumber, type, clientStamp)
+                sendSmsCodeCore(dialingCode, phoneNumber, type, clientStamp)
             }
         } else {
-            sendSmsCodeCore(phoneNumber, type, clientStamp)
+            sendSmsCodeCore(dialingCode, phoneNumber, type, clientStamp)
         }
         return token
     }

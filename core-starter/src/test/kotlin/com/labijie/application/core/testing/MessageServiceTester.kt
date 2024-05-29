@@ -25,7 +25,7 @@ class MessageServiceTester {
 
     @Test
     fun correctCodeAndVerify() {
-        val token = messageService.sendSmsCode("13000000000", SmsCodeType.Register)
+        val token = messageService.sendSmsCode(86, "13000000000", SmsCodeType.Register)
         val code = messageService.latestCode
 
         val ok = messageService.verifySmsCode(code, token.token)
@@ -36,7 +36,7 @@ class MessageServiceTester {
 
     @Test
     fun incorrectCodeAndVerify() {
-        val token = messageService.sendSmsCode("13000000000", SmsCodeType.Register)
+        val token = messageService.sendSmsCode(86, "13000000000", SmsCodeType.Register)
 
         val failed = messageService.verifySmsCode("32323", token.token)
         Assertions.assertFalse(failed)

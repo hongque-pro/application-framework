@@ -16,7 +16,6 @@ object IdentityUtils {
     @JvmStatic
     fun createUser(id: Long,
                    userName: String,
-                   phoneNumber: String,
                    userType: Byte): User {
         return User().apply {
             this.id = id
@@ -39,8 +38,8 @@ object IdentityUtils {
             this.timeZone = ZoneOffset.ofHours(8).id
             this.twoFactorEnabled = true
             this.userType = userType
-            this.phoneNumber = phoneNumber
-            this.phoneNumberConfirmed = true
+            this.phoneNumber = "N_${userName.lowercase()}"
+            this.phoneNumberConfirmed = false
             this.securityStamp = UUID.randomUUID().toString().replace("-", "")
             this.approved = true
             this.approverId = 0
@@ -51,5 +50,8 @@ object IdentityUtils {
 
 val User.isNullEmail
     get() = this.email.endsWith("@null.null")
+
+val User.isNullPhoneNumber
+    get() = this.phoneNumber.startsWith("N_")
 
 fun User.isEnabled(): Boolean = !this.lockoutEnabled || this.lockoutEnd < System.currentTimeMillis()

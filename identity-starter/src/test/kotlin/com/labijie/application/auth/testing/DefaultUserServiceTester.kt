@@ -11,6 +11,7 @@ import com.labijie.application.identity.data.pojo.dsl.UserDSL.deleteByPrimaryKey
 import com.labijie.application.identity.exception.InvalidPasswordException
 import com.labijie.application.identity.exception.UnsupportedLoginProviderException
 import com.labijie.application.identity.isEnabled
+import com.labijie.application.identity.model.RegisterBy
 import com.labijie.application.identity.model.RegisterInfo
 import com.labijie.application.identity.model.SocialRegisterInfo
 import com.labijie.application.identity.service.impl.DefaultUserService
@@ -84,7 +85,7 @@ open class DefaultUserServiceTester {
 
     @BeforeTest
     fun before() {
-        defaultUser = IdentityUtils.createUser(1, "nick", "13888888888", 1)
+        defaultUser = IdentityUtils.createUser(1, "nick", 1)
         svc.createUser(defaultUser, defaultUserPassword)
         Assertions.assertNotNull(svc.getUserById(defaultUser.id), "create default user failed.")
     }
@@ -106,7 +107,7 @@ open class DefaultUserServiceTester {
 
     @Test
     fun createRole() {
-        val u = IdentityUtils.createUser(this.snowflakeIdGenerator.newId(), "t1", "18888888888", 1)
+        val u = IdentityUtils.createUser(this.snowflakeIdGenerator.newId(), "t1", 1)
         svc.createUser(u, "r1", "r2")
     }
 
@@ -139,7 +140,7 @@ open class DefaultUserServiceTester {
                 this.password = "111111"
                 this.code = "#@#%#GFSVCST"
             }
-            svc.registerSocialUser(reg)
+            svc.registerSocialUser(reg, by = RegisterBy.Phone)
         }
     }
 
@@ -154,24 +155,39 @@ open class DefaultUserServiceTester {
     fun changePhone() {
         val newNumber = "13888888877"
         val oldNumber = defaultUser.phoneNumber
-        var r = svc.changePhone(defaultUser.id, newNumber)
+        var r = svc.changePhone(defaultUser.id, 86, newNumber)
         Assertions.assertTrue(r, "change phone nummber return false")
         val u = svc.getUser(newNumber)
         Assertions.assertNotNull(u, "find user failed after change phone number")
 
-        r = svc.changePhone(defaultUser.id, oldNumber)
+        r = svc.changePhone(defaultUser.id, 86, oldNumber)
         Assertions.assertTrue(r, "change phone nummber return false")
     }
 
     @Test
-    fun registerUser() {
-        val r = RegisterInfo(username = "newUsr", password = "1232454564", phoneNumber = "13777777777")
+    fun registerUserByPhone() {
+        val r = RegisterInfo(username = "newUsr1", password = "1232454564", phoneNumber = "13777777777")
 
-        val u = svc.registerUser(r)
+        val u = svc.registerUser(r, RegisterBy.Phone)
         val u2 = svc.getUser(u.user.id.toString())
 
         Assertions.assertNotNull(u2)
         Assertions.assertEquals(u.user.phoneNumber, u2!!.phoneNumber)
+        Assertions.assertTrue(u.user.phoneNumberConfirmed)
+        Assertions.assertFalse(u.user.emailConfirmed)
+    }
+
+    @Test
+    fun registerUserByEmail() {
+        val r = RegisterInfo(username = "newUsr2", password = "1232454564", email = "13777777777@outlook.com")
+
+        val u = svc.registerUser(r, RegisterBy.Email)
+        val u2 = svc.getUser(u.user.id.toString())
+
+        Assertions.assertNotNull(u2)
+        Assertions.assertEquals(u.user.email, u2!!.email)
+        Assertions.assertTrue(u.user.emailConfirmed)
+        Assertions.assertFalse(u.user.phoneNumberConfirmed)
     }
 
     @Test

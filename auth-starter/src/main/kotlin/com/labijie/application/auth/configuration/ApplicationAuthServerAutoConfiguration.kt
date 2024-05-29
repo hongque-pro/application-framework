@@ -34,7 +34,7 @@ import javax.sql.DataSource
 @AutoConfigureAfter(IdentityAutoConfiguration::class)
 @AutoConfigureBefore(OAuth2DependenciesAutoConfiguration::class)
 @Import(AuthDocConfiguration::class)
-@EnableConfigurationProperties(DefaultUserCreationProperties::class)
+@EnableConfigurationProperties(DefaultUserCreationProperties::class, AuthProperties::class)
 class ApplicationAuthServerAutoConfiguration : IResourceAuthorizationConfigurer {
 
     override fun configure(registry: AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry) {

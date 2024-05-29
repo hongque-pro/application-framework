@@ -14,6 +14,6 @@ interface IMessageService {
     /**
      * Send a message to phone, get a security token for verify.
      */
-    fun sendSmsCode(phoneNumber: String, type: SmsCodeType) : SmsToken
+    fun sendSmsCode(dialingCode: Short, phoneNumber: String, type: SmsCodeType) : SmsToken
     fun verifySmsCode(code: String, token: String, throwIfMissMatched:Boolean = false): Boolean
 }

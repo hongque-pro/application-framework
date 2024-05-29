@@ -9,8 +9,7 @@ import jakarta.validation.constraints.NotBlank
  * @date 2023-12-01
  */
 class SmsSendRequest {
-    @get:NotBlank
-    @get:ConfigurablePattern(ValidationProperties.PHONE_NUMBER)
+    var dialingCode: Short = 86
     var phoneNumber: String = ""
     var captcha: String = ""
     var type: SmsCodeType = SmsCodeType.General

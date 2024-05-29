@@ -8,5 +8,5 @@ import com.labijie.application.ErrorCodedException
  * @author Anders Xiao
  * @date 2019-12-14
  */
-class InvalidPhoneNumberException(message:String? = null)
-    : ErrorCodedException(ApplicationErrors.InvalidPhoneNumber, message?:"bad phone number format")
+class InvalidPhoneNumberException(message:String? = null, val inputPhone: String)
+    : ErrorCodedException(ApplicationErrors.InvalidPhoneNumber, message?:"bad phone number format") {}

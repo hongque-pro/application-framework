@@ -32,8 +32,13 @@ object Versions {
     const val easyCaptcha = "2.2.3"
 
     const val minio = "8.5.7"
-    const val dapr = "1.10.0"
+    const val dapr = "1.11.0"
 
+    const val libphonenumber = "8.13.37"
+}
+
+object ApacheVersions {
+    const val commonsValidator = "1.8.0"
 }
 
 object AliyunSDKVersions {

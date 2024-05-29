@@ -1,5 +1,6 @@
 package com.labijie.application.auth.controller
 
+import com.labijie.application.auth.configuration.AuthProperties
 import com.labijie.application.auth.model.*
 import com.labijie.application.auth.toHttpResponse
 import com.labijie.application.auth.toPrincipal
@@ -42,7 +43,8 @@ class AccountController @Autowired constructor(
     private val userService: IUserService,
     private val messageService: IMessageService,
     private val signInHelper: TwoFactorSignInHelper,
-    private val applicationProperties: ApplicationCoreProperties
+    private val applicationProperties: ApplicationCoreProperties,
+    private val authProperties: AuthProperties,
 ) {
 
     init {
@@ -52,7 +54,7 @@ class AccountController @Autowired constructor(
     @ClientRequired
     @RequestMapping("/register", method = [RequestMethod.POST])
     fun register(@RequestBody @Validated info: RegisterInfo, client: RegisteredClient): Map<String, Any> {
-        val userAndRoles = userService.registerUser(info)
+        val userAndRoles = userService.registerUser(info, authProperties.registerBy)
 
         return signInHelper.signIn(
             client,
@@ -130,8 +132,10 @@ class AccountController @Autowired constructor(
         messageService.verifySmsCode(request, true)
         val userId = OAuth2Utils.currentTwoFactorPrincipal().userId.toLong()
         val u = userService.getUserById(userId) ?: throw UserNotFoundException()
+
         DesUtils.verifyToken(request.token, userId.toString(), u.securityStamp, throwIfInvalid = true)
-        val success = userService.changePhone(userId, request.phoneNumber, true)
+
+        val success = userService.changePhone(userId, request.dialingCode, request.phoneNumber, true)
         return UpdateResult(request.phoneNumber.maskPhone(), success)
     }
 

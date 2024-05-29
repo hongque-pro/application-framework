@@ -24,7 +24,7 @@ class UnitTestConfiguration {
     @Bean
     fun mockUserService() : IUserService {
         val us =  mock(IUserService::class.java)
-        val u = IdentityUtils.createUser(OpenAppServiceTester.TestUserId, "test", "13888888888", 0)
+        val u = IdentityUtils.createUser(OpenAppServiceTester.TestUserId, "test", 0)
         Mockito.`when`(us.getUserById(OpenAppServiceTester.TestUserId)).thenReturn(u)
         return us
     }

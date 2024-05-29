@@ -23,10 +23,11 @@ class SocialRegisterInfo : SmsAssociated() {
     @get:Length(max = 32)
     var provider: String = ""
 
-    @get:NotBlank
-    @get: ConfigurablePattern(ValidationProperties.PHONE_NUMBER)
-    @get:Length(max = 16)
+    var dialingCode: Short = 86
+
     var phoneNumber: String = ""
+
+    var email: String = ""
 
     @get:NotBlank
     var code: String = ""

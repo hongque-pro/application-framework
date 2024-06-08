@@ -57,7 +57,7 @@ class LocalizationMessageSource(private val loader: ResourceBundleMessagesLoader
                 null
             }
             if(msg != null) {
-                svc.setMessage(code, msg ?: "", locale, false)
+                svc.setMessage(code, msg, locale, false)
                 logger.info("New localization message added: $code (${locale.toLanguageTag()})")
             }
         }

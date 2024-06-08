@@ -20,6 +20,8 @@ object ApplicationErrors {
     const val InvalidCaptcha = "invalid_captcha"
     @ErrorDescription("手机号格式不正确")
     const val InvalidPhoneNumber = "invalid_phone_number"
+    @ErrorDescription("用户名格式不正确")
+    const val InvalidUsername = "invalid_username"
     @ErrorDescription("电子邮件地址格式不正确")
     const val InvalidEmailAddress = "invalid_email_address"
     @ErrorDescription("安全令牌已过期或不正确，可能由于你操作花费的时间太长")

@@ -11,7 +11,7 @@ import com.labijie.application.crypto.DesUtils
 class CaptchaHumanChecker(private val applicationProperties: ApplicationCoreProperties) : IHumanChecker {
     override fun check(token: String, clientStamp: String, clientIp: String): Boolean {
         if(token.isNotBlank() && clientStamp.isNotBlank()) {
-            return DesUtils.verifyToken(clientStamp, token, applicationProperties.desSecret)
+            return DesUtils.verifyToken(clientStamp, token.lowercase(), applicationProperties.desSecret)
         }
         return false
     }

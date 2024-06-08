@@ -13,10 +13,16 @@
   ],
   "properties": [
     {
-      "name": "application.register-by",
+      "name": "application.auth.register-by",
       "type": "com.labijie.application.identity.model.RegisterBy",
       "sourceType": "com.labijie.application.auth.configuration.AuthProperties",
       "defaultValue": "Phone"
+    },
+    {
+      "name": "application.auth.register-controller-enabled",
+      "type": "java.lang.Boolean",
+      "sourceType": "com.labijie.application.auth.configuration.AuthProperties",
+      "defaultValue": true
     },
     {
       "name": "application.default-user-creation.enabled",

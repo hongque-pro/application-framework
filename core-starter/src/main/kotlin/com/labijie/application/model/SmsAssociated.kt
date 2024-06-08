@@ -9,10 +9,8 @@ import jakarta.validation.constraints.NotBlank
  * @date 2019-10-19
  */
 open class SmsAssociated {
-    @get:NotBlank
     var smsToken: String = ""
 
-    @get:NotBlank
     var smsCode: String = ""
 
     fun setSmsCode(code: String, token: String) {

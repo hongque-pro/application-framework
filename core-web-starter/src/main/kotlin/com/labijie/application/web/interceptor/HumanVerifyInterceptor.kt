@@ -19,8 +19,8 @@ import org.springframework.web.servlet.HandlerInterceptor
  */
 class HumanVerifyInterceptor(private val checker: IHumanChecker) : HandlerInterceptor {
     companion object {
-        const val TOKEN_HTTP_NAME = "h-token"
-        const val TOKEN_HTTP_STAMP_NAME = "h-token-stamp"
+        const val TOKEN_HTTP_NAME = "captcha"
+        const val TOKEN_HTTP_STAMP_NAME = "captchaStamp"
     }
 
     override fun preHandle(request: HttpServletRequest, response: HttpServletResponse, handler: Any): Boolean {

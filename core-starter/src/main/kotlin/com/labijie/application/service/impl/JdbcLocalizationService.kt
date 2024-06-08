@@ -12,6 +12,7 @@ import com.labijie.application.data.pojo.dsl.LocalizationCodeDSL.selectByPrimary
 import com.labijie.application.data.pojo.dsl.LocalizationLanguageDSL.insert
 import com.labijie.application.data.pojo.dsl.LocalizationLanguageDSL.selectByPrimaryKey
 import com.labijie.application.data.pojo.dsl.LocalizationLanguageDSL.toLocalizationLanguageList
+import com.labijie.application.data.pojo.dsl.LocalizationMessageDSL.allColumns
 import com.labijie.application.data.pojo.dsl.LocalizationMessageDSL.insert
 import com.labijie.application.data.pojo.dsl.LocalizationMessageDSL.selectByPrimaryKey
 import com.labijie.application.data.pojo.dsl.LocalizationMessageDSL.updateByPrimaryKey
@@ -65,12 +66,12 @@ class JdbcLocalizationService(
                     if (refreshCache) {
                         cacheManager.removeAfterTransactionCommit("all_locales")
                     }
-                    val newLang = LocalizationLanguage().apply {
-                        this.locale = localId
-                        this.language = locale.language
-                        this.country = locale.country
+
+                    LocalizationLanguageTable.upsert {
+                        it[LocalizationLanguageTable.locale] = localId
+                        it[language] = locale.language
+                        it[country] = locale.country
                     }
-                    LocalizationLanguageTable.insert(newLang)
                 }
             }
         }
@@ -89,22 +90,21 @@ class JdbcLocalizationService(
                 code,
                 LocalizationMessageTable.locale, LocalizationMessageTable.code
             )
-            if (existed == null) {
-                val newMessage = LocalizationMessage().apply {
-                    this.locale = locale.getId()
-                    this.code = code
-                    this.message = message
+            if (existed == null || override) {
+                LocalizationMessageTable.upsert {
+                    it[LocalizationMessageTable.locale] = locale.getId()
+                    it[LocalizationMessageTable.code] = code
+                    it[LocalizationMessageTable.message] = message
                 }
-                LocalizationMessageTable.insert(newMessage).insertedCount
-            } else if (override) {
+
                 if (refreshCache) {
                     cacheManager.removeAfterTransactionCommit(getCacheKey(locale, code))
                 }
-                existed.message = message
-                LocalizationMessageTable.updateByPrimaryKey(existed)
+                1
             } else {
                 0
             }
+
         } ?: 0
         return count > 0
     }
@@ -155,12 +155,13 @@ class JdbcLocalizationService(
         } ?: 0
     }
 
+
     override fun getMessage(code: String, locale: Locale): String? {
         if (code.isBlank()) {
             return null
         }
         val key = getCacheKey(locale, code)
-        return cacheManager.getOrSetSliding(key, Duration.ofMinutes(5)) {
+        return cacheManager.getOrSetSliding(key, Duration.ofHours(1)) {
             transactionTemplate.configure(isReadOnly = true).execute {
                 LocalizationMessageTable.selectByPrimaryKey(
                     locale.getId(),

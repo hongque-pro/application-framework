@@ -6,6 +6,7 @@ import com.labijie.application.component.impl.NoneHumanChecker
 import com.labijie.application.web.controller.CaptchaController
 import com.labijie.application.service.CaptchaHumanChecker
 import com.labijie.application.web.WrappedResponseBodyAdvice
+import com.labijie.application.web.antMatchers
 import com.labijie.application.web.converter.EnhanceStringToEnumConverterFactory
 import com.labijie.application.web.handler.ControllerExceptionHandler
 import com.labijie.application.web.interceptor.HttpCacheInterceptor
@@ -13,6 +14,7 @@ import com.labijie.application.web.interceptor.HumanVerifyInterceptor
 import com.labijie.application.web.interceptor.PrincipalArgumentResolver
 import com.labijie.infra.isProduction
 import com.labijie.infra.json.JacksonHelper
+import com.labijie.infra.oauth2.resource.IResourceAuthorizationConfigurer
 import jakarta.validation.Validation
 import jakarta.validation.Validator
 import org.hibernate.validator.HibernateValidator
@@ -33,6 +35,8 @@ import org.springframework.format.FormatterRegistry
 import org.springframework.http.MediaType
 import org.springframework.http.converter.HttpMessageConverter
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter
+import org.springframework.security.config.annotation.web.builders.HttpSecurity
+import org.springframework.security.config.annotation.web.configurers.AuthorizeHttpRequestsConfigurer
 import org.springframework.validation.beanvalidation.MethodValidationPostProcessor
 import org.springframework.web.method.support.HandlerMethodArgumentResolver
 import org.springframework.web.servlet.config.annotation.*
@@ -156,6 +160,18 @@ class ApplicationWebAutoConfiguration(private val properties: ApplicationWebProp
         @ConditionalOnProperty(prefix = "application.web.service-controllers", name = ["enabled"], havingValue = "true", matchIfMissing = true)
         fun captchaController(applicationProperties: ApplicationCoreProperties, captchaHumanChecker: CaptchaHumanChecker): CaptchaController {
             return CaptchaController(applicationProperties, captchaHumanChecker)
+        }
+
+        @Bean
+        fun captchaAuthConfigurer(): CaptchaAuthConfigurer {
+            return CaptchaAuthConfigurer()
+        }
+
+
+        class CaptchaAuthConfigurer : IResourceAuthorizationConfigurer {
+            override fun configure(registry: AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry) {
+                registry.antMatchers("/captcha/**").permitAll()
+            }
         }
     }
 }

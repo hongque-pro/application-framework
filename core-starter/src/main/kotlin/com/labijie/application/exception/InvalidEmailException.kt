@@ -9,4 +9,4 @@ import com.labijie.application.ErrorCodedException
 
 
 class InvalidEmailException(message:String? = null, val inputEmail: String)
-    : ErrorCodedException(ApplicationErrors.InvalidEmailAddress, message?:"bad email address") {}
+    : ErrorCodedException(ApplicationErrors.InvalidEmailAddress, message?: "Bad email address") {}

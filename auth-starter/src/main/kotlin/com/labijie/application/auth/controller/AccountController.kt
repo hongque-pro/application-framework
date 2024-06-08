@@ -15,8 +15,8 @@ import com.labijie.application.identity.service.IUserService
 import com.labijie.application.maskEmail
 import com.labijie.application.maskPhone
 import com.labijie.application.model.BindingStatus
-import com.labijie.application.model.SmsAssociated
 import com.labijie.application.model.SimpleValue
+import com.labijie.application.model.SmsAssociated
 import com.labijie.application.model.UpdateResult
 import com.labijie.application.verifySmsCode
 import com.labijie.infra.oauth2.OAuth2Utils
@@ -41,27 +41,14 @@ import java.time.Duration
 @RequestMapping("/account")
 class AccountController @Autowired constructor(
     private val userService: IUserService,
-    private val messageService: IMessageService,
-    private val signInHelper: TwoFactorSignInHelper,
-    private val applicationProperties: ApplicationCoreProperties,
-    private val authProperties: AuthProperties,
+    private val messageService: IMessageService
 ) {
 
     init {
         logger.info("AccountController loaded")
     }
 
-    @ClientRequired
-    @RequestMapping("/register", method = [RequestMethod.POST])
-    fun register(@RequestBody @Validated info: RegisterInfo, client: RegisteredClient): Map<String, Any> {
-        val userAndRoles = userService.registerUser(info, authProperties.registerBy)
 
-        return signInHelper.signIn(
-            client,
-            userAndRoles.toPrincipal(),
-            false
-        ).toHttpResponse()
-    }
 
     @GetMapping("/current")
     fun currentUser(): TwoFactorPrincipal {

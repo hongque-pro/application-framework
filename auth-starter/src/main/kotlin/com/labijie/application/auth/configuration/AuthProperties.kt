@@ -11,4 +11,5 @@ import org.springframework.boot.context.properties.ConfigurationProperties
 @ConfigurationProperties("application.auth")
 class AuthProperties {
     var registerBy: RegisterBy = RegisterBy.Phone
+    var registerControllerEnabled: Boolean = true
 }

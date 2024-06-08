@@ -11,12 +11,10 @@ import org.springframework.boot.context.properties.ConfigurationProperties
 class ValidationProperties {
 
     companion object {
-        const val USER_NAME = "user-name"
         const val CODE = "code"
     }
 
     var regex:MutableMap<String, String> = mutableMapOf(
-        USER_NAME to "(?=^.{3,16}\$)^[a-zA-Z][a-zA-Z0-9]*[_-]?[a-zA-Z0-9]+\$",
         CODE to "^(?!-)(?!.*?-\$)[a-z-]+\$"
     )
 }

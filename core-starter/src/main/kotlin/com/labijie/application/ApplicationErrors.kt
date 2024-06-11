@@ -45,6 +45,9 @@ object ApplicationErrors {
     @ErrorDescription("你没有权限进行该操作")
     const val PermissionDenied  = "permission_denied"
 
+    @ErrorDescription("密码至少 8 位，必须包含字母、数字和至少一位非数字字母字符。")
+    const val StrongPasswordConstraintViolation = "strong_password_constraint_violation"
+
     //人机验证失败
     @ErrorDescription("人机验证失败，请重试")
     const val RobotDetected = "robot_detected"

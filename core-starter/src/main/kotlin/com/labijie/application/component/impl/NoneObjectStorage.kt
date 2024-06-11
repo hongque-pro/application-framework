@@ -24,7 +24,7 @@ open class NoneObjectStorage : IObjectStorage {
     }
 
     override fun deleteObject(key: String, bucketPolicy: BucketPolicy): Boolean {
-        return false;
+        return false
     }
 
     override fun existObject(key: String, throwIfNotExisted: Boolean, bucketPolicy: BucketPolicy): Boolean {
@@ -42,5 +42,9 @@ open class NoneObjectStorage : IObjectStorage {
 
     override fun copyObject(sourceKey: String, sourceBucket: BucketPolicy, destKey: String, destBucket: BucketPolicy?) {
 
+    }
+
+    override fun getObjectSizeInBytes(key: String, bucketPolicy: BucketPolicy): Long? {
+        return null
     }
 }

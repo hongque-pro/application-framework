@@ -16,11 +16,16 @@ interface IFileIndexService {
     }
 
     fun getIndex(filePath: String): FileIndex?
+
+    fun getIndexes(filePaths: Iterable<String>): Map<String, FileIndex?>
+
+    fun getIndexById(fileIndexId: Long): FileIndex?
+
     fun getFileUrl(filePath: String, modifier: FileModifier): ObjectPreSignUrl
-    fun touchFile(filePath: String, modifier: FileModifier): TouchedFile
+    fun touchFile(filePath: String, modifier: FileModifier, fileSizeInBytes: Long? = null): TouchedFile
 
     fun setToTemp(filePath: String, throwIfNotStored: Boolean): FileIndex?
-    fun saveFile(filePath: String, fileType:String, entityId: Long? = null, checkFileExisted: Boolean = true): FileIndex?
+    fun saveFile(filePath: String, fileType:String,  entityId: Long? = null, fileSizeInBytes: Long? = null, checkFileExisted: Boolean = true): FileIndex?
     fun checkFileInStorage(filePath:String, throwIfNotStored: Boolean) : Boolean
     fun deleteFile(filePath: String, deleteObject:Boolean = false):Boolean
     fun deleteFiles(filePaths: List<String>, deleteObject: Boolean = false): Int

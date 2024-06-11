@@ -38,14 +38,15 @@ class FileController(private val fileIndexService: IFileIndexService) {
     fun touch(
         @RequestParam("folder", required = true) @Length(min = 1, max = 128) folder: String,
         @RequestParam("ext", required = false) fileExtensions: String?,
-        @RequestParam("modifier", required = true) modifier: FileModifier
+        @RequestParam("modifier", required = true) modifier: FileModifier,
+        @RequestParam("size", required = false) size: Long? = null
     ): TouchedFile {
 
         val name = UUID.randomUUID().toString().replace("-", "").lowercase()
         val ext = fileExtensions.orEmpty().trimStart('.')
         val normalizedFolder = folder.trim('/')
         val fullPath = "${normalizedFolder}/${name}.${ext}"
-        return fileIndexService.touchFile(fullPath, modifier)
+        return fileIndexService.touchFile(fullPath, modifier, size)
     }
 
 }

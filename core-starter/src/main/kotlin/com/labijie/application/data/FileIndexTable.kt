@@ -11,6 +11,7 @@ object FileIndexTable : SimpleLongIdTable("file_indices") {
     val path = varchar("path", 256).uniqueIndex()
     val timeCreated = long("time_created").index()
     val fileType = varchar("file_type", 32)
+    val sizeIntBytes = long("size_in_bytes").default(0).index()
     val entityId = long("entity_id").default(0).index()
     val fileAccess = enumeration<FileModifier>("modifier").index()
 }

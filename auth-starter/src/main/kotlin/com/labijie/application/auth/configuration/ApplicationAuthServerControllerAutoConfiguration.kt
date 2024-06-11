@@ -1,6 +1,6 @@
 package com.labijie.application.auth.configuration
 
-import com.labijie.application.auth.controller.AccountController
+import com.labijie.application.auth.controller.PhoneBasedAccountController
 import com.labijie.application.auth.controller.RegisterController
 import com.labijie.infra.oauth2.TwoFactorSignInHelper
 import com.labijie.infra.oauth2.configuration.OAuth2ServerAutoConfiguration
@@ -21,7 +21,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer
 class ApplicationAuthServerControllerAutoConfiguration : WebMvcConfigurer{
 
     @ConditionalOnBean(TwoFactorSignInHelper::class)
-    @Import(AccountController::class)
+    @Import(PhoneBasedAccountController::class)
     protected class AccountControllerImport
 
 

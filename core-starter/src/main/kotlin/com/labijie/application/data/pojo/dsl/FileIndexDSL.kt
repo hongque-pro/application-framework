@@ -8,6 +8,7 @@ import com.labijie.application.`data`.FileIndexTable.fileAccess
 import com.labijie.application.`data`.FileIndexTable.fileType
 import com.labijie.application.`data`.FileIndexTable.id
 import com.labijie.application.`data`.FileIndexTable.path
+import com.labijie.application.`data`.FileIndexTable.sizeIntBytes
 import com.labijie.application.`data`.FileIndexTable.timeCreated
 import com.labijie.application.`data`.pojo.FileIndex
 import com.labijie.application.model.FileModifier
@@ -74,6 +75,7 @@ public object FileIndexDSL {
     path,
     timeCreated,
     fileType,
+    sizeIntBytes,
     entityId,
     fileAccess,
     id,
@@ -86,6 +88,7 @@ public object FileIndexDSL {
     plain.path = raw[path]
     plain.timeCreated = raw[timeCreated]
     plain.fileType = raw[fileType]
+    plain.sizeIntBytes = raw[sizeIntBytes]
     plain.entityId = raw[entityId]
     plain.fileAccess = raw[fileAccess]
     plain.id = raw[id]
@@ -103,6 +106,9 @@ public object FileIndexDSL {
     if(row.hasValue(fileType)) {
       plain.fileType = row[fileType]
     }
+    if(row.hasValue(sizeIntBytes)) {
+      plain.sizeIntBytes = row[sizeIntBytes]
+    }
     if(row.hasValue(entityId)) {
       plain.entityId = row[entityId]
     }
@@ -119,6 +125,7 @@ public object FileIndexDSL {
     path->String::class
     timeCreated->Long::class
     fileType->String::class
+    sizeIntBytes->Long::class
     entityId->Long::class
     fileAccess->FileModifier::class
     id->Long::class
@@ -130,6 +137,7 @@ public object FileIndexDSL {
     FileIndexTable.path->this.path as T
     FileIndexTable.timeCreated->this.timeCreated as T
     FileIndexTable.fileType->this.fileType as T
+    FileIndexTable.sizeIntBytes->this.sizeIntBytes as T
     FileIndexTable.entityId->this.entityId as T
     FileIndexTable.fileAccess->this.fileAccess as T
     FileIndexTable.id->this.id as T
@@ -149,6 +157,8 @@ public object FileIndexDSL {
       builder[timeCreated] = raw.timeCreated
     if((list == null || list.contains(fileType)) && !ignore.contains(fileType))
       builder[fileType] = raw.fileType
+    if((list == null || list.contains(sizeIntBytes)) && !ignore.contains(sizeIntBytes))
+      builder[sizeIntBytes] = raw.sizeIntBytes
     if((list == null || list.contains(entityId)) && !ignore.contains(entityId))
       builder[entityId] = raw.entityId
     if((list == null || list.contains(fileAccess)) && !ignore.contains(fileAccess))

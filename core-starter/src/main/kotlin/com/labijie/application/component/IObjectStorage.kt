@@ -34,6 +34,12 @@ interface IObjectStorage {
     fun getObject(key: String, outputStream: OutputStream, bucketPolicy: BucketPolicy = BucketPolicy.PRIVATE)
 
     fun copyObject(sourceKey: String, sourceBucket: BucketPolicy, destKey: String, destBucket: BucketPolicy? = null)
+
+    fun getObjectSizeInBytes(key: String, bucketPolicy: BucketPolicy): Long?
+}
+
+fun IObjectStorage.getObjectSizeInBytesChecked(key: String, bucketPolicy: BucketPolicy): Long {
+    return getObjectSizeInBytes(key, bucketPolicy) ?: throw StoredObjectNotFoundException()
 }
 
 enum class GenerationURLPurpose {

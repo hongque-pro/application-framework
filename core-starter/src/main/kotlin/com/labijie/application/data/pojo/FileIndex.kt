@@ -23,6 +23,8 @@ public open class FileIndex {
 
   public var fileType: String = ""
 
+  public var sizeIntBytes: Long = 0L
+
   public var entityId: Long = 0L
 
   public var fileAccess: FileModifier = FileModifier.Public

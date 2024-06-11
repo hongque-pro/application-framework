@@ -1,16 +1,11 @@
 package com.labijie.application.auth.controller
 
-import com.labijie.application.auth.configuration.AuthProperties
 import com.labijie.application.auth.model.*
-import com.labijie.application.auth.toHttpResponse
-import com.labijie.application.auth.toPrincipal
 import com.labijie.application.component.IMessageService
-import com.labijie.application.configuration.ApplicationCoreProperties
 import com.labijie.application.crypto.DesUtils
 import com.labijie.application.exception.UserNotFoundException
 import com.labijie.application.identity.data.pojo.User
 import com.labijie.application.identity.isNullEmail
-import com.labijie.application.identity.model.RegisterInfo
 import com.labijie.application.identity.service.IUserService
 import com.labijie.application.maskEmail
 import com.labijie.application.maskPhone
@@ -21,12 +16,9 @@ import com.labijie.application.model.UpdateResult
 import com.labijie.application.verifySmsCode
 import com.labijie.infra.oauth2.OAuth2Utils
 import com.labijie.infra.oauth2.TwoFactorPrincipal
-import com.labijie.infra.oauth2.TwoFactorSignInHelper
-import com.labijie.infra.oauth2.filter.ClientRequired
 import com.labijie.infra.utils.logger
 import jakarta.validation.constraints.NotBlank
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.security.oauth2.server.authorization.client.RegisteredClient
 import org.springframework.validation.annotation.Validated
 import org.springframework.web.bind.annotation.*
 import java.time.Duration
@@ -39,7 +31,7 @@ import java.time.Duration
 
 @RestController
 @RequestMapping("/account")
-class AccountController @Autowired constructor(
+class PhoneBasedAccountController @Autowired constructor(
     private val userService: IUserService,
     private val messageService: IMessageService
 ) {

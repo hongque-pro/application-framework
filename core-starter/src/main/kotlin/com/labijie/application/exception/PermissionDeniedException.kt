@@ -12,7 +12,4 @@ import org.springframework.http.HttpStatus
  * @since JDK1.8
  */
 class PermissionDeniedException(message:String? = null)
-    : ErrorCodedStatusException(ApplicationErrors.PermissionDenied, message?:"Permission Denied") {
-    override val status: HttpStatus
-        get() = HttpStatus.FORBIDDEN
-    }
+    : ErrorCodedStatusException(ApplicationErrors.PermissionDenied, message?:"Permission Denied", status = HttpStatus.FORBIDDEN)

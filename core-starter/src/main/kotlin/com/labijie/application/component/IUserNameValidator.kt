@@ -6,5 +6,5 @@ package com.labijie.application.component
 
 
 interface IUserNameValidator {
-    fun validate(username: String, throwIfInvalid: Boolean): Boolean
+    fun validate(username: String?, throwIfInvalid: Boolean): Boolean
 }

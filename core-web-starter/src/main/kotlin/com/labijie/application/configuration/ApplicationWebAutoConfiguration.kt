@@ -79,7 +79,6 @@ class ApplicationWebAutoConfiguration(private val properties: ApplicationWebProp
             .allowedHeaders("*")
     }
 
-
     override fun addFormatters(registry: FormatterRegistry) {
         registry.addConverterFactory(EnhanceStringToEnumConverterFactory())
     }
@@ -180,17 +179,6 @@ class ApplicationWebAutoConfiguration(private val properties: ApplicationWebProp
             return CaptchaController(applicationProperties, captchaHumanChecker)
         }
 
-        @Bean
-        fun captchaAuthConfigurer(): CaptchaAuthConfigurer {
-            return CaptchaAuthConfigurer()
-        }
-
-
-        class CaptchaAuthConfigurer : IResourceAuthorizationConfigurer {
-            override fun configure(registry: AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry) {
-                registry.antMatchers("/captcha/**").permitAll()
-            }
-        }
     }
 
     private fun getPermitAllUrlsFromAnnotations(): Map<HttpMethod, MutableSet<String>> {

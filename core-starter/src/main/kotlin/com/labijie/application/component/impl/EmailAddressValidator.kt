@@ -12,8 +12,8 @@ import java.util.regex.Pattern
 
 class EmailAddressValidator: IEmailAddressValidator {
 
-    override fun validate(emailAddress: String, throwIfInvalid: Boolean): Boolean {
-        val valid = emailAddress.isNotBlank() && EmailValidator.getInstance().isValid(emailAddress)
+    override fun validate(emailAddress: String?, throwIfInvalid: Boolean): Boolean {
+        val valid = !emailAddress.isNullOrBlank() && EmailValidator.getInstance().isValid(emailAddress)
 
         if(!valid && throwIfInvalid){
             throw InvalidEmailException(inputEmail = emailAddress)

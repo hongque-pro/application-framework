@@ -25,7 +25,7 @@ data class RegisterInfo(
 
     var dialingCode: Short? = null,
 
-    var addition: String? = null,
+    var addition: MutableMap<String, String> = mutableMapOf(),
 
     var email: String = "",
 ) : SmsAssociated()

@@ -16,8 +16,8 @@ class StrongPasswordValidator : IStrongPasswordValidator {
             Pattern.compile("^(?=.*\\d)(?=.*[a-zA-Z])(?=.*[^\\da-zA-Z\\s]).{4,16}\$")
         }
     }
-    override fun validate(password: String, throwIfInvalid: Boolean): Boolean {
-        val valid = (password.isNotBlank() && pattern.matcher(password).matches())
+    override fun validate(password: String?, throwIfInvalid: Boolean): Boolean {
+        val valid = (!password.isNullOrBlank() && pattern.matcher(password).matches())
 
         if (!valid && throwIfInvalid) {
             throw StrongPasswordViolationException(inputPassword = password)

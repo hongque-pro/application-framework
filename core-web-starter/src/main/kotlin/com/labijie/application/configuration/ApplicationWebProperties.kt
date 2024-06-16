@@ -10,5 +10,8 @@ import org.springframework.boot.context.properties.ConfigurationProperties
 
 @ConfigurationProperties("application.web")
 data class ApplicationWebProperties(
+    /**
+     * 当配置为 JsonMode.JAVASCRIPT 时，整个网站的 json 响应将兼容 javascript (long 等类型自动变为 string).
+     */
     var jsonMode: JsonMode = JsonMode.JAVASCRIPT
 )

@@ -5,15 +5,15 @@ import com.labijie.application.auth.social.OAuth2SocialConstants
 import com.labijie.application.auth.social.exception.BadSocialCredentialsException
 import com.labijie.application.auth.social.exception.SocialUserLockedException
 import com.labijie.application.auth.social.model.SocialLoginInfo
-import com.labijie.application.auth.toHttpResponse
 import com.labijie.application.auth.toPrincipal
 import com.labijie.application.component.IMessageService
-import com.labijie.application.component.impl.NoneMessageService
 import com.labijie.application.identity.isEnabled
 import com.labijie.application.identity.model.SocialRegisterInfo
 import com.labijie.application.identity.model.SocialUserAndRoles
 import com.labijie.application.identity.service.ISocialUserService
 import com.labijie.application.verifySmsCode
+import com.labijie.infra.oauth2.AccessToken
+import com.labijie.infra.oauth2.OAuth2ServerUtils.toAccessToken
 import com.labijie.infra.oauth2.TwoFactorSignInHelper
 import com.labijie.infra.oauth2.filter.ClientRequired
 import jakarta.validation.Valid
@@ -44,7 +44,7 @@ class AccountSocialController(
     fun register(
         @RequestBody @Valid info: SocialRegisterInfo,
         clientDetails: RegisteredClient
-    ): Map<String, Any> {
+    ): AccessToken {
 
         messageService.verifySmsCode(info, true)
         val userRoles = userService.registerSocialUser(info, authProperties.registerBy)
@@ -56,7 +56,7 @@ class AccountSocialController(
     fun login(
         @RequestBody @Valid info: SocialLoginInfo,
         clientDetails: RegisteredClient
-    ): Map<String, Any> {
+    ): AccessToken {
         val userRoles =
             userService.getSocialUser(info.provider, info.code) ?: throw BadSocialCredentialsException(info.provider)
         return signInUser(userRoles, clientDetails)
@@ -65,7 +65,7 @@ class AccountSocialController(
     private fun signInUser(
         userRoles: SocialUserAndRoles,
         clientDetails: RegisteredClient
-    ): Map<String, Any> {
+    ): AccessToken {
         val u = userRoles.user
 
         //账号是否锁定
@@ -83,6 +83,6 @@ class AccountSocialController(
             clientDetails,
             principal,
             false
-        ).toHttpResponse()
+        ).toAccessToken()
     }
 }

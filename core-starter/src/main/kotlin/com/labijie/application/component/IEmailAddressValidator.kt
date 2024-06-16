@@ -6,5 +6,5 @@ package com.labijie.application.component
 
 
 interface IEmailAddressValidator {
-    fun validate(emailAddress: String, throwIfInvalid: Boolean): Boolean
+    fun validate(emailAddress: String?, throwIfInvalid: Boolean): Boolean
 }

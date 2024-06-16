@@ -18,7 +18,7 @@ import java.time.Duration
  * @Date: 2021/12/13
  * @Description:
  */
-class DefaultClientRepository(
+class DefaultServerClientRepository(
     private val clientService: IOAuth2ClientService
 ) : RegisteredClientRepository, ApplicationContextAware {
 
@@ -57,7 +57,7 @@ class DefaultClientRepository(
         }
         val r = clientService.getById(id)
         return r?.let {
-            if (it.enabled == true) {
+            if (it.enabled) {
                 RegisteredClient.withId(it.clientId)
                     .clientId(it.clientId)
                     .clientSecret(it.clientSecret)

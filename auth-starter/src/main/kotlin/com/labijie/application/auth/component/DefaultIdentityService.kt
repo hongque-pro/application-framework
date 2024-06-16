@@ -47,7 +47,7 @@ open class DefaultIdentityService constructor(
                 enabled = true,
                 password = user.passwordHash,
                 accountNonExpired = true,
-                accountNonLocked = !userLocked,
+                accountNonLocked = true,
                 twoFactorEnabled = false,
                 authorities = roles
         )

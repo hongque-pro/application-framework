@@ -6,5 +6,5 @@ package com.labijie.application.component
 
 
 interface IStrongPasswordValidator {
-    fun validate(password: String, throwIfInvalid: Boolean): Boolean
+    fun validate(password: String?, throwIfInvalid: Boolean): Boolean
 }

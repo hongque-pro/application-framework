@@ -38,5 +38,5 @@ class SocialRegisterInfo : SmsAssociated() {
      */
     var iv: String? = null
 
-    var addition: String = ""
+    var addition: MutableMap<String, String> = mutableMapOf()
 }

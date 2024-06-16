@@ -14,11 +14,18 @@ import io.swagger.v3.oas.models.info.Info
 import io.swagger.v3.oas.models.media.IntegerSchema
 import io.swagger.v3.oas.models.media.Schema
 import io.swagger.v3.oas.models.media.StringSchema
+import io.swagger.v3.oas.models.parameters.Parameter
 import org.apache.commons.text.CaseUtils
 import org.springframework.boot.info.GitProperties
+import org.springframework.core.MethodParameter
+import org.springframework.core.annotation.AnnotatedElementUtils
+import org.springframework.web.bind.annotation.RequestParam
+import org.springframework.web.bind.annotation.ValueConstants
 import java.lang.reflect.Type
 import java.math.BigDecimal
 import java.time.format.DateTimeFormatter
+import kotlin.reflect.KParameter
+import kotlin.reflect.jvm.kotlinFunction
 
 /**
  * @author Anders Xiao
@@ -143,5 +150,60 @@ object DocUtils {
                         }
                     }
             )
+    }
+
+    fun isMethodParameterRequired(methodParameter: MethodParameter): Boolean {
+        val kParameter = methodParameter.toKParameter()
+        val parameterDoc = AnnotatedElementUtils.findMergedAnnotation(
+            AnnotatedElementUtils.forAnnotations(*methodParameter.parameterAnnotations),
+            io.swagger.v3.oas.annotations.Parameter::class.java
+        )
+        val requestParam = AnnotatedElementUtils.findMergedAnnotation(
+            AnnotatedElementUtils.forAnnotations(*methodParameter.parameterAnnotations),
+            RequestParam::class.java
+        )
+        // Swagger @Parameter annotation takes precedence
+        if (parameterDoc != null && parameterDoc.required)
+            return parameterDoc.required
+        // parameter is not required if a default value is provided in @RequestParam
+        else if (requestParam != null && requestParam.defaultValue != ValueConstants.DEFAULT_NONE)
+            return false
+        else if (kParameter != null) {
+            return kParameter.type.isMarkedNullable == false
+        }else {
+            return true
+        }
+    }
+
+    fun fillMvcKotlinParameter(parameterModel: Parameter, methodParameter: MethodParameter) {
+        val kParameter = methodParameter.toKParameter()
+        if (kParameter != null) {
+            val parameterDoc = AnnotatedElementUtils.findMergedAnnotation(
+                AnnotatedElementUtils.forAnnotations(*methodParameter.parameterAnnotations),
+                io.swagger.v3.oas.annotations.Parameter::class.java
+            )
+            val requestParam = AnnotatedElementUtils.findMergedAnnotation(
+                AnnotatedElementUtils.forAnnotations(*methodParameter.parameterAnnotations),
+                RequestParam::class.java
+            )
+            // Swagger @Parameter annotation takes precedence
+            if (parameterDoc != null && parameterDoc.required)
+                parameterModel.required = parameterDoc.required
+            // parameter is not required if a default value is provided in @RequestParam
+            else if (requestParam != null && requestParam.defaultValue != ValueConstants.DEFAULT_NONE)
+                parameterModel.required = false
+            else
+                parameterModel.required =
+                    kParameter.type.isMarkedNullable == false
+        }
+    }
+
+    private fun MethodParameter.toKParameter(): KParameter? {
+        // ignore return type, see org.springframework.core.MethodParameter.getParameterIndex
+        if (parameterIndex == -1) return null
+        val kotlinFunction = method?.kotlinFunction ?: return null
+        // The first parameter of the kotlin function is the "this" reference and not needed here.
+        // See also kotlin.reflect.KCallable.getParameters
+        return kotlinFunction.parameters[parameterIndex + 1]
     }
 }

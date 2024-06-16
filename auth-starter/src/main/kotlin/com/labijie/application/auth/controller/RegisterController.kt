@@ -5,10 +5,11 @@
 package com.labijie.application.auth.controller
 
 import com.labijie.application.auth.configuration.AuthProperties
-import com.labijie.application.auth.toHttpResponse
 import com.labijie.application.auth.toPrincipal
 import com.labijie.application.identity.model.RegisterInfo
 import com.labijie.application.identity.service.IUserService
+import com.labijie.infra.oauth2.AccessToken
+import com.labijie.infra.oauth2.OAuth2ServerUtils.toAccessToken
 import com.labijie.infra.oauth2.TwoFactorSignInHelper
 import com.labijie.infra.oauth2.filter.ClientRequired
 import org.springframework.security.oauth2.server.authorization.client.RegisteredClient
@@ -28,13 +29,13 @@ class RegisterController(
 ) {
     @ClientRequired
     @RequestMapping("/register", method = [RequestMethod.POST])
-    fun register(@RequestBody @Validated info: RegisterInfo, client: RegisteredClient): Map<String, Any> {
+    fun register(@RequestBody @Validated info: RegisterInfo, client: RegisteredClient): AccessToken {
         val userAndRoles = userService.registerUser(info, authProperties.registerBy)
 
         return signInHelper.signIn(
             client,
             userAndRoles.toPrincipal(),
             false
-        ).toHttpResponse()
+        ).toAccessToken()
     }
 }

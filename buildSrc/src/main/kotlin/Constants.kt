@@ -20,7 +20,7 @@ object Versions {
     const val infraPlugin = "2.0.2"
     const val infraCommons = "3.0.0"
     const val infraCaching = "1.4.1"
-    const val infraOAuth2 = "2.0.0"
+    const val infraOAuth2 = "2.0.2"
     const val infraCloudStream = "1.2.1"
 
     const val bouncyCastle = "1.77"

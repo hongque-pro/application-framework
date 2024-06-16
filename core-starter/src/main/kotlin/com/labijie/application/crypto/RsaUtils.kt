@@ -123,7 +123,7 @@ object RsaUtils {
             signature.initSign(privateKey)
             signature.update(content.toByteArray(charset))
             val signed: ByteArray = signature.sign()
-            Base64.getEncoder().encodeToString(signed)
+            Base64.getUrlEncoder().encodeToString(signed)
         } catch (ie: InvalidKeySpecException) {
             throw RsaException(
                 "RSA private key format is not correct, check that the PKCS8 format is configured correctly",
@@ -146,7 +146,7 @@ object RsaUtils {
             signature.initSign(privateKey)
             signature.update(content.toByteArray(charset))
             val signed: ByteArray = signature.sign()
-            Base64.getEncoder().encodeToString(signed)
+            Base64.getUrlEncoder().encodeToString(signed)
         } catch (e: Exception) {
             e.throwIfNecessary()
             throw RsaException(
@@ -196,6 +196,16 @@ object RsaUtils {
         return verifySHA256(str, sign, publicKey, charset)
     }
 
+    fun verifySHA256(
+        context: Map<String, String>,
+        sign: String,
+        publicKey: RSAPublicKey,
+        charset: Charset = Charsets.UTF_8
+    ): Boolean {
+        val str = getSignContent(context)
+        return verifySHA256(str, sign, publicKey, charset)
+    }
+
     fun verifySHA1(
         content: String, sign: String, publicKey: String,
         charset: Charset = Charsets.UTF_8
@@ -231,7 +241,7 @@ object RsaUtils {
                 .getInstance(SIGN_ALGORITHMS)
             signature.initVerify(publicKey)
             signature.update(content.toByteArray(charset))
-            signature.verify(Base64.getDecoder().decode(sign))
+            signature.verify(Base64.getUrlDecoder().decode(sign))
         } catch (e: Exception) {
             e.throwIfNecessary()
             throw RsaException(
@@ -251,7 +261,7 @@ object RsaUtils {
                 .getInstance(SIGN_SHA256RSA_ALGORITHMS)
             signature.initVerify(publicKey)
             signature.update(content.toByteArray(charset))
-            signature.verify(Base64.getDecoder().decode(sign))
+            signature.verify(Base64.getUrlDecoder().decode(sign))
         } catch (e: Exception) {
             e.throwIfNecessary()
             throw RsaException(
@@ -298,7 +308,7 @@ object RsaUtils {
                     offSet = i * MAX_ENCRYPT_BLOCK
                 }
                 val encryptedData = out.toByteArray()
-                Base64.getEncoder().encode(encryptedData)
+                Base64.getUrlEncoder().encode(encryptedData)
             }
             bytes.toString(charset)
         } catch (e: Exception) {
@@ -332,7 +342,7 @@ object RsaUtils {
             val cipher: Cipher = Cipher.getInstance(ENCRTPY_RSA)
             cipher.init(Cipher.DECRYPT_MODE, privateKey)
             val bytes = content.toByteArray(charset)
-            val encryptedData: ByteArray = Base64.getDecoder().decode(bytes)
+            val encryptedData: ByteArray = Base64.getUrlDecoder().decode(bytes)
             val inputLen = encryptedData.size
             var offSet = 0
             var cache: ByteArray

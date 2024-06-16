@@ -1,13 +1,10 @@
 package com.labijie.application.identity.service.impl
 
 import com.labijie.application.ApplicationRuntimeException
-import com.labijie.application.configuration.ValidationProperties
 import com.labijie.application.configure
-import com.labijie.application.exception.InvalidPhoneNumberException
 import com.labijie.application.exception.OperationConcurrencyException
 import com.labijie.application.exception.UserNotFoundException
 import com.labijie.application.executeReadOnly
-import com.labijie.application.identity.IdentityUtils
 import com.labijie.application.identity.configuration.IdentityProperties
 import com.labijie.application.identity.data.UserLoginTable
 import com.labijie.application.identity.data.UserOpenIdTable
@@ -40,7 +37,6 @@ import org.springframework.dao.DuplicateKeyException
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.support.TransactionTemplate
-import java.util.regex.Pattern
 
 
 /**
@@ -267,7 +263,7 @@ abstract class AbstractSocialUserService(
             } ?: throw UserNotFoundException()
             val ctx = registrationContext
             if (ctx != null) {
-                this.onSocialUserRegisteredAfterTranscationCommitted(ctx)
+                this.onSocialUserRegisteredAfterTransactionCommitted(ctx)
             }
             if (r.provider.isMultiOpenId) {
                 //对于多 open id 的提供程，例如微信，第三方账号可能存在，但是仍然可能存在第三方的不同的 APP OPEN ID 不存在的问题, 单独事务处理
@@ -280,12 +276,12 @@ abstract class AbstractSocialUserService(
         return SocialUserAndRoles(userAndRoles, loginProvider, r.token.userKey)
     }
 
-    protected open fun onSocialUserRegisteredInTranscation(context: SocialUserRegistrationContext) {
-        this.onUserRegisteredInTranscation(context.user, context.registerInfo.addition)
+    protected open fun onSocialUserRegisteredInTransaction(context: SocialUserRegistrationContext) {
+        this.onUserRegisteredInTransaction(context.user, context.registerInfo.addition)
     }
 
-    protected open fun onSocialUserRegisteredAfterTranscationCommitted(context: SocialUserRegistrationContext) {
-        this.onUserRegisteredAfterTranscationCommitted(context.user, context.registerInfo.addition)
+    protected open fun onSocialUserRegisteredAfterTransactionCommitted(context: SocialUserRegistrationContext) {
+        this.onUserRegisteredAfterTransactionCommitted(context.user, context.registerInfo.addition)
     }
 
     protected class DuplicateRegisteringException : ApplicationRuntimeException()
@@ -352,7 +348,7 @@ abstract class AbstractSocialUserService(
                 this.addUserLogin(userAndRoles.user.id, loginProvider, token)
 
                 val reContext = SocialUserRegistrationContext(socialRegisterInfo, userAndRoles, provider, token)
-                this.onSocialUserRegisteredInTranscation(reContext)
+                this.onSocialUserRegisteredInTransaction(reContext)
                 return Pair(SocialUserAndRoles(userAndRoles, provider.name, token.userKey), reContext)
             } catch (e: DuplicateKeyException) {
                 logger.warn("Duplicate social user register (provider: $loginProvider).", e)

@@ -31,6 +31,10 @@ object AuthErrors {
     const val UNSUPPORTED_RESPONSE_TYPE = OAuth2ErrorCodes.UNSUPPORTED_RESPONSE_TYPE
     @ErrorDescription("你没有权限访问该资源")
     const val ACCESS_DENIED = OAuth2ErrorCodes.ACCESS_DENIED
+    //custom
+    @ErrorDescription("第三方登录用户未授权或授权信息被篡改")
+    const val INVALID_OAUTH2_USER_TOKEN = "invalid_oauth2_user_token"
 
-
+    @ErrorDescription("OAuth2 授权方不可用")
+    const val INVALID_OAUTH2_CLIENT_REGISTRATION = "invalid_oauth2_client_registration"
 }

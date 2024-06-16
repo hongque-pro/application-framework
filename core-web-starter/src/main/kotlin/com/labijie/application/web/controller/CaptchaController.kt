@@ -10,6 +10,7 @@ import com.labijie.application.web.getRealIp
 import com.labijie.application.web.interceptor.HumanVerifyInterceptor
 import io.springboot.captcha.SpecCaptcha
 import io.springboot.captcha.base.Captcha
+import jakarta.annotation.security.PermitAll
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
 import org.springframework.web.bind.annotation.*
@@ -21,6 +22,7 @@ import java.time.Duration
  * @date 2023-12-03
  */
 
+@PermitAll
 @RestController
 @RequestMapping("/captcha")
 class CaptchaController(

@@ -11,8 +11,9 @@ import org.springframework.http.HttpStatus
 open class ErrorCodedStatusException(
     error: String,
     message: String? = null,
-    cause: Throwable? = null
+    cause: Throwable? = null,
+    status: HttpStatus? = null
 ) : ErrorCodedException(error, message, cause) {
 
-    open val status: HttpStatus = HttpStatus.CONFLICT
+    open val status: HttpStatus = status ?: HttpStatus.CONFLICT
 }

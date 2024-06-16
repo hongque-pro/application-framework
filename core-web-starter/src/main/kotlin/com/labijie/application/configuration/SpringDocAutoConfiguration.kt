@@ -4,11 +4,7 @@ import com.labijie.application.doc.DocPropertyCustomizer
 import com.labijie.application.doc.DocUtils
 import com.labijie.infra.getApplicationName
 import com.labijie.infra.oauth2.TwoFactorPrincipal
-import com.labijie.infra.utils.nowString
-import com.labijie.infra.utils.toLocalDateTime
 import io.swagger.v3.oas.models.OpenAPI
-import io.swagger.v3.oas.models.info.Info
-import org.apache.commons.text.CaseUtils
 import org.springdoc.core.configuration.SpringDocSecurityOAuth2Customizer
 import org.springdoc.core.models.GroupedOpenApi
 import org.springdoc.core.utils.SpringDocUtils
@@ -23,11 +19,10 @@ import org.springframework.context.ApplicationContextAware
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.ComponentScan
 import org.springframework.context.annotation.Configuration
-import org.springframework.context.annotation.Lazy
 import org.springframework.context.annotation.Profile
 import org.springframework.core.Ordered
+import org.springframework.core.annotation.AnnotationUtils
 import org.springframework.core.env.Environment
-import java.time.format.DateTimeFormatter
 
 
 /**
@@ -98,6 +93,7 @@ class SpringDocAutoConfiguration(private val environment: Environment): Initiali
         return GroupedOpenApi.builder()
             .group("OAuth2 Server")
             .pathsToMatch("/oauth2/**")
+            .pathsToExclude("/oauth2/unauthorized/**")
             .addOpenApiCustomizer {
                 SpringDocSecurityOAuth2Customizer().apply {
                     setApplicationContext(applicationContext)

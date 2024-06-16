@@ -1,5 +1,9 @@
 package com.labijie.application.auth
 
+import com.labijie.application.ErrorCodedException
+import com.labijie.application.auth.oauth2.OAuth2UserTokenArgumentResolver
+import com.labijie.application.identity.IdentityErrors
+import com.labijie.application.identity.model.RegisterInfo
 import com.labijie.application.identity.model.UserAndRoles
 import com.labijie.application.web.roleAuthority
 import com.labijie.infra.oauth2.ITwoFactorUserDetails
@@ -7,12 +11,8 @@ import com.labijie.infra.oauth2.OAuth2Utils
 import com.labijie.infra.oauth2.SimpleTwoFactorUserDetails
 import org.springframework.security.oauth2.core.AuthorizationGrantType
 import org.springframework.security.oauth2.core.OAuth2AccessToken
-import org.springframework.security.oauth2.core.endpoint.OAuth2ParameterNames
-import org.springframework.security.oauth2.server.authorization.authentication.OAuth2AccessTokenAuthenticationToken
 import org.springframework.security.oauth2.server.authorization.client.RegisteredClient
 import org.springframework.security.oauth2.server.authorization.settings.TokenSettings
-import org.springframework.util.CollectionUtils
-import org.springframework.util.StringUtils
 import java.time.Duration
 import java.time.Instant
 import java.time.temporal.ChronoUnit
@@ -72,27 +72,40 @@ fun <T : UserAndRoles> T.toPrincipal(configure: (T.() -> Map<String, String>)? =
     )
 }
 
-fun OAuth2AccessTokenAuthenticationToken.toHttpResponse(): Map<String, Any> {
-    val parameters: MutableMap<String, Any> = HashMap()
-    parameters[OAuth2ParameterNames.ACCESS_TOKEN] = this.accessToken.tokenValue
-    parameters[OAuth2ParameterNames.TOKEN_TYPE] = this.accessToken.tokenType.value
-    parameters[OAuth2ParameterNames.EXPIRES_IN] = this.accessToken.getExpiresInSeconds()
-    if (!CollectionUtils.isEmpty(this.accessToken.scopes)) {
-        parameters[OAuth2ParameterNames.SCOPE] = StringUtils.collectionToDelimitedString(this.accessToken.scopes, " ")
-    }
-    if (this.refreshToken != null) {
-        parameters[OAuth2ParameterNames.REFRESH_TOKEN] = this.refreshToken!!.tokenValue
-    }
-    if (!CollectionUtils.isEmpty(this.additionalParameters)) {
-        this.additionalParameters.forEach { (k, v) ->
-            parameters[k] = v
-        }
-    }
-    return parameters
-}
 
 fun OAuth2AccessToken.getExpiresInSeconds(): Long {
     return if (this.expiresAt != null) {
         ChronoUnit.SECONDS.between(Instant.now(), this.expiresAt)
     } else -1
+}
+
+fun UserAndRoles.toUserDetails() : ITwoFactorUserDetails {
+    val userLocked = (user.lockoutEnabled && (user.lockoutEnd) > System.currentTimeMillis())
+
+    if (userLocked) throw ErrorCodedException(error = IdentityErrors.ACCOUNT_LOCKED)
+
+    val authorities = ArrayList(
+        roles.map {
+            roleAuthority(it.name)
+        })
+
+    return SimpleTwoFactorUserDetails(
+        user.id.toString(),
+        user.userName,
+        credentialsNonExpired = true,
+        enabled = true,
+        password = user.passwordHash,
+        accountNonExpired = true,
+        accountNonLocked = true,
+        twoFactorEnabled = false,
+        authorities = authorities
+    )
+}
+
+fun RegisterInfo.attachOAuth2User(auth2UserToken: String) {
+    this.addition[OAuth2UserTokenArgumentResolver.TOKEN_PARAMETER_NAME] = auth2UserToken
+}
+
+fun RegisterInfo.getOAuth2User(): String? {
+    return this.addition[OAuth2UserTokenArgumentResolver.TOKEN_PARAMETER_NAME]
 }

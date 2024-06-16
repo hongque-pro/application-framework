@@ -9,10 +9,12 @@ import java.nio.charset.Charset
 
 object HttpFormUrlCodec {
 
-    fun encode(formData: Map<String, Any>, charset: Charset = Charsets.UTF_8) : String {
+    fun encode(formData: Map<String, Any?>, charset: Charset = Charsets.UTF_8, allowNullValue: Boolean = false) : String {
         val builder = StringBuilder()
         formData.forEach { (name, value) ->
-            builder.appendNameValue(name, value, charset)
+            if(value != null || allowNullValue) {
+                builder.appendNameValue(name, value ?: "", charset)
+            }
         }
         return builder.toString()
     }

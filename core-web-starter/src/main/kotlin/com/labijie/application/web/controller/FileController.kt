@@ -30,7 +30,6 @@ class FileController(private val fileIndexService: IFileIndexService) {
         @RequestParam("filePath", required = true) filePath: String,
         @RequestParam("modifier", required = true) modifier: FileModifier
     ): ObjectPreSignUrl {
-
         return fileIndexService.getFileUrl(filePath, modifier)
     }
 

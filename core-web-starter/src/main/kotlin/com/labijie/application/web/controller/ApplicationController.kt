@@ -3,6 +3,7 @@ package com.labijie.application.web.controller
 import com.labijie.application.IErrorRegistry
 import com.labijie.application.service.ILocalizationService
 import com.labijie.infra.json.JacksonHelper
+import jakarta.annotation.security.PermitAll
 import jakarta.servlet.http.HttpServletResponse
 import org.springframework.context.ApplicationContext
 import org.springframework.context.ApplicationContextAware
@@ -17,6 +18,7 @@ import java.util.*
  * @author Anders Xiao
  * @date 2019-12-14
  */
+@PermitAll
 @RestController
 @RequestMapping("/application/public")
 class ApplicationController : ApplicationContextAware {

@@ -3,27 +3,26 @@ package com.labijie.application.auth.configuration
 import com.labijie.application.auth.AuthErrorsRegistration
 import com.labijie.application.auth.component.*
 import com.labijie.application.auth.event.UserSignInEventListener
+import com.labijie.application.auth.service.IOAuth2ClientUserService
+import com.labijie.application.auth.service.IOAuth2UserTokenCodec
 import com.labijie.application.identity.configuration.IdentityAutoConfiguration
 import com.labijie.application.identity.service.IOAuth2ClientService
 import com.labijie.application.identity.service.IUserService
 import com.labijie.infra.IIdGenerator
 import com.labijie.infra.oauth2.IIdentityService
 import com.labijie.infra.oauth2.configuration.OAuth2DependenciesAutoConfiguration
-import com.labijie.infra.oauth2.configuration.OAuth2ServerAutoConfiguration
 import com.labijie.infra.oauth2.resource.IResourceAuthorizationConfigurer
 import org.springframework.boot.autoconfigure.AutoConfigureAfter
 import org.springframework.boot.autoconfigure.AutoConfigureBefore
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBean
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
-import org.springframework.context.annotation.Import
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configurers.AuthorizeHttpRequestsConfigurer
 import org.springframework.security.oauth2.server.authorization.client.RegisteredClientRepository
-import javax.sql.DataSource
+import org.springframework.transaction.support.TransactionTemplate
 
 /**
  * Created with IntelliJ IDEA.
@@ -33,7 +32,6 @@ import javax.sql.DataSource
 @Configuration(proxyBeanMethods = false)
 @AutoConfigureAfter(IdentityAutoConfiguration::class)
 @AutoConfigureBefore(OAuth2DependenciesAutoConfiguration::class)
-@Import(AuthDocConfiguration::class)
 @EnableConfigurationProperties(DefaultUserCreationProperties::class, AuthProperties::class)
 class ApplicationAuthServerAutoConfiguration : IResourceAuthorizationConfigurer {
 
@@ -42,6 +40,7 @@ class ApplicationAuthServerAutoConfiguration : IResourceAuthorizationConfigurer 
             "/account/register",
             "/account/verify",
             "/account/set-password",
+            "/login/oauth2/code/*"
         ).permitAll()
     }
 
@@ -84,8 +83,8 @@ class ApplicationAuthServerAutoConfiguration : IResourceAuthorizationConfigurer 
     @Bean
     @ConditionalOnProperty(prefix = "infra.oauth2", name = ["client-repository"], havingValue = "jdbc", matchIfMissing = true)
     @ConditionalOnMissingBean(RegisteredClientRepository::class)
-    fun defaultClientRepository(clientService: IOAuth2ClientService): DefaultClientRepository {
-        return DefaultClientRepository(clientService)
+    fun defaultClientRepository(clientService: IOAuth2ClientService): DefaultServerClientRepository {
+        return DefaultServerClientRepository(clientService)
     }
 
     @Bean

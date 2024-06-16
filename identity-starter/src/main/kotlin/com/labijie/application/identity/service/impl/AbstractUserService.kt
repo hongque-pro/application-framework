@@ -12,6 +12,7 @@ import com.labijie.application.component.impl.NationalPhoneValidator
 import com.labijie.application.component.impl.EmailAddressValidator
 import com.labijie.application.component.IEmailAddressValidator
 import com.labijie.application.component.IPhoneValidator
+import com.labijie.application.identity.component.IUserRegistrationIntegration
 import com.labijie.application.identity.configuration.IdentityProperties
 import com.labijie.application.identity.data.RoleTable
 import com.labijie.application.identity.data.UserRoleTable
@@ -97,6 +98,10 @@ abstract class AbstractUserService(
         this.context?.getBeansOfType(IPhoneValidator::class.java)?.values?.firstOrNull() ?: NationalPhoneValidator()
     }
 
+    protected open val integrations by lazy {
+        this.context?.getBeanProvider(IUserRegistrationIntegration::class.java)?.orderedStream()?.toList() ?: listOf()
+    }
+
     protected fun getUserAndRoles(
         phoneNumber: String,
         loginProvider: String? = null
@@ -138,9 +143,9 @@ abstract class AbstractUserService(
         } ?: false
     }
 
-    protected open fun onUserRegisteredInTranscation(user: UserAndRoles, addition:String?) {}
+    protected open fun onUserRegisteredInTransaction(user: UserAndRoles, addition:Map<String, String>) {}
 
-    protected open fun onUserRegisteredAfterTranscationCommitted(user: UserAndRoles, addition:String?) {}
+    protected open fun onUserRegisteredAfterTransactionCommitted(user: UserAndRoles, addition:Map<String, String>) {}
 
     override fun registerUser(register: RegisterInfo, by: RegisterBy): UserAndRoles {
 
@@ -198,10 +203,17 @@ abstract class AbstractUserService(
             }
 
             val userAndRoles = this.createUser(user, register.password, *this.getDefaultUserRoles())
-            this.onUserRegisteredInTranscation(userAndRoles, register.addition)
+            integrations.forEach {
+                it.onUserRegisteredInTransaction(userAndRoles, register.addition)
+            }
+            this.onUserRegisteredInTransaction(userAndRoles, register.addition)
             userAndRoles
         }!!
-        this.onUserRegisteredAfterTranscationCommitted(u, register.addition)
+
+        integrations.forEach {
+            it.onUserRegisteredAfterTransactionCommitted(u, register.addition)
+        }
+        this.onUserRegisteredAfterTransactionCommitted(u, register.addition)
         return u
     }
 

@@ -8,6 +8,7 @@ import com.labijie.application.configuration.HttpClientProperties
 import com.labijie.application.httpclient.HttpClientLoggingInterceptor
 import com.labijie.application.jackson.DescribeEnumDeserializer
 import com.labijie.application.jackson.DescribeEnumSerializer
+import com.labijie.application.jackson.IObjectMapperCustomizer
 import com.labijie.application.localization.ILocalizationResourceBundle
 import com.labijie.application.localization.LocalizationMessageSource
 import com.labijie.application.service.ILocalizationService
@@ -95,8 +96,13 @@ class ApplicationInitializationRunner<T : ConfigurableApplicationContext>(
         enumModule.addSerializer(Enum::class.java, DescribeEnumSerializer)
 
         JacksonHelper.webCompatibilityMapper.registerModule(enumModule)
-
         JacksonHelper.defaultObjectMapper.registerModule(enumModule)
+
+
+        applicationContext.getBeanProvider(IObjectMapperCustomizer::class.java).orderedStream().forEach {
+            it.customize(JacksonHelper.webCompatibilityMapper)
+            it.customize(JacksonHelper.defaultObjectMapper)
+        }
     }
 
     private fun initLocalization() {

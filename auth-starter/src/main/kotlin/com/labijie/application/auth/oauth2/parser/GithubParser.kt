@@ -10,6 +10,9 @@ import org.springframework.security.oauth2.core.user.OAuth2User
 import org.springframework.stereotype.Component
 
 
+/**
+ * refer: https://docs.github.com/en/rest/users/users
+ */
 @Component
 class GithubParser : IOAuth2UserParser {
     override fun isSupported(clientRegistrationId: String): Boolean {

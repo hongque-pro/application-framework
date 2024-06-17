@@ -25,9 +25,11 @@ object ClientRegistrationBuilder {
     fun build(environment: Environment): List<ClientRegistration> {
         val clientRegistrations = mutableListOf<ClientRegistration>()
 
+        //https://developers.google.com/identity/protocols/oauth2/scopes
         getProvider(environment, "google")?.let {
             clientRegistrations.add(
                 CommonOAuth2Provider.GOOGLE.getBuilder("google")
+                    //.scope("OpenID", "https://www.googleapis.com/auth/userinfo.profile", "https://www.googleapis.com/auth/userinfo.email")
                     .clientId(it.clientId)
                     .clientSecret(it.clientSecret)
                     .build()

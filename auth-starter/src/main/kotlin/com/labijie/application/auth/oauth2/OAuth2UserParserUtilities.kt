@@ -5,10 +5,12 @@
 package com.labijie.application.auth.oauth2
 
 import com.labijie.application.identity.exception.UnsupportedLoginProviderException
+import com.nimbusds.oauth2.sdk.OAuth2Error
 import org.slf4j.LoggerFactory
 import org.springframework.context.ApplicationContext
 import org.springframework.context.ApplicationContextAware
 import org.springframework.security.oauth2.client.registration.ClientRegistration
+import org.springframework.security.oauth2.core.OAuth2AuthenticationException
 import org.springframework.security.oauth2.core.user.OAuth2User
 
 
@@ -43,7 +45,7 @@ class OAuth2UserParserUtilities : ApplicationContextAware {
             logger.error(err)
         }
 
-        return token ?: throw UnsupportedLoginProviderException(client.clientName)
+        return token ?: throw OAuth2AuthenticationException(OAuth2Error.SERVER_ERROR_CODE)
     }
 
     override fun setApplicationContext(applicationContext: ApplicationContext) {

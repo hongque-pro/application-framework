@@ -9,6 +9,7 @@ import com.labijie.application.auth.controller.OAuth2ClientController
 import com.labijie.application.auth.event.OAuth2ClientSignIngEvenListener
 import com.labijie.application.auth.oauth2.ClientRegistrationBuilder
 import com.labijie.application.auth.oauth2.OAuth2UserTokenArgumentResolver
+import com.labijie.application.auth.oauth2.parser.GithubParser
 import com.labijie.application.auth.service.IOAuth2ClientUserService
 import com.labijie.application.auth.service.IOAuth2UserTokenCodec
 import com.labijie.application.auth.service.impl.OAuth2ClientUserService
@@ -19,11 +20,13 @@ import com.labijie.infra.oauth2.resource.configuration.ResourceServerAutoConfigu
 import org.springframework.boot.autoconfigure.AutoConfigureAfter
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.context.annotation.Bean
+import org.springframework.context.annotation.ComponentScan
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Import
 import org.springframework.core.env.Environment
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository
 import org.springframework.security.oauth2.client.registration.InMemoryClientRegistrationRepository
+import org.springframework.security.oauth2.server.authorization.settings.AuthorizationServerSettings
 import org.springframework.transaction.support.TransactionTemplate
 import org.springframework.web.method.support.HandlerMethodArgumentResolver
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer
@@ -31,6 +34,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer
 
 @Configuration(proxyBeanMethods = false)
 @AutoConfigureAfter(ResourceServerAutoConfiguration::class)
+@ComponentScan(basePackageClasses = [GithubParser::class])
 class OAuth2LoginAutoConfiguration : WebMvcConfigurer {
     override fun addArgumentResolvers(resolvers: MutableList<HandlerMethodArgumentResolver>) {
         resolvers.add(OAuth2UserTokenArgumentResolver())
@@ -80,7 +84,8 @@ class OAuth2LoginAutoConfiguration : WebMvcConfigurer {
     fun oauth2ClientSignIngEvenListener(
         oauth2ClientUserService: IOAuth2ClientUserService,
         oauth2UserTokenCodec: IOAuth2UserTokenCodec,
+        oauth2ServerSettings: AuthorizationServerSettings,
     ): OAuth2ClientSignIngEvenListener {
-        return OAuth2ClientSignIngEvenListener(oauth2UserTokenCodec, oauth2ClientUserService)
+        return OAuth2ClientSignIngEvenListener(oauth2UserTokenCodec, oauth2ClientUserService, oauth2ServerSettings)
     }
 }

@@ -6,21 +6,26 @@ import com.labijie.application.identity.`data`.OAuth2ClientTable
 import com.labijie.application.identity.`data`.OAuth2ClientTable.accessTokenLiveSeconds
 import com.labijie.application.identity.`data`.OAuth2ClientTable.additionalInformation
 import com.labijie.application.identity.`data`.OAuth2ClientTable.authorities
+import com.labijie.application.identity.`data`.OAuth2ClientTable.authorizationCodeLiveSeconds
 import com.labijie.application.identity.`data`.OAuth2ClientTable.authorizedGrantTypes
 import com.labijie.application.identity.`data`.OAuth2ClientTable.autoApprove
 import com.labijie.application.identity.`data`.OAuth2ClientTable.clientId
 import com.labijie.application.identity.`data`.OAuth2ClientTable.clientSecret
+import com.labijie.application.identity.`data`.OAuth2ClientTable.deviceCodeLiveSeconds
 import com.labijie.application.identity.`data`.OAuth2ClientTable.enabled
 import com.labijie.application.identity.`data`.OAuth2ClientTable.redirectUrls
 import com.labijie.application.identity.`data`.OAuth2ClientTable.refreshTokenLiveSeconds
 import com.labijie.application.identity.`data`.OAuth2ClientTable.resourceIds
+import com.labijie.application.identity.`data`.OAuth2ClientTable.reuseRefreshTokens
 import com.labijie.application.identity.`data`.OAuth2ClientTable.scopes
 import com.labijie.application.identity.`data`.pojo.OAuth2Client
 import java.lang.IllegalArgumentException
 import kotlin.Array
 import kotlin.Boolean
 import kotlin.Int
+import kotlin.Long
 import kotlin.Number
+import kotlin.Pair
 import kotlin.String
 import kotlin.Unit
 import kotlin.collections.Iterable
@@ -29,16 +34,21 @@ import kotlin.collections.isNotEmpty
 import kotlin.collections.toList
 import kotlin.reflect.KClass
 import org.jetbrains.exposed.sql.Column
+import org.jetbrains.exposed.sql.Expression
 import org.jetbrains.exposed.sql.Op
 import org.jetbrains.exposed.sql.Query
 import org.jetbrains.exposed.sql.ResultRow
 import org.jetbrains.exposed.sql.SqlExpressionBuilder
 import org.jetbrains.exposed.sql.batchInsert
 import org.jetbrains.exposed.sql.insert
+import org.jetbrains.exposed.sql.replace
 import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.statements.InsertStatement
+import org.jetbrains.exposed.sql.statements.ReplaceStatement
 import org.jetbrains.exposed.sql.statements.UpdateBuilder
+import org.jetbrains.exposed.sql.statements.UpsertStatement
 import org.jetbrains.exposed.sql.update
+import org.jetbrains.exposed.sql.upsert
 
 /**
  * DSL support for OAuth2ClientTable
@@ -71,9 +81,11 @@ public object OAuth2ClientDSL {
     enabled,
     accessTokenLiveSeconds,
     refreshTokenLiveSeconds,
+    authorizationCodeLiveSeconds,
+    deviceCodeLiveSeconds,
+    reuseRefreshTokens,
     )
   }
-
 
   public fun parseRow(raw: ResultRow): OAuth2Client {
     val plain = OAuth2Client()
@@ -89,6 +101,9 @@ public object OAuth2ClientDSL {
     plain.enabled = raw[enabled]
     plain.accessTokenLiveSeconds = raw[accessTokenLiveSeconds]
     plain.refreshTokenLiveSeconds = raw[refreshTokenLiveSeconds]
+    plain.authorizationCodeLiveSeconds = raw[authorizationCodeLiveSeconds]
+    plain.deviceCodeLiveSeconds = raw[deviceCodeLiveSeconds]
+    plain.reuseRefreshTokens = raw[reuseRefreshTokens]
     return plain
   }
 
@@ -130,6 +145,15 @@ public object OAuth2ClientDSL {
     if(row.hasValue(refreshTokenLiveSeconds)) {
       plain.refreshTokenLiveSeconds = row[refreshTokenLiveSeconds]
     }
+    if(row.hasValue(authorizationCodeLiveSeconds)) {
+      plain.authorizationCodeLiveSeconds = row[authorizationCodeLiveSeconds]
+    }
+    if(row.hasValue(deviceCodeLiveSeconds)) {
+      plain.deviceCodeLiveSeconds = row[deviceCodeLiveSeconds]
+    }
+    if(row.hasValue(reuseRefreshTokens)) {
+      plain.reuseRefreshTokens = row[reuseRefreshTokens]
+    }
     return plain
   }
 
@@ -146,6 +170,9 @@ public object OAuth2ClientDSL {
     enabled->Boolean::class
     accessTokenLiveSeconds->Int::class
     refreshTokenLiveSeconds->Int::class
+    authorizationCodeLiveSeconds->Int::class
+    deviceCodeLiveSeconds->Int::class
+    reuseRefreshTokens->Boolean::class
     else->throw IllegalArgumentException("""Unknown column <${column.name}> for 'OAuth2Client'""")
   }
 
@@ -163,6 +190,9 @@ public object OAuth2ClientDSL {
     OAuth2ClientTable.enabled->this.enabled as T
     OAuth2ClientTable.accessTokenLiveSeconds->this.accessTokenLiveSeconds as T
     OAuth2ClientTable.refreshTokenLiveSeconds->this.refreshTokenLiveSeconds as T
+    OAuth2ClientTable.authorizationCodeLiveSeconds->this.authorizationCodeLiveSeconds as T
+    OAuth2ClientTable.deviceCodeLiveSeconds->this.deviceCodeLiveSeconds as T
+    OAuth2ClientTable.reuseRefreshTokens->this.reuseRefreshTokens as T
     else->throw IllegalArgumentException("""Unknown column <${column.name}> for 'OAuth2Client'""")
   }
 
@@ -201,6 +231,14 @@ public object OAuth2ClientDSL {
     if((list == null || list.contains(refreshTokenLiveSeconds)) &&
         !ignore.contains(refreshTokenLiveSeconds))
       builder[refreshTokenLiveSeconds] = raw.refreshTokenLiveSeconds
+    if((list == null || list.contains(authorizationCodeLiveSeconds)) &&
+        !ignore.contains(authorizationCodeLiveSeconds))
+      builder[authorizationCodeLiveSeconds] = raw.authorizationCodeLiveSeconds
+    if((list == null || list.contains(deviceCodeLiveSeconds)) &&
+        !ignore.contains(deviceCodeLiveSeconds))
+      builder[deviceCodeLiveSeconds] = raw.deviceCodeLiveSeconds
+    if((list == null || list.contains(reuseRefreshTokens)) && !ignore.contains(reuseRefreshTokens))
+      builder[reuseRefreshTokens] = raw.reuseRefreshTokens
   }
 
   public fun ResultRow.toOAuth2Client(vararg selective: Column<*>): OAuth2Client {
@@ -217,7 +255,7 @@ public object OAuth2ClientDSL {
 
   public fun OAuth2ClientTable.selectSlice(vararg selective: Column<*>): Query {
     val query = if(selective.isNotEmpty()) {
-      slice(selective.toList()).selectAll()
+      select(selective.toList())
     }
     else {
       selectAll()
@@ -232,6 +270,16 @@ public object OAuth2ClientDSL {
       Unit = assign(this, raw, selective = selective)
 
   public fun OAuth2ClientTable.insert(raw: OAuth2Client): InsertStatement<Number> = insert {
+    assign(it, raw)
+  }
+
+  public fun OAuth2ClientTable.upsert(
+    raw: OAuth2Client,
+    onUpdate: List<Pair<Column<*>, Expression<*>>>? = null,
+    onUpdateExclude: List<Column<*>>? = null,
+    `where`: (SqlExpressionBuilder.() -> Op<Boolean>)? = null,
+  ): UpsertStatement<Long> = upsert(where = where, onUpdate = onUpdate, onUpdateExclude =
+      onUpdateExclude) {
     assign(it, raw)
   }
 
@@ -269,5 +317,9 @@ public object OAuth2ClientDSL {
     val query = selectSlice(*selective)
     `where`.invoke(query)
     return query.firstOrNull()?.toOAuth2Client(*selective)
+  }
+
+  public fun OAuth2ClientTable.replace(raw: OAuth2Client): ReplaceStatement<Long> = replace {
+    assign(it, raw)
   }
 }

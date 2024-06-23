@@ -1,6 +1,6 @@
 package com.labijie.application.identity.data
 
-import org.jetbrains.exposed.sql.Table
+import java.time.Duration
 
 
 /**
@@ -18,9 +18,11 @@ object OAuth2ClientTable : IdentityTable("oauth2_clients") {
     val additionalInformation = varchar("additional_information", 4096).default("")
     val autoApprove = bool("auto_approve")
     val enabled = bool("enabled").default(true).index()
-    val accessTokenLiveSeconds = integer("access_token_live_sec").default(3600)
-    val refreshTokenLiveSeconds = integer("refresh_token_live_sec").default(3600 * 24)
-
+    val accessTokenLiveSeconds = integer("access_token_live_sec").default(Duration.ofMinutes(5).toSeconds().toInt())
+    val refreshTokenLiveSeconds = integer("refresh_token_live_sec").default(Duration.ofDays(7).toSeconds().toInt())
+    val authorizationCodeLiveSeconds = integer("authorization_Code_Live_sec").default(Duration.ofMinutes(5).toSeconds().toInt())
+    val deviceCodeLiveSeconds = integer("device_code_live_sec").default(Duration.ofMinutes(5).toSeconds().toInt())
+    val reuseRefreshTokens = bool("reuse_refresh_tokens").default(true)
     override val primaryKey: PrimaryKey
         get() = PrimaryKey(clientId)
 }

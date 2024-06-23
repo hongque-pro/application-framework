@@ -23,6 +23,7 @@ import kotlin.Comparable
 import kotlin.Int
 import kotlin.Long
 import kotlin.Number
+import kotlin.Pair
 import kotlin.String
 import kotlin.Unit
 import kotlin.collections.Collection
@@ -37,6 +38,7 @@ import kotlin.text.Charsets
 import kotlin.text.toByteArray
 import kotlin.text.toLong
 import org.jetbrains.exposed.sql.Column
+import org.jetbrains.exposed.sql.Expression
 import org.jetbrains.exposed.sql.Op
 import org.jetbrains.exposed.sql.Query
 import org.jetbrains.exposed.sql.ResultRow
@@ -47,11 +49,15 @@ import org.jetbrains.exposed.sql.andWhere
 import org.jetbrains.exposed.sql.batchInsert
 import org.jetbrains.exposed.sql.deleteWhere
 import org.jetbrains.exposed.sql.insert
+import org.jetbrains.exposed.sql.replace
 import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.statements.InsertStatement
+import org.jetbrains.exposed.sql.statements.ReplaceStatement
 import org.jetbrains.exposed.sql.statements.UpdateBuilder
 import org.jetbrains.exposed.sql.statements.UpdateStatement
+import org.jetbrains.exposed.sql.statements.UpsertStatement
 import org.jetbrains.exposed.sql.update
+import org.jetbrains.exposed.sql.upsert
 
 /**
  * DSL support for FileIndexTable
@@ -81,7 +87,6 @@ public object FileIndexDSL {
     id,
     )
   }
-
 
   public fun parseRow(raw: ResultRow): FileIndex {
     val plain = FileIndex()
@@ -181,7 +186,7 @@ public object FileIndexDSL {
 
   public fun FileIndexTable.selectSlice(vararg selective: Column<*>): Query {
     val query = if(selective.isNotEmpty()) {
-      slice(selective.toList()).selectAll()
+      select(selective.toList())
     }
     else {
       selectAll()
@@ -196,6 +201,16 @@ public object FileIndexDSL {
       assign(this, raw, selective = selective)
 
   public fun FileIndexTable.insert(raw: FileIndex): InsertStatement<Number> = insert {
+    assign(it, raw)
+  }
+
+  public fun FileIndexTable.upsert(
+    raw: FileIndex,
+    onUpdate: List<Pair<Column<*>, Expression<*>>>? = null,
+    onUpdateExclude: List<Column<*>>? = null,
+    `where`: (SqlExpressionBuilder.() -> Op<Boolean>)? = null,
+  ): UpsertStatement<Long> = upsert(where = where, onUpdate = onUpdate, onUpdateExclude =
+      onUpdateExclude) {
     assign(it, raw)
   }
 
@@ -331,5 +346,9 @@ public object FileIndexDSL {
     val token = if(list.size < pageSize) null else encodeToken(list, { getColumnValue(sortColumn) },
         FileIndex::id)
     return OffsetList(list, token)
+  }
+
+  public fun FileIndexTable.replace(raw: FileIndex): ReplaceStatement<Long> = replace {
+    assign(it, raw)
   }
 }

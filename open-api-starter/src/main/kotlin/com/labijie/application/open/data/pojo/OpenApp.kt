@@ -17,7 +17,7 @@ import kotlin.String
  * Origin Exposed Table:
  * @see com.labijie.application.open.data.OpenAppTable
  */
-public open class OpenApp {
+public class OpenApp {
   public var displayName: String = ""
 
   public var appSecret: String = ""

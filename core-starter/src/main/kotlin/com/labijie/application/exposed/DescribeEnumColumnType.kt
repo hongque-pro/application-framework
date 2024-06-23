@@ -18,7 +18,7 @@ import kotlin.reflect.KClass
 class DescribeEnumColumnType<E, V>(
     val enumClass: KClass<E>,
     val valueClass: KClass<V>
-) : ColumnType() where V : Number, E : IDescribeEnum<V>, E : Enum<E> {
+) : ColumnType<E>() where V : Number, E : IDescribeEnum<V>, E : Enum<E> {
 
     companion object {
         private val typeMappings = mapOf(
@@ -50,11 +50,15 @@ class DescribeEnumColumnType<E, V>(
         else -> error("$value of ${value::class.qualifiedName} is not valid for enum ${enumClass.simpleName}")
     }
 
-    override fun notNullValueToDB(value: Any): Any = when (value) {
-        is Number -> value
-        is IDescribeEnum<*> -> value.code
-        else -> error("$value of ${value::class.qualifiedName} is not valid for enum ${enumClass.simpleName}")
+    override fun notNullValueToDB(value: E): Any {
+        return value.code
     }
+
+//    override fun notNullValueToDB(value: E): Any = when (value) {
+//        is Number -> value
+//        is IDescribeEnum<*> -> value.code
+//        else -> error("$value of ${value::class.qualifiedName} is not valid for enum ${enumClass.simpleName}")
+//    }
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

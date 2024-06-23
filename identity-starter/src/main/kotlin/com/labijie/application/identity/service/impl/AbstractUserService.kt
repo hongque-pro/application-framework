@@ -25,6 +25,7 @@ import com.labijie.application.identity.data.pojo.dsl.RoleDSL.selectOne
 import com.labijie.application.identity.data.pojo.dsl.RoleDSL.toRoleList
 import com.labijie.application.identity.data.pojo.dsl.UserDSL.insert
 import com.labijie.application.identity.data.pojo.dsl.UserDSL.selectByPrimaryKey
+import com.labijie.application.identity.data.pojo.dsl.UserDSL.selectMany
 import com.labijie.application.identity.data.pojo.dsl.UserDSL.selectOne
 import com.labijie.application.identity.data.pojo.dsl.UserDSL.toUserList
 import com.labijie.application.identity.data.pojo.dsl.UserDSL.updateByPrimaryKey
@@ -445,19 +446,23 @@ abstract class AbstractUserService(
     private fun getUserByPrimaryField(usr: String): User? {
         val id = usr.toLongOrNull()
         if(id != null){
-            return UserTable.select {
-                UserTable.id.eq(id) or
-                UserTable.phoneNumber.eq(usr) or
-                UserTable.userName.eq(usr) or
-                UserTable.email.eq(usr)
-            }.toUserList().firstOrNull()
-        }
-
-        return UserTable.select {
+            return UserTable.selectMany {
+                andWhere {
+                    UserTable.id.eq(id) or
                     UserTable.phoneNumber.eq(usr) or
                     UserTable.userName.eq(usr) or
                     UserTable.email.eq(usr)
-        }.toUserList().firstOrNull()
+                }
+            }.firstOrNull()
+        }
+
+        return UserTable.selectMany {
+            andWhere {
+                UserTable.phoneNumber.eq(usr) or
+                UserTable.userName.eq(usr) or
+                UserTable.email.eq(usr)
+            }
+        }.firstOrNull()
     }
 
     override fun getUserRoles(userId: Long): List<Role> {

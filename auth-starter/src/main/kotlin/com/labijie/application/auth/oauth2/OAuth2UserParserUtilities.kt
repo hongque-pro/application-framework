@@ -32,6 +32,7 @@ class OAuth2UserParserUtilities : ApplicationContextAware {
         val p = parsers.firstOrNull { it.isSupported(clientId) }
         val token = p?.parse(user)?.apply {
             this.clientRegistrationId = client.registrationId
+            this.id = user.name
         }
 
         if(token == null) {

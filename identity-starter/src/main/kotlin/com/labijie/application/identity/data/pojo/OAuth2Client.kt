@@ -16,7 +16,7 @@ import kotlin.String
  * Origin Exposed Table:
  * @see com.labijie.application.identity.data.OAuth2ClientTable
  */
-public open class OAuth2Client {
+public class OAuth2Client {
   public var clientId: String = ""
 
   public var resourceIds: String = ""
@@ -40,4 +40,10 @@ public open class OAuth2Client {
   public var accessTokenLiveSeconds: Int = 0
 
   public var refreshTokenLiveSeconds: Int = 0
+
+  public var authorizationCodeLiveSeconds: Int = 0
+
+  public var deviceCodeLiveSeconds: Int = 0
+
+  public var reuseRefreshTokens: Boolean = false
 }

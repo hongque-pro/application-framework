@@ -18,7 +18,7 @@ import kotlin.String
  * Origin Exposed Table:
  * @see com.labijie.application.identity.data.UserTable
  */
-public open class User {
+public class User {
   public var userName: String = ""
 
   public var userType: Byte = 0

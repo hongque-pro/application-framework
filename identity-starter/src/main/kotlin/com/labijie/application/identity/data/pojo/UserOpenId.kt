@@ -15,7 +15,7 @@ import kotlin.String
  * Origin Exposed Table:
  * @see com.labijie.application.identity.data.UserOpenIdTable
  */
-public open class UserOpenId {
+public class UserOpenId {
   public var userId: Long = 0L
 
   public var appId: String = ""

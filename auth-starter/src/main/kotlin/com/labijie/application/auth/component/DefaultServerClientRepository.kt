@@ -37,8 +37,11 @@ class DefaultServerClientRepository(
                 this.clientId = client.clientId
                 this.clientSecret = client.clientSecret ?: ""
                 this.resourceIds = ""
-                this.accessTokenLiveSeconds = client.tokenSettings.accessTokenTimeToLive.seconds.toInt()
-                this.refreshTokenLiveSeconds = client.tokenSettings.refreshTokenTimeToLive.seconds.toInt()
+                this.accessTokenLiveSeconds = client.tokenSettings.accessTokenTimeToLive.toSeconds().toInt()
+                this.refreshTokenLiveSeconds = client.tokenSettings.refreshTokenTimeToLive.toSeconds().toInt()
+                this.authorizationCodeLiveSeconds = client.tokenSettings.authorizationCodeTimeToLive.toSeconds().toInt()
+                this.deviceCodeLiveSeconds = client.tokenSettings.deviceCodeTimeToLive.toSeconds().toInt()
+                this.reuseRefreshTokens = client.tokenSettings.isReuseRefreshTokens
                 this.authorities = ""
                 this.scopes = StringUtils.collectionToCommaDelimitedString(client.scopes)
                 this.autoApprove = false
@@ -79,7 +82,9 @@ class DefaultServerClientRepository(
                             .refreshTokenTimeToLive(
                                 Duration.ofSeconds(it.refreshTokenLiveSeconds.toLong())
                             )
-                            .reuseRefreshTokens(oauth2ServerProperties?.token?.reuseRefreshToken ?: true)
+                            .authorizationCodeTimeToLive(Duration.ofSeconds(it.authorizationCodeLiveSeconds.toLong()))
+                            .deviceCodeTimeToLive(Duration.ofSeconds(it.deviceCodeLiveSeconds.toLong()))
+                            .reuseRefreshTokens(it.reuseRefreshTokens)
                             .build()
                     )
                     .build()

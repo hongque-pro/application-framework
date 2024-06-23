@@ -15,6 +15,7 @@ import com.labijie.infra.oauth2.AccessToken
 import com.labijie.infra.oauth2.OAuth2ServerUtils.toAccessToken
 import com.labijie.infra.oauth2.TwoFactorSignInHelper
 import com.labijie.infra.oauth2.configuration.OAuth2ServerProperties
+import com.labijie.infra.utils.ifNullOrBlank
 import jakarta.annotation.security.PermitAll
 import org.springframework.security.oauth2.client.registration.ClientRegistration
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository
@@ -22,6 +23,7 @@ import org.springframework.security.oauth2.client.web.OAuth2AuthorizationRequest
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 

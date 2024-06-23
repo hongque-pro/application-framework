@@ -17,7 +17,9 @@ import kotlin.Array
 import kotlin.Boolean
 import kotlin.Comparable
 import kotlin.Int
+import kotlin.Long
 import kotlin.Number
+import kotlin.Pair
 import kotlin.String
 import kotlin.Unit
 import kotlin.collections.Collection
@@ -30,6 +32,7 @@ import kotlin.reflect.KClass
 import kotlin.text.Charsets
 import kotlin.text.toByteArray
 import org.jetbrains.exposed.sql.Column
+import org.jetbrains.exposed.sql.Expression
 import org.jetbrains.exposed.sql.Op
 import org.jetbrains.exposed.sql.Query
 import org.jetbrains.exposed.sql.ResultRow
@@ -40,11 +43,15 @@ import org.jetbrains.exposed.sql.andWhere
 import org.jetbrains.exposed.sql.batchInsert
 import org.jetbrains.exposed.sql.deleteWhere
 import org.jetbrains.exposed.sql.insert
+import org.jetbrains.exposed.sql.replace
 import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.statements.InsertStatement
+import org.jetbrains.exposed.sql.statements.ReplaceStatement
 import org.jetbrains.exposed.sql.statements.UpdateBuilder
 import org.jetbrains.exposed.sql.statements.UpdateStatement
+import org.jetbrains.exposed.sql.statements.UpsertStatement
 import org.jetbrains.exposed.sql.update
+import org.jetbrains.exposed.sql.upsert
 
 /**
  * DSL support for LocalizationLanguageTable
@@ -71,7 +78,6 @@ public object LocalizationLanguageDSL {
     disabled,
     )
   }
-
 
   public fun parseRow(raw: ResultRow): LocalizationLanguage {
     val plain = LocalizationLanguage()
@@ -150,7 +156,7 @@ public object LocalizationLanguageDSL {
 
   public fun LocalizationLanguageTable.selectSlice(vararg selective: Column<*>): Query {
     val query = if(selective.isNotEmpty()) {
-      slice(selective.toList()).selectAll()
+      select(selective.toList())
     }
     else {
       selectAll()
@@ -166,6 +172,16 @@ public object LocalizationLanguageDSL {
 
   public fun LocalizationLanguageTable.insert(raw: LocalizationLanguage): InsertStatement<Number> =
       insert {
+    assign(it, raw)
+  }
+
+  public fun LocalizationLanguageTable.upsert(
+    raw: LocalizationLanguage,
+    onUpdate: List<Pair<Column<*>, Expression<*>>>? = null,
+    onUpdateExclude: List<Column<*>>? = null,
+    `where`: (SqlExpressionBuilder.() -> Op<Boolean>)? = null,
+  ): UpsertStatement<Long> = upsert(where = where, onUpdate = onUpdate, onUpdateExclude =
+      onUpdateExclude) {
     assign(it, raw)
   }
 
@@ -302,5 +318,10 @@ public object LocalizationLanguageDSL {
     val token = if(list.size < pageSize) null else encodeToken(list, { getColumnValue(sortColumn) },
         LocalizationLanguage::locale)
     return OffsetList(list, token)
+  }
+
+  public fun LocalizationLanguageTable.replace(raw: LocalizationLanguage): ReplaceStatement<Long> =
+      replace {
+    assign(it, raw)
   }
 }

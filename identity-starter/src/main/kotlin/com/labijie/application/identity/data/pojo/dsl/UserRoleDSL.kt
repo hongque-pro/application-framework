@@ -12,6 +12,7 @@ import kotlin.Boolean
 import kotlin.Int
 import kotlin.Long
 import kotlin.Number
+import kotlin.Pair
 import kotlin.Unit
 import kotlin.collections.Iterable
 import kotlin.collections.List
@@ -19,6 +20,7 @@ import kotlin.collections.isNotEmpty
 import kotlin.collections.toList
 import kotlin.reflect.KClass
 import org.jetbrains.exposed.sql.Column
+import org.jetbrains.exposed.sql.Expression
 import org.jetbrains.exposed.sql.Op
 import org.jetbrains.exposed.sql.Query
 import org.jetbrains.exposed.sql.ResultRow
@@ -29,11 +31,15 @@ import org.jetbrains.exposed.sql.andWhere
 import org.jetbrains.exposed.sql.batchInsert
 import org.jetbrains.exposed.sql.deleteWhere
 import org.jetbrains.exposed.sql.insert
+import org.jetbrains.exposed.sql.replace
 import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.statements.InsertStatement
+import org.jetbrains.exposed.sql.statements.ReplaceStatement
 import org.jetbrains.exposed.sql.statements.UpdateBuilder
 import org.jetbrains.exposed.sql.statements.UpdateStatement
+import org.jetbrains.exposed.sql.statements.UpsertStatement
 import org.jetbrains.exposed.sql.update
+import org.jetbrains.exposed.sql.upsert
 
 /**
  * DSL support for UserRoleTable
@@ -58,7 +64,6 @@ public object UserRoleDSL {
     roleId,
     )
   }
-
 
   public fun parseRow(raw: ResultRow): UserRole {
     val plain = UserRole()
@@ -118,7 +123,7 @@ public object UserRoleDSL {
 
   public fun UserRoleTable.selectSlice(vararg selective: Column<*>): Query {
     val query = if(selective.isNotEmpty()) {
-      slice(selective.toList()).selectAll()
+      select(selective.toList())
     }
     else {
       selectAll()
@@ -133,6 +138,16 @@ public object UserRoleDSL {
       assign(this, raw, selective = selective)
 
   public fun UserRoleTable.insert(raw: UserRole): InsertStatement<Number> = insert {
+    assign(it, raw)
+  }
+
+  public fun UserRoleTable.upsert(
+    raw: UserRole,
+    onUpdate: List<Pair<Column<*>, Expression<*>>>? = null,
+    onUpdateExclude: List<Column<*>>? = null,
+    `where`: (SqlExpressionBuilder.() -> Op<Boolean>)? = null,
+  ): UpsertStatement<Long> = upsert(where = where, onUpdate = onUpdate, onUpdateExclude =
+      onUpdateExclude) {
     assign(it, raw)
   }
 
@@ -197,5 +212,9 @@ public object UserRoleDSL {
     val query = selectSlice(*selective)
     `where`.invoke(query)
     return query.firstOrNull()?.toUserRole(*selective)
+  }
+
+  public fun UserRoleTable.replace(raw: UserRole): ReplaceStatement<Long> = replace {
+    assign(it, raw)
   }
 }

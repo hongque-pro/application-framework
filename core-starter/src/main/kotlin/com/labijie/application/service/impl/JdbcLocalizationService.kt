@@ -177,8 +177,7 @@ class JdbcLocalizationService(
         return transactionTemplate.executeReadOnly {
 
             val messagesQuery = LocalizationMessageTable
-                .slice(LocalizationMessageTable.code, LocalizationMessageTable.message)
-                .selectAll()
+                .select(LocalizationMessageTable.code, LocalizationMessageTable.message)
                 .andWhere {
                     LocalizationMessageTable.locale eq locale.getId()
                 }.alias("messages")
@@ -189,8 +188,7 @@ class JdbcLocalizationService(
                 LocalizationCodeTable.code,
                 messagesQuery[LocalizationMessageTable.code]
             )
-                .slice(LocalizationCodeTable.code, messagesQuery[LocalizationMessageTable.message])
-                .selectAll()
+                .select(LocalizationCodeTable.code, messagesQuery[LocalizationMessageTable.message])
                 .orderBy(LocalizationCodeTable.code)
                 .toList()
 

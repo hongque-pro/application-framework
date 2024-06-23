@@ -29,7 +29,7 @@ object ClientRegistrationBuilder {
         getProvider(environment, "google")?.let {
             clientRegistrations.add(
                 CommonOAuth2Provider.GOOGLE.getBuilder("google")
-                    //.scope("OpenID", "https://www.googleapis.com/auth/userinfo.profile", "https://www.googleapis.com/auth/userinfo.email")
+                    //.scope("openid", "https://www.googleapis.com/auth/userinfo.profile", "https://www.googleapis.com/auth/userinfo.email")
                     .clientId(it.clientId)
                     .clientSecret(it.clientSecret)
                     .build()

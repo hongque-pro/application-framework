@@ -15,7 +15,7 @@ import kotlin.String
  * Origin Exposed Table:
  * @see com.labijie.application.data.LocalizationLanguageTable
  */
-public class LocalizationLanguage {
+public open class LocalizationLanguage {
   public var locale: String = ""
 
   public var language: String = ""

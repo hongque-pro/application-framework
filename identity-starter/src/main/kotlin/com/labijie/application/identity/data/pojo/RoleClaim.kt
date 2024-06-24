@@ -15,7 +15,7 @@ import kotlin.String
  * Origin Exposed Table:
  * @see com.labijie.application.identity.data.RoleClaimTable
  */
-public class RoleClaim {
+public open class RoleClaim {
   public var claimType: String = ""
 
   public var claimValue: String = ""

@@ -16,7 +16,7 @@ import kotlin.String
  * Origin Exposed Table:
  * @see com.labijie.application.identity.data.OAuth2ClientTable
  */
-public class OAuth2Client {
+public open class OAuth2Client {
   public var clientId: String = ""
 
   public var resourceIds: String = ""

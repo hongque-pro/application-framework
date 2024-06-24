@@ -17,7 +17,7 @@ import kotlin.String
  * Origin Exposed Table:
  * @see com.labijie.application.open.data.OpenPartnerTable
  */
-public class OpenPartner {
+public open class OpenPartner {
   public var name: String = ""
 
   public var timeExpired: Long = 0L

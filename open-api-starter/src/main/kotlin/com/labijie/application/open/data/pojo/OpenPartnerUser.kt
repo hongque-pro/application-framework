@@ -14,7 +14,7 @@ import kotlin.Long
  * Origin Exposed Table:
  * @see com.labijie.application.open.data.OpenPartnerUserTable
  */
-public class OpenPartnerUser {
+public open class OpenPartnerUser {
   public var userId: Long = 0L
 
   public var partnerId: Long = 0L

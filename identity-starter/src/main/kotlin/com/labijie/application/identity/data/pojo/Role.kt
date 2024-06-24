@@ -15,7 +15,7 @@ import kotlin.String
  * Origin Exposed Table:
  * @see com.labijie.application.identity.data.RoleTable
  */
-public class Role {
+public open class Role {
   public var concurrencyStamp: String = ""
 
   public var name: String = ""

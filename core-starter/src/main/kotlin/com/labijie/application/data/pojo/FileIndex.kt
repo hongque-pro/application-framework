@@ -16,7 +16,7 @@ import kotlin.String
  * Origin Exposed Table:
  * @see com.labijie.application.data.FileIndexTable
  */
-public class FileIndex {
+public open class FileIndex {
   public var path: String = ""
 
   public var timeCreated: Long = 0L

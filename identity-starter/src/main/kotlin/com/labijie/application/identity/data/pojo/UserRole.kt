@@ -14,7 +14,7 @@ import kotlin.Long
  * Origin Exposed Table:
  * @see com.labijie.application.identity.data.UserRoleTable
  */
-public class UserRole {
+public open class UserRole {
   public var userId: Long = 0L
 
   public var roleId: Long = 0L

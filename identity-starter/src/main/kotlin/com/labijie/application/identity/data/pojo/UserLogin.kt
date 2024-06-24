@@ -15,7 +15,7 @@ import kotlin.String
  * Origin Exposed Table:
  * @see com.labijie.application.identity.data.UserLoginTable
  */
-public class UserLogin {
+public open class UserLogin {
   public var loginProvider: String = ""
 
   public var providerKey: String = ""

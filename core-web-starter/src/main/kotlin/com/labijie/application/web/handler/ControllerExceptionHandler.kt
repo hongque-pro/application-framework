@@ -4,10 +4,13 @@ import com.fasterxml.jackson.core.JacksonException
 import com.fasterxml.jackson.databind.JsonMappingException
 import com.labijie.application.*
 import com.labijie.application.ApplicationErrors.UnhandledError
+import com.labijie.application.component.IWebErrorTranslator
 import com.labijie.infra.utils.ifNullOrBlank
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.validation.ConstraintViolationException
 import org.slf4j.LoggerFactory
+import org.springframework.context.ApplicationContext
+import org.springframework.context.ApplicationContextAware
 import org.springframework.context.MessageSource
 import org.springframework.core.Ordered
 import org.springframework.http.HttpStatus
@@ -26,7 +29,6 @@ import org.springframework.web.method.annotation.HandlerMethodValidationExceptio
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException
 import org.springframework.web.servlet.NoHandlerFoundException
 import java.lang.reflect.UndeclaredThrowableException
-import kotlin.collections.toMap
 
 /**
  * Created with IntelliJ IDEA.
@@ -34,12 +36,22 @@ import kotlin.collections.toMap
  * @date 2019-09-05
  */
 @RestControllerAdvice
-class ControllerExceptionHandler(private val messageSource: MessageSource) : Ordered {
+class ControllerExceptionHandler(private val messageSource: MessageSource) : Ordered, ApplicationContextAware {
     override fun getOrder(): Int {
         return Int.MAX_VALUE
     }
 
+    private lateinit var applicationContext: ApplicationContext
+
     private val logger = LoggerFactory.getLogger(ControllerExceptionHandler::class.java)
+
+    private val errorTranslators by lazy {
+        if (this::applicationContext.isInitialized) {
+            applicationContext.getBeanProvider(IWebErrorTranslator::class.java).orderedStream().toList()
+        } else {
+            listOf()
+        }
+    }
 
 
     @ExceptionHandler(AuthenticationException::class)
@@ -169,7 +181,9 @@ class ControllerExceptionHandler(private val messageSource: MessageSource) : Ord
         if (jsonException != null) {
             val details = if (jsonException is JsonMappingException) {
                 mutableMapOf(
-                    jsonException.pathReference to jsonException.localizedMessage.ifNullOrBlank { jsonException.message ?: "Json deserialize failed." }
+                    jsonException.pathReference to jsonException.localizedMessage.ifNullOrBlank {
+                        jsonException.message ?: "Json deserialize failed."
+                    }
                 )
             } else null
             val error = ErrorResponse(ApplicationErrors.InvalidRequestFormat, details = details)
@@ -177,7 +191,7 @@ class ControllerExceptionHandler(private val messageSource: MessageSource) : Ord
         }
 
         val response = handleUnhandledException(request, e)
-        return ResponseEntity(response, HttpStatus.INTERNAL_SERVER_ERROR)
+        return response
     }
 
     @ExceptionHandler(NoHandlerFoundException::class)
@@ -191,11 +205,17 @@ class ControllerExceptionHandler(private val messageSource: MessageSource) : Ord
     }
 
     @ExceptionHandler(Throwable::class)
-    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-    fun handleUnhandledException(request: HttpServletRequest, e: Throwable): ErrorResponse {
+    fun handleUnhandledException(request: HttpServletRequest, e: Throwable): ResponseEntity<ErrorResponse> {
         val error = when (e) {
             is UndeclaredThrowableException -> e.undeclaredThrowable ?: e
-            else -> e
+            else -> {
+                for (t in errorTranslators) {
+                    if(t.isSupported(e)) {
+                        return ResponseEntity(t.translate(e), HttpStatus.OK)
+                    }
+                }
+                e
+            }
         }
 
         logger.error(
@@ -207,6 +227,10 @@ class ControllerExceptionHandler(private val messageSource: MessageSource) : Ord
             Request URI: ${request.requestURI}
             """, error
         )
-        return ErrorResponse(UnhandledError)
+        return ResponseEntity(ErrorResponse(UnhandledError), HttpStatus.INTERNAL_SERVER_ERROR)
+    }
+
+    override fun setApplicationContext(applicationContext: ApplicationContext) {
+        this.applicationContext = applicationContext
     }
 }

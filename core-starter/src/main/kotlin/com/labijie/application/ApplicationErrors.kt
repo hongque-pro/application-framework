@@ -22,7 +22,7 @@ object ApplicationErrors {
     const val InvalidPhoneNumber = "invalid_phone_number"
     @ErrorDescription("用户名格式不正确")
     const val InvalidUsername = "invalid_username"
-    @ErrorDescription("名字格式不正确")
+    @ErrorDescription("名称格式不正确")
     const val InvalidDisplayName = "invalid_display_name"
     @ErrorDescription("电子邮件地址格式不正确")
     const val InvalidEmailAddress = "invalid_email_address"

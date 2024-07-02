@@ -4,14 +4,8 @@
  */
 package com.labijie.application.configuration
 
-import com.labijie.application.component.IEmailAddressValidator
-import com.labijie.application.component.IPhoneValidator
-import com.labijie.application.component.IStrongPasswordValidator
-import com.labijie.application.component.IUserNameValidator
-import com.labijie.application.component.impl.NationalPhoneValidator
-import com.labijie.application.component.impl.EmailAddressValidator
-import com.labijie.application.component.impl.StrongPasswordValidator
-import com.labijie.application.component.impl.UsernameValidator
+import com.labijie.application.component.*
+import com.labijie.application.component.impl.*
 import org.springframework.boot.autoconfigure.AutoConfigureOrder
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.context.annotation.Bean
@@ -45,5 +39,11 @@ class ApplicationDefaultsAutoConfiguration {
     @ConditionalOnMissingBean(IStrongPasswordValidator::class)
     fun strongPasswordValidator(): StrongPasswordValidator {
         return StrongPasswordValidator()
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(IDisplayNameValidator::class)
+    fun displayNameValidator(): DisplayNameValidator {
+        return DisplayNameValidator()
     }
 }

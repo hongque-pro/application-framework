@@ -20,7 +20,7 @@ class FacebookParser : IOAuth2UserParser {
         return OAuth2UserToken().apply {
             this.email = user.attributes["email"]?.toString() ?: ""
             this.avatarUrl = user.attributes["avatar_url"]?.toString() ?: ""
-            this.displayName = user.attributes["login"]?.toString() ?: ""
+            this.displayName = user.attributes["name"]?.toString() ?: ""
         }
     }
 }

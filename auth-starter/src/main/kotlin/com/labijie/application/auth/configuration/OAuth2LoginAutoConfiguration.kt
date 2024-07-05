@@ -45,7 +45,7 @@ class OAuth2LoginAutoConfiguration : WebMvcConfigurer {
     @ConditionalOnMissingBean(ClientRegistrationRepository::class)
     fun clientRegistrationRepository(environment: Environment): ClientRegistrationRepository {
         val clients = ClientRegistrationBuilder.build(environment);
-        return if(clients.isEmpty()) NoneClientRegistrationRepository() else InMemoryClientRegistrationRepository()
+        return if(clients.isEmpty()) NoneClientRegistrationRepository() else InMemoryClientRegistrationRepository(clients)
     }
 
     @Bean

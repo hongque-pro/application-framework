@@ -18,11 +18,6 @@ class OAuth2LoginCustomizer(
         val handler = OAuth2ClientAuthenticationCompleteHandler(parserUtilities, authProperties)
 
         t.let {
-            if (authProperties.oauth2LoginBaseUrl.isNotBlank()) {
-                it.redirectionEndpoint { endpoint ->
-                    endpoint.baseUri(authProperties.oauth2LoginBaseUrl)
-                }
-            }
             it.successHandler(handler)
             it.failureHandler(handler)
         }

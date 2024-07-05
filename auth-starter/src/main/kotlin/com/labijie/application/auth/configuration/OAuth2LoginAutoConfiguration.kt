@@ -4,6 +4,7 @@
  */
 package com.labijie.application.auth.configuration
 
+import com.labijie.application.auth.component.NoneClientRegistrationRepository
 import com.labijie.application.auth.component.OAuth2UserRegistrationIntegration
 import com.labijie.application.auth.controller.OAuth2ClientController
 import com.labijie.application.auth.event.OAuth2ClientSignIngEvenListener
@@ -43,7 +44,8 @@ class OAuth2LoginAutoConfiguration : WebMvcConfigurer {
     @Bean
     @ConditionalOnMissingBean(ClientRegistrationRepository::class)
     fun clientRegistrationRepository(environment: Environment): ClientRegistrationRepository {
-        return InMemoryClientRegistrationRepository(ClientRegistrationBuilder.build(environment))
+        val clients = ClientRegistrationBuilder.build(environment);
+        return if(clients.isEmpty()) NoneClientRegistrationRepository() else InMemoryClientRegistrationRepository()
     }
 
     @Bean

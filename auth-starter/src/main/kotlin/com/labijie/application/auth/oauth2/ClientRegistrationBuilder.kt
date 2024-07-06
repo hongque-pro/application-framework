@@ -13,8 +13,6 @@ import org.springframework.security.oauth2.client.registration.ClientRegistratio
 
 
 object ClientRegistrationBuilder {
-    private data class LoginProvideConfig(val clientId: String, val clientSecret: String)
-
     private fun getProvider(
         clientProperties: OAuth2ClientProperties,
         providerName: String

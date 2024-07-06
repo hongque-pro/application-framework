@@ -15,27 +15,42 @@ import org.springframework.security.oauth2.client.registration.ClientRegistratio
 object ClientRegistrationBuilder {
     private data class LoginProvideConfig(val clientId: String, val clientSecret: String)
 
-    private fun getProvider(clientProperties: OAuth2ClientProperties, providerName: String): OAuth2ClientProperties.Registration? {
+    private fun getProvider(
+        clientProperties: OAuth2ClientProperties,
+        providerName: String
+    ): OAuth2ClientProperties.Registration? {
         val r = clientProperties.registration[providerName]
-        if(r != null && !r.clientId.isNullOrBlank() && !r.clientId.isNullOrBlank()) {
+        if (r != null && !r.clientId.isNullOrBlank() && !r.clientId.isNullOrBlank()) {
             return r
         }
         return null
     }
 
-    private fun ClientRegistration.Builder.applyCommons(authProperties: AuthProperties, registration: OAuth2ClientProperties.Registration): ClientRegistration.Builder {
-        val baseUrl = authProperties.oauth2Login.redirectionBaseUrl
-        val redirectUri =  if(baseUrl.isNotBlank()) {
-            "${baseUrl}/{action}/oauth2/code/{registrationId}"
-        }else {
-            ""
+    private fun ClientRegistration.Builder.applyCommons(
+        authProperties: AuthProperties,
+        registration: OAuth2ClientProperties.Registration
+    ): ClientRegistration.Builder {
+        val baseUrl = authProperties.oauth2Login.redirectionBaseUrl.let {
+            if (it.endsWith("/")) {
+                it.trimEnd('/')
+            } else {
+                it
+            }
         }
 
-        if(redirectUri.isNotBlank()) {
-            this.redirectUri(redirectUri)
+        if (registration.redirectUri.isNullOrBlank()) {
+            if (baseUrl.isNotBlank()) {
+                this.redirectUri("${baseUrl}/{action}/oauth2/code/{registrationId}")
+            }
+        } else {
+            var uri = registration.redirectUri
+            if (baseUrl.isNotBlank()) {
+                uri = uri.replace("{baseUrl}", baseUrl)
+            }
+            this.redirectUri(uri)
         }
 
-        if(!registration.scope.isNullOrEmpty()) {
+        if (!registration.scope.isNullOrEmpty()) {
             this.scope(registration.scope)
         }
 

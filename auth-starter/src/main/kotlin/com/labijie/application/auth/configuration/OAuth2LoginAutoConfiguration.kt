@@ -20,6 +20,7 @@ import com.labijie.infra.oauth2.component.IOAuth2ServerRSAKeyPair
 import com.labijie.infra.oauth2.resource.configuration.ResourceServerAutoConfiguration
 import org.springframework.boot.autoconfigure.AutoConfigureAfter
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
+import org.springframework.boot.autoconfigure.security.oauth2.client.OAuth2ClientProperties
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.ComponentScan
 import org.springframework.context.annotation.Configuration
@@ -43,8 +44,8 @@ class OAuth2LoginAutoConfiguration : WebMvcConfigurer {
 
     @Bean
     @ConditionalOnMissingBean(ClientRegistrationRepository::class)
-    fun clientRegistrationRepository(environment: Environment): ClientRegistrationRepository {
-        val clients = ClientRegistrationBuilder.build(environment);
+    fun clientRegistrationRepository(authProperties: AuthProperties, properties: OAuth2ClientProperties): ClientRegistrationRepository {
+        val clients = ClientRegistrationBuilder.build(authProperties, properties);
         return if(clients.isEmpty()) NoneClientRegistrationRepository() else InMemoryClientRegistrationRepository(clients)
     }
 

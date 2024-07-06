@@ -63,16 +63,22 @@ class OAuth2ClientAuthenticationCompleteHandler(
             val clientRegistration =
                 clientRegistrationRepository.findByRegistrationId(authentication.authorizedClientRegistrationId)
 
-            if (authentication.principal is OidcUser) {
-                authentication.authorizedClientRegistrationId
-                consumeOidc2User(clientRegistration, authentication.principal as OidcUser)
-            } else if (authentication.principal is OAuth2User) {
-                consumeOAuth2User(clientRegistration, authentication.principal as OAuth2User)
-            } else {
-                throw BadCredentialsException("Principal is not an oauth2 user")
+            when (authentication.principal) {
+                is OidcUser -> {
+                    authentication.authorizedClientRegistrationId
+                    consumeOidc2User(clientRegistration, authentication.principal as OidcUser)
+                }
+
+                is OAuth2User -> {
+                    consumeOAuth2User(clientRegistration, authentication.principal as OAuth2User)
+                }
+
+                else -> {
+                    throw BadCredentialsException("Principal is not an oauth2 user")
+                }
             }
 
-            val uri = URIBuilder(authProperties.oauth2Login.redirectionUri).apply {
+            val uri = URIBuilder(authProperties.oauth2Login.handlerPageUri).apply {
                 val userToken = oauth2UserParserUtilities.parse(clientRegistration, authentication.principal)
 
 
@@ -120,7 +126,7 @@ class OAuth2ClientAuthenticationCompleteHandler(
     ) {
         logger.error("An error occurred while exchanging data with OAuth2 website.", exception)
 
-        val uri = URIBuilder(authProperties.oauth2Login.redirectionUri).apply {
+        val uri = URIBuilder(authProperties.oauth2Login.handlerPageUri).apply {
             this.addParameter("error", "oath2")
         }.build()
         response?.sendRedirect(uri.toString())

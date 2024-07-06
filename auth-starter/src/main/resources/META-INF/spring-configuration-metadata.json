@@ -24,10 +24,16 @@
       "defaultValue": "Phone"
     },
     {
-      "name": "application.auth.oauth2-login.redirection-uri",
+      "name": "application.auth.oauth2-login.handler-page-uri",
       "type": "java.lang.String",
       "sourceType": "com.labijie.application.auth.configuration.OAuth2LoginSettings",
       "defaultValue": "/"
+    },
+    {
+      "name": "application.auth.oauth2-login.redirection-base-url",
+      "type": "java.lang.String",
+      "sourceType": "com.labijie.application.auth.configuration.OAuth2LoginSettings",
+      "defaultValue": ""
     },
     {
       "name": "application.auth.register-controller-enabled",

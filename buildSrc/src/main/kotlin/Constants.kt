@@ -9,7 +9,6 @@ object Versions {
     const val springBoot = "3.2.0"
     const val antisamy="1.7.4"
     const val springDoc="2.2.0"
-    const val apachePOI = "5.1.0"
     const val uberH3 = "3.7.1"
 
     const val mysqlVersion="8.2.0"

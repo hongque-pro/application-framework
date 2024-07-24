@@ -12,7 +12,6 @@ import java.util.*
  * @date 2019-09-06
  */
 @EnableWebSecurity
-@EnableWebMvc
 @SpringBootApplication
 class DummyApplication
 

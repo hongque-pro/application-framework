@@ -60,7 +60,7 @@ class ControllerExceptionHandler(private val messageSource: MessageSource) : Ord
         if (e is OAuth2AuthenticationException) {
             return ErrorResponse(
                 e.error.errorCode,
-                localeErrorMessage(e.error.errorCode, e.error.description ?: e.error.errorCode)
+                localeErrorMessage(e.error.errorCode, e.error.description)
             )
         }
         return ErrorResponse(OAuth2ErrorCodes.ACCESS_DENIED)
@@ -141,9 +141,8 @@ class ControllerExceptionHandler(private val messageSource: MessageSource) : Ord
     @ExceptionHandler(MissingServletRequestParameterException::class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     fun handle(request: HttpServletRequest, e: MissingServletRequestParameterException): ErrorResponse {
-        return MissingParameterResponse(
+        return RequestParameterResponse(
             ApplicationErrors.RequestParameterMissed,
-            e.localizedMessage,
             e.parameterName
         )
     }
@@ -151,10 +150,9 @@ class ControllerExceptionHandler(private val messageSource: MessageSource) : Ord
     @ExceptionHandler(MethodArgumentTypeMismatchException::class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     fun handle(request: HttpServletRequest, e: MethodArgumentTypeMismatchException): ErrorResponse {
-        return MissingParameterResponse(
+        return RequestParameterResponse(
             ApplicationErrors.BadRequestParameter,
-            e.localizedMessage,
-            e.parameter.parameterName.orEmpty()
+            e.parameter.parameterName
         )
     }
 

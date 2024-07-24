@@ -1,5 +1,3 @@
-import org.gradle.internal.impldep.com.fasterxml.jackson.databind.ObjectMapper
-
 infra {
     useInfraOrmGenerator(Versions.infraOrm)
     processSpringMessageSource("com/labijie/application")
@@ -7,7 +5,9 @@ infra {
 
 dependencies {
     api("com.labijie.infra:commons-springboot-starter:${Versions.infraCommons}")
-    api("commons-validator:commons-validator:${ApacheVersions.commonsValidator}")
+    api("commons-validator:commons-validator:${ApacheVersions.commonsValidator}") {
+        exclude(module = "commons-logging")
+    }
     api("com.googlecode.libphonenumber:libphonenumber:${Versions.libphonenumber}")
     api("org.jsoup:jsoup:${Versions.jsoup}")
     api("org.springframework:spring-tx")

@@ -3,10 +3,10 @@ package com.labijie.application.configuration
 import com.labijie.application.JsonMode
 import com.labijie.application.component.IHumanChecker
 import com.labijie.application.component.impl.NoneHumanChecker
-import com.labijie.application.web.controller.CaptchaController
 import com.labijie.application.service.CaptchaHumanChecker
 import com.labijie.application.web.WrappedResponseBodyAdvice
 import com.labijie.application.web.antMatchers
+import com.labijie.application.web.controller.CaptchaController
 import com.labijie.application.web.converter.EnhanceStringToEnumConverterFactory
 import com.labijie.application.web.handler.ControllerExceptionHandler
 import com.labijie.application.web.interceptor.HttpCacheInterceptor
@@ -53,7 +53,7 @@ import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandl
  * @author Anders Xiao
  * @date 2019-09-05
  */
-@EnableWebMvc
+//@EnableWebMvc
 @Configuration(proxyBeanMethods = false)
 @Import(DefaultResourceSecurityConfiguration::class, SpringDocAutoConfiguration::class)
 @AutoConfigureAfter(Environment::class)
@@ -109,6 +109,9 @@ class ApplicationWebAutoConfiguration(private val properties: ApplicationWebProp
     }
 
     override fun addInterceptors(registry: InterceptorRegistry) {
+//        if(properties.localeResolver.enabled) {
+//            registry.addInterceptor(ApplicationLocaleInterceptor(applicationContext)).order(Ordered.HIGHEST_PRECEDENCE)
+//        }
         registry.addInterceptor(
             HumanVerifyInterceptor(
                 humanChecker ?: NoneHumanChecker()

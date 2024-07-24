@@ -5,6 +5,10 @@
       "type": "com.labijie.application.configuration.ApplicationWebProperties"
     },
     {
+      "name": "application.web.locale-resolver",
+      "type": "com.labijie.application.configuration.LocaleResolverSettings"
+    },
+    {
       "name": "application.web.service-controllers"
     }
   ],
@@ -15,8 +19,9 @@
       "type": "java.lang.Boolean"
     },
     {
-      "name": "application.web.application-locale-resolver-enabled",
+      "name": "application.web.application.web.locale-resolver.enabled",
       "description": "Enable locale resolver from localization service, etc",
+      "sourceType": "com.labijie.application.configuration.LocaleResolverSettings",
       "type": "java.lang.Boolean",
       "defaultValue": true
     },
@@ -24,6 +29,7 @@
       "name": "application.web.json-mode",
       "description": "If use javascript mode, web server will serialize int64, double to string in json, as same as deserialization",
       "type": "com.labijie.application.JsonMode",
+      "sourceType": "com.labijie.application.configuration.ApplicationWebProperties",
       "defaultValue": "javascript"
     }
   ]

@@ -27,6 +27,7 @@ open class DaprDisposable(
         if(daprProperties.shutdownDaprOnExit) {
             var retryCount = 0
             val ex: Throwable? = null
+            logger.info("Shutdown dapr ...")
             while (true) {
                 try {
                     daprClient.shutdown()?.block()

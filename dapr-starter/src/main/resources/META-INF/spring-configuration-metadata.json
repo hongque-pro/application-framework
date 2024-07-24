@@ -40,14 +40,14 @@
     {
       "name": "application.dapr.cluster-notification.enabled",
       "type": "java.lang.Boolean",
-      "sourceType": "com.labijie.application.dapr.configuration.ClusterEventSettings",
+      "sourceType": "com.labijie.application.dapr.configuration.ClusterNotificationSettings",
       "defaultValue": false
     },
     {
       "name": "application.dapr.cluster-notification.binding.binding-name",
       "type": "java.lang.String",
       "sourceType": "com.labijie.application.dapr.configuration.BindingConfig",
-      "defaultValue": "localization-changed"
+      "defaultValue": "cluster-event"
     },
     {
       "name": "application.dapr.cluster-notification.binding.operation",

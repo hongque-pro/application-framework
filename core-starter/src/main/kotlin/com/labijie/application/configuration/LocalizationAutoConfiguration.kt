@@ -5,6 +5,7 @@ import com.labijie.application.localization.LocalizationMessageSource
 import com.labijie.application.localization.ResourceBundleMessagesLoader
 import com.labijie.application.service.impl.JdbcLocalizationService
 import com.labijie.application.service.impl.NoneLocalizationService
+import com.labijie.caching.ICacheManager
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.autoconfigure.AutoConfigureBefore
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean
@@ -35,7 +36,6 @@ class LocalizationAutoConfiguration {
     @Lazy
     @ConditionalOnMissingBean(ILocalizationService::class)
     fun localizationService(
-        environment: Environment,
         @Autowired(required = false) dataSource: DataSource?,
         @Autowired(required = false) transactionTemplate: TransactionTemplate?) : ILocalizationService {
         return if(transactionTemplate != null && dataSource != null) {

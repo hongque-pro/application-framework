@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.type.TypeReference
 import com.labijie.application.component.IMessageService
 import com.labijie.application.copier.BeanCopierUtils
 import com.labijie.application.model.SmsAssociated
+import com.labijie.application.service.ILocalizationService
 import com.labijie.caching.ICacheManager
 import com.labijie.infra.SecondIntervalTimeoutTimer
 import com.labijie.infra.json.JacksonHelper
@@ -17,6 +18,7 @@ import org.springframework.transaction.TransactionDefinition
 import org.springframework.transaction.annotation.Isolation
 import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.support.*
+import org.springframework.util.LinkedCaseInsensitiveMap
 import org.springframework.web.client.RestTemplate
 import org.springframework.web.util.UriBuilder
 import java.math.BigDecimal
@@ -29,7 +31,7 @@ import java.time.OffsetDateTime
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 import java.time.format.DateTimeParseException
-import java.util.Locale
+import java.util.*
 import kotlin.reflect.KClass
 
 
@@ -456,7 +458,7 @@ fun ByteArray?.isNullOrEmpty(): Boolean {
 }
 
 
-fun ICacheManager.removeAfterTransactionCommit(key: String, region: String = "", delay: Duration = Duration.ZERO) {
+fun ICacheManager.removeAfterTransactionCommit(key: String, region: String? = null, delay: Duration = Duration.ZERO) {
     val sync = CacheRemoveTransactionSynchronization(this, key, region, delay)
     TransactionSynchronizationManager.registerSynchronization(sync)
 }
@@ -464,7 +466,7 @@ fun ICacheManager.removeAfterTransactionCommit(key: String, region: String = "",
 internal class CacheRemoveTransactionSynchronization(
     private val cacheManager: ICacheManager,
     private val key: String,
-    private val region: String,
+    private val region: String?,
     private val delay: Duration
 ) : TransactionSynchronization {
     override fun afterCommit() {
@@ -476,6 +478,29 @@ internal class CacheRemoveTransactionSynchronization(
             cacheManager.remove(key, region)
         }
     }
+}
+
+private var localeService: ILocalizationService?  = null
+
+private fun localeService(): ILocalizationService? {
+    val service = localeService
+    if(service == null) {
+        localeService = if (SpringContext.isInitialized) {
+            SpringContext.current.getBean(ILocalizationService::class.java)
+        } else null
+        return localeService
+    }
+    return service
+}
+fun defaultLocale(): Locale {
+    val service = localeService()
+    return service?.getDefault() ?: Locale.getDefault() ?: Locale.US
+}
+
+fun findLocale(locale: Locale, supportedLocales: List<Locale>) : Locale? {
+    return supportedLocales.firstOrNull { it.getId().equals(locale.getId(), ignoreCase = true) }
+        ?: supportedLocales.firstOrNull { it.country.isNullOrBlank() && (locale.language ?: "").equals(it.language, ignoreCase = true) }
+        ?: supportedLocales.firstOrNull { (locale.language ?: "").equals(it.language, ignoreCase = true) }
 }
 
 fun localeMessage(locale: Locale, code: String, vararg args: Any): String {
@@ -515,3 +540,38 @@ fun localeErrorMessage(errorCode: String, args: Collection<Any>? = null, default
     return e?: errorCode.replace("_", " ")
 }
 
+fun <V> Map<out String, V>.toCaseInsensitiveMap(): MutableMap<String, V> {
+    val map = LinkedCaseInsensitiveMap<V>(this.size)
+    this.forEach {
+        map[it.key] = it.value
+    }
+    return map
+}
+
+fun  <V> caseInsensitiveMapOf(vararg pairs: Pair<String, V>): MutableMap<String, V>  {
+    return LinkedCaseInsensitiveMap<V>(pairs.size).apply {
+        pairs.forEach {
+            this[it.first] = it.second
+        }
+    }
+}
+
+inline fun <reified V> caseInsensitiveMapOf(expectedSize: Int = 0) = LinkedCaseInsensitiveMap<V>(expectedSize)
+
+
+fun syncDatabaseTransaction(commit: (()->Unit)? = null, rollback: (()->Unit)? = null) {
+    if(commit != null || rollback != null) {
+        TransactionSynchronizationManager.registerSynchronization(object : TransactionSynchronization {
+            override fun afterCompletion(status: Int) {
+                if (status == TransactionSynchronization.STATUS_ROLLED_BACK) {
+                    rollback?.invoke()
+                }
+                if (status == TransactionSynchronization.STATUS_COMMITTED) {
+                    commit?.invoke()
+                }
+            }
+        })
+    }
+}
+
+fun Locale.getId() = this.toLanguageTag()

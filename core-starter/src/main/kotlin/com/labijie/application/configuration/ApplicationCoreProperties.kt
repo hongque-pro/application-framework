@@ -12,7 +12,6 @@ class ApplicationCoreProperties {
         private const val DEFAULT_DES_SECRET = "!QAZde#@W1122"
     }
 
-
     var desSecret: String = DEFAULT_DES_SECRET
     var preloadLocales: String = "zh_CN,en_US"
 

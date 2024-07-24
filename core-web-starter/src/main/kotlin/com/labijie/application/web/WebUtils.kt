@@ -15,7 +15,9 @@ import org.springframework.web.context.request.RequestContextHolder
 import org.springframework.web.context.request.ServletRequestAttributes
 import org.springframework.web.method.HandlerMethod
 import java.io.*
+import java.net.InetAddress
 import java.net.URLEncoder
+import java.net.UnknownHostException
 import java.nio.charset.Charset
 import java.util.*
 import kotlin.reflect.KClass
@@ -27,10 +29,15 @@ import kotlin.reflect.KClass
  * @date 2019-09-05
  */
 
+private const val LOCALHOST_IP = "127.0.0.1"
+
+private const val LOCALHOST_IPV6 = "0:0:0:0:0:0:0:1"
+
+private const val EMPTY_IPV4 = "0.0.0.0"
 
 private fun HttpServletRequest.getHeaderValue(name: String): String? {
     val headValue = this.getHeader(name) //squid
-    return if (!headValue.isNullOrBlank() && !"unKnown".equals(headValue, ignoreCase = true)) {
+    return if (!headValue.isNullOrBlank() && !"UnKnown".equals(headValue, ignoreCase = true)) {
         headValue.getFirstValue()
     } else null
 }
@@ -45,10 +52,29 @@ private fun String.getFirstValue(): String {
 }
 
 fun HttpServletRequest.getRealIp(): String {
-    return this.getHeaderValue("X-Forwarded-For")
+    val ip = this.getHeaderValue("X-Forwarded-For")
             ?: this.getHeaderValue("X-Real-IP")
             ?: this.getHeaderValue("WL-Proxy-Client-IP")
-            ?: this.remoteAddr.ifNullOrBlank { "0.0.0.0" }
+            ?: this.getHeaderValue("Proxy-Client-IP")
+
+    return if(ip.isNullOrBlank()) {
+        val remoteIP = this.remoteAddr
+        val i = if (LOCALHOST_IP.equals(remoteIP, ignoreCase = true) || LOCALHOST_IPV6.equals(remoteIP, ignoreCase = true)) {
+            try {
+                InetAddress.getLocalHost()?.hostAddress ?: EMPTY_IPV4
+            } catch (e: UnknownHostException) {
+                EMPTY_IPV4
+            }
+        } else EMPTY_IPV4
+
+        i.let {
+            if (it.isNotBlank() && it.length > 15 && it.indexOf(",") > 0) {
+                it.getFirstValue()
+            } else EMPTY_IPV4
+        }
+    }else {
+        EMPTY_IPV4
+    }
 }
 
 

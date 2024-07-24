@@ -132,7 +132,7 @@ class HttpClientLoggingInterceptor(
             stringBuilder.appendLine()
             stringBuilder.appendLine("============== Http Invocation ==============")
             stringBuilder.appendLine("---------------- Request ----------------")
-            stringBuilder.appendLine("OkHttp Settings:")
+            stringBuilder.appendLine("HTTP Settings:")
             stringBuilder.appendLine("   Connect Timeout: ${httpClientProperties.connectTimeout}")
             stringBuilder.appendLine("   Read Timeout: ${httpClientProperties.readTimeout}")
             stringBuilder.appendLine("   Write Timeout: ${httpClientProperties.writeTimeout}")

@@ -1,9 +1,11 @@
 package com.labijie.application.identity
 
+import com.labijie.application.getId
 import com.labijie.application.identity.data.pojo.User
 import com.labijie.infra.utils.ShortId
+import org.apache.commons.lang3.LocaleUtils
 import java.time.ZoneOffset
-import java.util.UUID
+import java.util.*
 
 /**
  * Created with IntelliJ IDEA.
@@ -16,13 +18,14 @@ object IdentityUtils {
     @JvmStatic
     fun createUser(id: Long,
                    userName: String,
-                   userType: Byte): User {
+                   userType: Byte = 0,
+                   locale: Locale? = null): User {
         return User().apply {
             this.id = id
             this.userName = userName
             this.lockoutEnd = System.currentTimeMillis()
             this.lockoutEnabled = false
-            this.language = "zh-CN"
+            this.language = (locale ?: Locale.US).getId()
             this.accessFailedCount = 0
             this.concurrencyStamp = ShortId.newId()
             this.email = "${userName.lowercase()}@null.null"
@@ -55,3 +58,10 @@ val User.isNullPhoneNumber
     get() = this.phoneNumber.startsWith("N_")
 
 fun User.isEnabled(): Boolean = !this.lockoutEnabled || this.lockoutEnd < System.currentTimeMillis()
+
+val User.locale: Locale?
+    get() = try {
+        LocaleUtils.toLocale(this.language)
+    }catch (e: IllegalArgumentException) {
+        null
+    }

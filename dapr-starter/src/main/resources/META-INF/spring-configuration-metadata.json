@@ -10,6 +10,18 @@
       "type": "com.labijie.application.dapr.configuration.MessageServiceConfig",
       "sourceType": "com.labijie.application.dapr.configuration.DaprProperties",
       "sourceMethod": "getMessageService()"
+    },
+    {
+      "name": "application.dapr.cluster-notification",
+      "type": "com.labijie.application.dapr.configuration.ClusterNotificationSettings",
+      "sourceType": "com.labijie.application.dapr.configuration.DaprProperties",
+      "sourceMethod": "getBindings()"
+    },
+    {
+      "name": "application.dapr.cluster-notification.binding",
+      "type": "com.labijie.application.dapr.configuration.BindingConfig",
+      "sourceType": "com.labijie.application.dapr.configuration.ClusterNotificationSettings",
+      "sourceMethod": "getLocalization()"
     }
   ],
   "properties": [
@@ -24,6 +36,24 @@
       "type": "java.lang.Boolean",
       "sourceType": "com.labijie.application.dapr.configuration.DaprProperties",
       "defaultValue": true
+    },
+    {
+      "name": "application.dapr.cluster-notification.enabled",
+      "type": "java.lang.Boolean",
+      "sourceType": "com.labijie.application.dapr.configuration.ClusterEventSettings",
+      "defaultValue": false
+    },
+    {
+      "name": "application.dapr.cluster-notification.binding.binding-name",
+      "type": "java.lang.String",
+      "sourceType": "com.labijie.application.dapr.configuration.BindingConfig",
+      "defaultValue": "localization-changed"
+    },
+    {
+      "name": "application.dapr.cluster-notification.binding.operation",
+      "type": "java.lang.String",
+      "sourceType": "com.labijie.application.dapr.configuration.BindingConfig",
+      "defaultValue": "create"
     },
     {
       "name": "application.dapr.message-service.sms-pubsub-name",

@@ -7,4 +7,5 @@ spring:
 infra:
   exposed:
     show-sql: true
-    generate-schema: true
+    generate-schema:
+      enabled: true

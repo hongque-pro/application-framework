@@ -14,6 +14,7 @@ object LocalizationLanguageTable: Table("localization_languages") {
     val language = varchar("language", 4).index()
     val country = varchar("region", 4)
     val disabled = bool("disabled").default(false)
+    val default = bool("default").default(false)
 
     override val primaryKey: PrimaryKey
         get() = PrimaryKey(locale)

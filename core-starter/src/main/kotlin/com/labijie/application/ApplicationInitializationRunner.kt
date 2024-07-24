@@ -14,8 +14,10 @@ import com.labijie.application.localization.LocalizationMessageSource
 import com.labijie.application.service.ILocalizationService
 import com.labijie.infra.getApplicationName
 import com.labijie.infra.json.JacksonHelper
+import com.labijie.infra.orm.withoutSqlLog
 import com.labijie.infra.utils.ifNullOrBlank
 import com.labijie.infra.utils.logger
+import com.labijie.infra.utils.throwIfNecessary
 import com.labijie.infra.utils.toLocalDateTime
 import com.sun.management.OperatingSystemMXBean
 import org.apache.commons.lang3.LocaleUtils
@@ -106,29 +108,36 @@ class ApplicationInitializationRunner<T : ConfigurableApplicationContext>(
     }
 
     private fun initLocalization() {
+        withoutSqlLog {
+            val locales = applicationCoreProperties.preloadLocales
+            val messageSource =
+                applicationContext.getBeanProvider(MessageSource::class.java).ifAvailable as? LocalizationMessageSource
+            if (locales.isNotBlank() && messageSource != null) {
+                val localeList = locales.split(",").mapNotNull {
+                    try {
+                        LocaleUtils.toLocale(it.trim())
+                    } catch (_: IllegalArgumentException) {
+                        null
+                    }
+                }
 
-        val locales = applicationCoreProperties.preloadLocales
-        val messageSource =
-            applicationContext.getBeanProvider(MessageSource::class.java).ifAvailable as? LocalizationMessageSource
-        if (locales.isNotBlank() && messageSource != null) {
-            val localeList = locales.split(",").mapNotNull {
+
+                val bundleList =
+                    applicationContext.getBeanProvider(ILocalizationResourceBundle::class.java).orderedStream().toList()
+                        .flatMap { b ->
+                            b.getResources()
+                        }.toTypedArray()
+
+                messageSource.loadResourceBundle(*bundleList)
                 try {
-                    LocaleUtils.toLocale(it.trim())
-                } catch (_: IllegalArgumentException) {
-                    null
+                    messageSource.saveMessagesFromExistedBundle(*localeList.toTypedArray())
+                } catch (e: Throwable) {
+                    e.throwIfNecessary()
+                    logger.error("Save locale message bundle to jdbc failed")
                 }
             }
-
-
-            val bundleList =
-                applicationContext.getBeanProvider(ILocalizationResourceBundle::class.java).orderedStream().toList()
-                    .flatMap { b ->
-                        b.getResources()
-                    }.toTypedArray()
-
-            messageSource.loadResourceBundle(*bundleList)
-            messageSource.preloadMessages(*localeList.toTypedArray())
         }
+
     }
 
     private fun initHttpClientLogger() {
@@ -140,8 +149,10 @@ class ApplicationInitializationRunner<T : ConfigurableApplicationContext>(
     private fun initErrorRegistrations() {
         try {
             thread {
-                errorRegistrations.orderedStream().forEach {
-                    it.register(errorRegistry, localizationService)
+                withoutSqlLog {
+                    errorRegistrations.orderedStream().forEach {
+                        it.register(errorRegistry, localizationService)
+                    }
                 }
             }
         } catch (e: Throwable) {
@@ -167,7 +178,9 @@ class ApplicationInitializationRunner<T : ConfigurableApplicationContext>(
             val moduleClass = it::class.java
             val method = tryGetMethod(moduleClass)
             if (method == null) {
-                logger.warn("Find bean implements this interface (bean type: ${moduleClass.name})., but no have 'initialize' method")
+                if(logger.isDebugEnabled) {
+                    logger.warn("Find bean implements this interface (bean type: ${moduleClass.name})., but no have 'initialize' method")
+                }
             } else {
                 try {
                     val parameters = method.parameters.map { param ->

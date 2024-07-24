@@ -2,9 +2,9 @@ package com.labijie.application.localization
 
 import com.labijie.application.service.ILocalizationService
 import com.labijie.application.service.impl.NoneLocalizationService
+import com.labijie.application.service.setMessages
 import org.slf4j.LoggerFactory
 import org.springframework.context.*
-import org.springframework.context.support.MessageSourceAccessor
 import java.util.*
 
 /**
@@ -21,7 +21,7 @@ class LocalizationMessageSource(private val loader: ResourceBundleMessagesLoader
     private lateinit var applicationContext: ApplicationContext
     private var localizationService: ILocalizationService? = null
 
-    fun preloadMessages(vararg locales: Locale) {
+    fun saveMessagesFromExistedBundle(vararg locales: Locale) {
         localizationService?.let {
             svc->
             locales.forEach {

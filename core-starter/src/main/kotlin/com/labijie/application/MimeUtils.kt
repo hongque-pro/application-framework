@@ -1,5 +1,8 @@
 package com.labijie.application
 
+import org.apache.commons.collections.map.CaseInsensitiveMap
+import org.springframework.util.LinkedCaseInsensitiveMap
+
 /**
  * Created with IntelliJ IDEA.
  * @author Anders Xiao
@@ -568,7 +571,7 @@ object MimeUtils {
         ".xml" to "text/xml",
         ".xmta" to "application/xml",
         ".xof" to "x-world/x-vrml",
-        ".XOML" to "text/plain",
+        ".xoml" to "text/plain",
         ".xpm" to "image/x-xpixmap",
         ".xps" to "application/vnd.ms-xpsdocument",
         ".xrm-ms" to "text/xml",
@@ -583,7 +586,7 @@ object MimeUtils {
         ".xwd" to "image/x-xwindowdump",
         ".z" to "application/x-compress",
         ".zip" to "application/x-zip-compressed"
-    )
+    ).toCaseInsensitiveMap()
 
     private val mimes = mapOf(
         "application/fsharp-script" to ".fsx",
@@ -601,7 +604,7 @@ object MimeUtils {
         "application/x-x509-ca-cert" to ".cer",
         "application/xhtml+xml" to ".xhtml",
         "application/xml" to ".xml",  // anomoly, .xml -> text/xml, but application/xml -> many thingss, but all are xml, so safest is .xml
-        "audio/aac" to ".AAC",
+        "audio/aac" to ".aac",
         "audio/aiff" to ".aiff",
         "audio/basic" to ".snd",
         "audio/mid" to ".midi",
@@ -631,7 +634,7 @@ object MimeUtils {
         "video/x-la-asf" to ".lsf",
         "video/x-ms-asf" to ".asf",
         "x-world/x-vrml" to ".xof"
-    )
+    ).toCaseInsensitiveMap()
 
     fun getMimeByExtensions(ext: String): String {
         val normalized = if (!ext.startsWith(".")) {
@@ -641,7 +644,7 @@ object MimeUtils {
         return this.extensions.getOrDefault(normalized, "application/octet-stream")
     }
 
-    fun getExtensionsByMime(mime: String): String {
-        return this.mimes.getOrDefault(mime, "application/octet-stream")
+    fun getExtensionsByMime(mime: String, default: String? = null): String {
+        return this.mimes.getOrDefault(mime, default ?: "")
     }
 }

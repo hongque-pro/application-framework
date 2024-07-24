@@ -20,9 +20,11 @@ class DaprProperties {
     var jsonMode: JsonMode = JsonMode.NORMAL
     var shutdownDaprOnExit: Boolean = true
 
-
     @NestedConfigurationProperty
     val messageService: MessageServiceConfig = MessageServiceConfig()
+
+    @NestedConfigurationProperty
+    val clusterNotification: ClusterNotificationSettings = ClusterNotificationSettings()
 
 
     val appId: String by lazy {

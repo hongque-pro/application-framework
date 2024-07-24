@@ -49,7 +49,8 @@ open class DefaultIdentityService constructor(
                 accountNonExpired = true,
                 accountNonLocked = true,
                 twoFactorEnabled = false,
-                authorities = roles
+                authorities = roles,
+                attachedFields = mapOf("lang" to user.language)
         )
     }
 

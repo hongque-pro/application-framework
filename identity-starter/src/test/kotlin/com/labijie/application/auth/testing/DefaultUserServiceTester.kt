@@ -1,6 +1,5 @@
 package com.labijie.application.auth.testing
 
-import com.labijie.application.component.impl.NoneMessageService
 import com.labijie.application.exception.UserNotFoundException
 import com.labijie.application.identity.IdentityUtils
 import com.labijie.application.identity.configuration.IdentityProperties
@@ -15,7 +14,6 @@ import com.labijie.application.identity.model.RegisterBy
 import com.labijie.application.identity.model.RegisterInfo
 import com.labijie.application.identity.model.SocialRegisterInfo
 import com.labijie.application.identity.service.impl.DefaultUserService
-import com.labijie.application.model.SmsCodeType
 import com.labijie.caching.ICacheManager
 import com.labijie.infra.IIdGenerator
 import com.labijie.infra.impl.DebugIdGenerator
@@ -25,7 +23,6 @@ import org.jetbrains.exposed.sql.deleteWhere
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.test.context.ContextConfiguration
 import org.springframework.test.context.junit.jupiter.SpringExtension
@@ -41,11 +38,11 @@ import kotlin.test.Test
  * Github: https://github.com/endink
  */
 
-@ExtendWith(SpringExtension::class)
 @ExposedTest
+@ExtendWith(SpringExtension::class)
 @ContextConfiguration(classes = [UnitTestConfiguration::class])
 //@AutoConfigureTestDatabase
-@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
+//@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 open class DefaultUserServiceTester {
 
     companion object {

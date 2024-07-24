@@ -7,13 +7,10 @@ import com.labijie.application.open.service.IOpenPartnerService
 import com.labijie.infra.orm.test.ExposedTest
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
-
 import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase
 import org.springframework.test.context.ContextConfiguration
 import org.springframework.test.context.junit.jupiter.SpringExtension
-import org.springframework.transaction.annotation.EnableTransactionManagement
 import kotlin.test.BeforeTest
 
 /**
@@ -22,9 +19,7 @@ import kotlin.test.BeforeTest
  */
 @ExtendWith(SpringExtension::class)
 @ExposedTest
-@EnableTransactionManagement
 @ContextConfiguration(classes = [UnitTestConfiguration::class])
-@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 class OpenAppServiceTester {
 
     @Autowired

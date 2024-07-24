@@ -15,6 +15,12 @@
       "type": "java.lang.Boolean"
     },
     {
+      "name": "application.web.application-locale-resolver-enabled",
+      "description": "Enable locale resolver from localization service, etc",
+      "type": "java.lang.Boolean",
+      "defaultValue": true
+    },
+    {
       "name": "application.web.json-mode",
       "description": "If use javascript mode, web server will serialize int64, double to string in json, as same as deserialization",
       "type": "com.labijie.application.JsonMode",

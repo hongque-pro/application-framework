@@ -4,6 +4,7 @@ package com.labijie.application.`data`.pojo.dsl
 
 import com.labijie.application.`data`.LocalizationLanguageTable
 import com.labijie.application.`data`.LocalizationLanguageTable.country
+import com.labijie.application.`data`.LocalizationLanguageTable.default
 import com.labijie.application.`data`.LocalizationLanguageTable.disabled
 import com.labijie.application.`data`.LocalizationLanguageTable.language
 import com.labijie.application.`data`.LocalizationLanguageTable.locale
@@ -76,6 +77,7 @@ public object LocalizationLanguageDSL {
     language,
     country,
     disabled,
+    default,
     )
   }
 
@@ -85,6 +87,7 @@ public object LocalizationLanguageDSL {
     plain.language = raw[language]
     plain.country = raw[country]
     plain.disabled = raw[disabled]
+    plain.default = raw[default]
     return plain
   }
 
@@ -102,6 +105,9 @@ public object LocalizationLanguageDSL {
     if(row.hasValue(disabled)) {
       plain.disabled = row[disabled]
     }
+    if(row.hasValue(default)) {
+      plain.default = row[default]
+    }
     return plain
   }
 
@@ -111,6 +117,7 @@ public object LocalizationLanguageDSL {
     language->String::class
     country->String::class
     disabled->Boolean::class
+    default->Boolean::class
     else->throw
         IllegalArgumentException("""Unknown column <${column.name}> for 'LocalizationLanguage'""")
   }
@@ -121,6 +128,7 @@ public object LocalizationLanguageDSL {
     LocalizationLanguageTable.language->this.language as T
     LocalizationLanguageTable.country->this.country as T
     LocalizationLanguageTable.disabled->this.disabled as T
+    LocalizationLanguageTable.default->this.default as T
     else->throw
         IllegalArgumentException("""Unknown column <${column.name}> for 'LocalizationLanguage'""")
   }
@@ -140,6 +148,8 @@ public object LocalizationLanguageDSL {
       builder[country] = raw.country
     if((list == null || list.contains(disabled)) && !ignore.contains(disabled))
       builder[disabled] = raw.disabled
+    if((list == null || list.contains(default)) && !ignore.contains(default))
+      builder[default] = raw.default
   }
 
   public fun ResultRow.toLocalizationLanguage(vararg selective: Column<*>): LocalizationLanguage {

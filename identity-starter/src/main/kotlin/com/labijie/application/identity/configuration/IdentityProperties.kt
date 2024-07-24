@@ -15,5 +15,6 @@ data class IdentityProperties(
         var cacheRegion:String = "",
         var cacheClientTimeout: Duration = Duration.ofMinutes(5),
         var cacheRoleTimeout: Duration = Duration.ofMinutes(10),
-        var cacheUserTimeout: Duration = Duration.ofMinutes(10)
+        var cacheUserTimeout: Duration = Duration.ofMinutes(10),
+
 )

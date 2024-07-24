@@ -11,7 +11,7 @@ object Versions {
     const val springDoc="2.2.0"
     const val uberH3 = "3.7.1"
 
-    const val mysqlVersion="8.2.0"
+    const val mysqlVersion="9.0.0"
 
     const val infraBom = "3.2.0"
     const val infraOrm = "2.0.3"

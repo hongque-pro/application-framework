@@ -23,4 +23,6 @@ public open class LocalizationLanguage {
   public var country: String = ""
 
   public var disabled: Boolean = false
+
+  public var default: Boolean = false
 }

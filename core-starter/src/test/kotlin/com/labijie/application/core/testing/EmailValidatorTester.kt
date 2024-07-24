@@ -4,7 +4,7 @@
  */
 package com.labijie.application.core.testing
 
-import com.labijie.application.validation.EmailValidatorUtils
+import org.apache.commons.validator.routines.EmailValidator
 import kotlin.test.Test
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
@@ -28,7 +28,7 @@ class EmailValidatorTester {
         assetInvalidEmail("@aaaemail163")
     }
 
-    private fun assetValidEmail(email: String) = assertTrue(EmailValidatorUtils.getInstance().isValid(email), "$email must be an email")
+    private fun assetValidEmail(email: String) = assertTrue(EmailValidator.getInstance().isValid(email), "$email must be an email")
 
-    private fun assetInvalidEmail(email: String) = assertFalse(EmailValidatorUtils.getInstance().isValid(email), "$email can not be an email")
+    private fun assetInvalidEmail(email: String) = assertFalse(EmailValidator.getInstance().isValid(email), "$email can not be an email")
 }

@@ -65,4 +65,7 @@ object ApplicationErrors {
 
     @ErrorDescription("文件不存在")
     const val FileIndexNotFound  = "file_index_not_found"
+
+    @ErrorDescription("临时文件已经超时")
+    const val TemporaryFileTimout  = "temporary_file_timout"
 }

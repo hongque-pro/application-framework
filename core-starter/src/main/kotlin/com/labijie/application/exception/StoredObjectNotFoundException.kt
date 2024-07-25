@@ -9,4 +9,4 @@ import com.labijie.application.ErrorCodedException
  * @date 2019-09-22
  */
 class StoredObjectNotFoundException(message:String? = null)
-    : ErrorCodedException(ApplicationErrors.StoredObjectNotFound, message ?: "Object not found in storage.")
+    : ErrorCodedException(ApplicationErrors.StoredObjectNotFound, message)

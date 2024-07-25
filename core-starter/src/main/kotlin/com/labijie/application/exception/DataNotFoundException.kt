@@ -8,7 +8,8 @@ import com.labijie.application.ErrorCodedException
  * @author Anders Xiao
  * @date 2019-10-14
  */
-class DataNotFoundException(message:String? = null) :
+class DataNotFoundException(message: String? = null) :
     ErrorCodedException(
         ApplicationErrors.DataMissed,
-        message?:"Required data was not found.")
+        message
+    )

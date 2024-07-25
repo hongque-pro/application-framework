@@ -9,4 +9,4 @@ import com.labijie.application.ErrorCodedException
  * @date 19-12-17
  * @since JDK1.8
  */
-class DataAlreadyExistedException(message:String? = null) : ErrorCodedException(ApplicationErrors.DataExisted, message ?: "data already existed")
+class DataAlreadyExistedException(message:String? = null) : ErrorCodedException(ApplicationErrors.DataExisted, message)

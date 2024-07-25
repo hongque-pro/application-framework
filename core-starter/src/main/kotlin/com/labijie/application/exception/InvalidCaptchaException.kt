@@ -9,5 +9,5 @@ import com.labijie.application.ErrorCodedException
  * @date 2019-09-11
  */
 class InvalidCaptchaException(message:String? = null)
-    :ErrorCodedException(ApplicationErrors.InvalidCaptcha, message?:"invalid captcha code input") {
+    :ErrorCodedException(ApplicationErrors.InvalidCaptcha, message) {
 }

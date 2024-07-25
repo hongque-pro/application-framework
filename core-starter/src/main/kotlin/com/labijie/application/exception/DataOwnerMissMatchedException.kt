@@ -9,5 +9,4 @@ import com.labijie.application.ErrorCodedException
  * @date 2019-09-28
  */
 class DataOwnerMissMatchedException(message:String? = null) :
-    ErrorCodedException(ApplicationErrors.DataOwnerMissMatched,
-        message?:"Data operation denied.")
+    ErrorCodedException(ApplicationErrors.DataOwnerMissMatched, message)

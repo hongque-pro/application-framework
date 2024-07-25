@@ -10,4 +10,4 @@ import com.labijie.application.ErrorCodedException
  * @since JDK1.8
  */
 class BadRequestException(message:String? = null)
-    : ErrorCodedException(ApplicationErrors.BadRequestParameter, message?:"Bad Request")
+    : ErrorCodedException(ApplicationErrors.BadRequestParameter, message)

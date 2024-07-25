@@ -8,4 +8,5 @@ import com.labijie.application.ApplicationErrors
 import com.labijie.application.ErrorCodedException
 
 
-class StrongPasswordViolationException(message: String? = null, val inputPassword: String? = null): ErrorCodedException(ApplicationErrors.StrongPasswordConstraintViolation, message ?: "Object not found in storage.")
+class StrongPasswordViolationException(message: String? = null, val inputPassword: String? = null):
+    ErrorCodedException(ApplicationErrors.StrongPasswordConstraintViolation, message, args = inputPassword?.let { mapOf("input" to inputPassword) })

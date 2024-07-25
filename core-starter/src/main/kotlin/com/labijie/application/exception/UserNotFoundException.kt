@@ -8,9 +8,11 @@ import com.labijie.application.ErrorCodedException
  * @author Anders Xiao
  * @date 2019-09-06
  */
-class UserNotFoundException(identity:String, message: String?= null) : ErrorCodedException(
+class UserNotFoundException(identity:String? = null, message: String?= null) : ErrorCodedException(
     ApplicationErrors.UserNotFound,
-    message?: if(identity.isBlank()) "User was not found" else "User with identity '$identity' was not found") {
+    message,
+    args = identity?.let { mapOf("identity" to it) }
+) {
 
-    constructor(userId:Long? = null):this(userId?.toString() ?: "")
+    constructor(userId:Long? = null):this(userId?.toString())
 }

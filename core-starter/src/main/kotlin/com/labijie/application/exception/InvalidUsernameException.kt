@@ -8,5 +8,5 @@ import com.labijie.application.ApplicationErrors
 import com.labijie.application.ErrorCodedException
 
 
-class InvalidUsernameException(message:String? = null, val inputUsername: String?)
-    : ErrorCodedException(ApplicationErrors.InvalidUsername, message?: "Bad username.") {}
+class InvalidUsernameException(message:String? = null, val inputUsername: String? = null)
+    : ErrorCodedException(ApplicationErrors.InvalidUsername, message, args = inputUsername?.let { mapOf("input" to inputUsername) }) {}

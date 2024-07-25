@@ -1,7 +1,6 @@
 package com.labijie.application.exception
 
 import com.labijie.application.ApplicationErrors
-import com.labijie.application.ErrorCodedException
 import com.labijie.application.ErrorCodedStatusException
 import org.springframework.http.HttpStatus
 
@@ -12,4 +11,4 @@ import org.springframework.http.HttpStatus
  * @since JDK1.8
  */
 class PermissionDeniedException(message:String? = null)
-    : ErrorCodedStatusException(ApplicationErrors.PermissionDenied, message?:"Permission Denied", status = HttpStatus.FORBIDDEN)
+    : ErrorCodedStatusException(ApplicationErrors.PermissionDenied, message, status = HttpStatus.FORBIDDEN)

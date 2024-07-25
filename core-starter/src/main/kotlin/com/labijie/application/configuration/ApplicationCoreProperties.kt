@@ -1,6 +1,7 @@
 package com.labijie.application.configuration
 
 import org.springframework.boot.context.properties.ConfigurationProperties
+import org.springframework.boot.context.properties.NestedConfigurationProperty
 
 /**
  * @author Anders Xiao
@@ -14,6 +15,9 @@ class ApplicationCoreProperties {
 
     var desSecret: String = DEFAULT_DES_SECRET
     var preloadLocales: String = "zh_CN,en_US"
+
+    @NestedConfigurationProperty
+    val file: FileSettings = FileSettings()
 
     val isDefaultDesSecret: Boolean
         get() = desSecret == DEFAULT_DES_SECRET

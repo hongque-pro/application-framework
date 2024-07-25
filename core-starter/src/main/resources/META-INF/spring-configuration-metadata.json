@@ -19,6 +19,10 @@
     {
       "name": "application.open-api.client",
       "type": "com.labijie.application.configuration.OpenApiClientProperties"
+    },
+    {
+      "name": "application.file",
+      "type": "com.labijie.application.configuration.FileSettings"
     }
   ],
   "properties": [
@@ -27,6 +31,13 @@
       "sourceType": "com.labijie.application.configuration.ApplicationCoreProperties",
       "description": "The key used by application DES digest.",
       "type": "java.lang.String"
+    },
+    {
+      "name": "application.temp-file-expiration",
+      "sourceType": "com.labijie.application.configuration.FileSettings",
+      "description": "The temp file expiration.",
+      "type": "java.time.Duration",
+      "defaultValue": "1h"
     },
     {
       "name": "application.preload-locales",

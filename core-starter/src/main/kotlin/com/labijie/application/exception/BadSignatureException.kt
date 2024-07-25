@@ -11,11 +11,8 @@ import org.springframework.http.HttpStatus
  */
 class BadSignatureException(message: String? = null, var platform: String? = null) : ErrorCodedStatusException(
     ApplicationErrors.InvalidSignature,
-    message ?: "Invalid signature for request content"
+    message,
+    args = platform?.let { mapOf("platform" to it) }
 ) {
     override val status: HttpStatus = HttpStatus.PRECONDITION_FAILED
-
-
-    override val message: String?
-        get() = if (!platform.isNullOrBlank()) "${super.message} (platform: $platform)" else super.message
 }

@@ -5,7 +5,7 @@
 package com.labijie.application.component.impl
 
 import com.labijie.application.component.IDisplayNameValidator
-import com.labijie.application.exception.InvalidUsernameException
+import com.labijie.application.exception.InvalidDisplayNameException
 import java.util.regex.Pattern
 import java.util.regex.Pattern.UNICODE_CHARACTER_CLASS
 
@@ -21,7 +21,7 @@ class DisplayNameValidator : IDisplayNameValidator {
         val valid = (!displayName.isNullOrBlank() && pattern.matcher(displayName).matches())
 
         if (!valid && throwIfInvalid) {
-            throw InvalidUsernameException(inputUsername = displayName)
+            throw InvalidDisplayNameException(inputDisplayName = displayName)
         }
         return valid
     }

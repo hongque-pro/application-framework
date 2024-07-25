@@ -9,5 +9,5 @@ import com.labijie.application.ErrorCodedException
  * @date 2019-10-19
  */
 class InvalidSecurityStampException (message:String? = null)
-    : ErrorCodedException(ApplicationErrors.InvalidSecurityStamp, message?:"invalid security stamp") {
+    : ErrorCodedException(ApplicationErrors.InvalidSecurityStamp, message) {
 }

@@ -9,5 +9,4 @@ import com.labijie.application.ErrorCodedException
  * @date 2019-09-26
  */
 class DataMaybeChangedException(message:String? = null)
-    : ErrorCodedException(ApplicationErrors.DataMaybeChanged, message?:"Data currently being edited may have been changed.") {
-}
+    : ErrorCodedException(ApplicationErrors.DataMaybeChanged, message)

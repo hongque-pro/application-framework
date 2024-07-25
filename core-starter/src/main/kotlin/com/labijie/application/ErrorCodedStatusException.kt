@@ -12,8 +12,9 @@ open class ErrorCodedStatusException(
     error: String,
     message: String? = null,
     cause: Throwable? = null,
-    status: HttpStatus? = null
-) : ErrorCodedException(error, message, cause) {
+    status: HttpStatus? = null,
+    args: Map<String, String>? = null
+) : ErrorCodedException(error, message, cause, args) {
 
     open val status: HttpStatus = status ?: HttpStatus.CONFLICT
 }

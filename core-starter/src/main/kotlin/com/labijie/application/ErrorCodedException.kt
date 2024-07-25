@@ -9,16 +9,18 @@ open class ErrorCodedException(
     val error: String,
     message: String? = null,
     cause: Throwable? = null,
-    localizedMessage: String? = null
-) : ApplicationRuntimeException(message, cause){
+    args: Map<String, String>? = null
+) : ApplicationRuntimeException(message ?: localeErrorMessage(error), cause) {
 
-    private val locMessage: String = localizedMessage ?: localeErrorMessage(error)
-    open fun getDetails():Map<String, Any>? {
-        return null
+    val args: MutableMap<String, String> = mutableMapOf()
+
+    init {
+        args?.forEach {
+            this.args.putIfAbsent(it.key, it.value)
+        }
     }
 
-    override fun getLocalizedMessage(): String = locMessage
-
-    override val message: String?
-        get() = super.message ?: localizedMessage
+    open fun getDetails(): Map<String, Any>? {
+        return null
+    }
 }

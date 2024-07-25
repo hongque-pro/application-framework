@@ -8,5 +8,5 @@ import com.labijie.application.ErrorCodedException
  * @date 2023-11-29
  */
 class OperationConcurrencyException (message:String? = null)
-    : ErrorCodedException(ApplicationErrors.DataOperationConcurrency, message?: "operation concurrency, please retry again.") {
+    : ErrorCodedException(ApplicationErrors.DataOperationConcurrency, message) {
 }

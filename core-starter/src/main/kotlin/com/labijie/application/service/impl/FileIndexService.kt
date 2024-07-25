@@ -1,32 +1,37 @@
 package com.labijie.application.service.impl
 
-import com.labijie.application.ApplicationRuntimeException
-import com.labijie.application.BucketPolicy
-import com.labijie.application.MimeUtils
+import com.labijie.application.*
 import com.labijie.application.component.GenerationURLPurpose
 import com.labijie.application.component.IObjectStorage
+import com.labijie.application.configuration.ApplicationCoreProperties
 import com.labijie.application.data.FileIndexTable
+import com.labijie.application.data.TempFileIndexTable
 import com.labijie.application.data.pojo.FileIndex
+import com.labijie.application.data.pojo.TempFileIndex
 import com.labijie.application.data.pojo.dsl.FileIndexDSL.deleteByPrimaryKey
 import com.labijie.application.data.pojo.dsl.FileIndexDSL.insert
 import com.labijie.application.data.pojo.dsl.FileIndexDSL.selectByPrimaryKey
 import com.labijie.application.data.pojo.dsl.FileIndexDSL.selectMany
 import com.labijie.application.data.pojo.dsl.FileIndexDSL.selectOne
 import com.labijie.application.data.pojo.dsl.FileIndexDSL.updateByPrimaryKey
+import com.labijie.application.data.pojo.dsl.TempFileIndexDSL.deleteByPrimaryKey
+import com.labijie.application.data.pojo.dsl.TempFileIndexDSL.insert
+import com.labijie.application.data.pojo.dsl.TempFileIndexDSL.selectByPrimaryKey
 import com.labijie.application.exception.FileIndexAlreadyExistedException
 import com.labijie.application.exception.FileIndexNotFoundException
 import com.labijie.application.exception.StoredObjectNotFoundException
-import com.labijie.application.executeReadOnly
+import com.labijie.application.exception.TemporaryFileTimoutException
 import com.labijie.application.model.FileModifier
 import com.labijie.application.model.ObjectPreSignUrl
 import com.labijie.application.model.toObjectBucket
-import com.labijie.application.service.IFileIndexService
-import com.labijie.application.service.TouchedFile
+import com.labijie.application.service.*
 import com.labijie.infra.IIdGenerator
+import org.jetbrains.exposed.sql.Column
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.inList
 import org.jetbrains.exposed.sql.andWhere
 import org.jetbrains.exposed.sql.deleteWhere
 import org.springframework.transaction.support.TransactionTemplate
+import java.time.Duration
 import kotlin.io.path.Path
 import kotlin.io.path.extension
 
@@ -35,6 +40,7 @@ import kotlin.io.path.extension
  * @date 2023-12-05
  */
 class FileIndexService(
+    private val properties: ApplicationCoreProperties,
     private val transactionTemplate: TransactionTemplate,
     private val idGenerator: IIdGenerator,
     private val objectStorage: IObjectStorage
@@ -62,9 +68,14 @@ class FileIndexService(
         return map
     }
 
-    override fun touchFile(filePath: String, modifier: FileModifier, fileSizeInBytes: Long?): TouchedFile {
+    override fun touchFile(
+        filePath: String,
+        modifier: FileModifier,
+        fileSizeInBytes: Long?,
+        expiration: Duration?
+    ): TouchedFile {
         if (filePath.isBlank()) {
-            throw ApplicationRuntimeException("File path can not be null or empty string.")
+            throw IllegalArgumentException("File path can not be null or empty string when touch file.")
         }
 
         val fileIndex = transactionTemplate.execute {
@@ -75,15 +86,23 @@ class FileIndexService(
                 throw FileIndexAlreadyExistedException(filePath)
             }
 
-            FileIndex().apply {
+            val index = FileIndex().apply {
                 this.id = idGenerator.newId()
                 this.path = filePath
                 this.fileType = IFileIndexService.TEMP_FILE_TYPE
                 this.timeCreated = System.currentTimeMillis()
                 this.fileAccess = modifier
                 this.sizeIntBytes = fileSizeInBytes ?: 0
-                FileIndexTable.insert(this)
             }
+
+            val tempIndex = TempFileIndex().propertiesFrom(index).apply {
+                this.setTimeout(expiration ?: properties.file.tempFileExpiration)
+            }
+
+            FileIndexTable.insert(index)
+            TempFileIndexTable.insert(tempIndex)
+            index
+
         } ?: throw ApplicationRuntimeException("A database error has occurred while touching file.")
 
         val bucketPolicy = if (modifier == FileModifier.Public) BucketPolicy.PUBLIC else BucketPolicy.PRIVATE
@@ -122,6 +141,11 @@ class FileIndexService(
             checkFileInStorage(filePath, true)
         }
 
+        val temp = TempFileIndexTable.selectByPrimaryKey(existedFile.id)
+
+
+        if(temp?.isExpired() == true) throw TemporaryFileTimoutException()
+
         val size = if(existedFile.sizeIntBytes <= 0) {
             val sizeInBytes =
                 fileSizeInBytes ?: objectStorage.getObjectSizeInBytes(filePath, existedFile.fileAccess.toObjectBucket())
@@ -132,7 +156,7 @@ class FileIndexService(
         } else null
 
         return transactionTemplate.execute {
-            if (existedFile.fileType.lowercase() != IFileIndexService.TEMP_FILE_TYPE.lowercase()) {
+            if (!existedFile.isTempFile()) {
                 throw FileIndexAlreadyExistedException(filePath)
             }
 
@@ -142,13 +166,21 @@ class FileIndexService(
             size?.let {
                 existedFile.sizeIntBytes
             }
-            val count = FileIndexTable.updateByPrimaryKey(
-                existedFile,
-                FileIndexTable.fileType,
-                FileIndexTable.entityId,
-                FileIndexTable.timeCreated,
-                FileIndexTable.sizeIntBytes
-            )
+
+            val columns = if(size == null) {
+                arrayOf<Column<*>>(
+                    FileIndexTable.fileType,
+                    FileIndexTable.entityId,
+                    FileIndexTable.timeCreated,
+                    FileIndexTable.sizeIntBytes)
+            }else {
+                arrayOf<Column<*>>(
+                    FileIndexTable.fileType,
+                    FileIndexTable.entityId,
+                    FileIndexTable.timeCreated)
+            }
+            TempFileIndexTable.deleteByPrimaryKey(existedFile.id)
+            val count = FileIndexTable.updateByPrimaryKey(existedFile, *columns)
             if (count > 0) existedFile else null
         }
     }
@@ -165,11 +197,21 @@ class FileIndexService(
                 }
                 null
             } else {
-                existedFile.fileType = IFileIndexService.TEMP_FILE_TYPE
-                existedFile.entityId = 0
-                existedFile.timeCreated = System.currentTimeMillis()
-                val count = FileIndexTable.updateByPrimaryKey(existedFile)
-                if (count > 0) existedFile else null
+                if(!existedFile.fileType.equals(IFileIndexService.TEMP_FILE_TYPE, ignoreCase = true)) {
+
+                    existedFile.fileType = IFileIndexService.TEMP_FILE_TYPE
+                    existedFile.entityId = 0
+
+                    val count =
+                        FileIndexTable.updateByPrimaryKey(existedFile, FileIndexTable.fileType, FileIndexTable.entityId)
+                    if(count > 0 ){
+                        val tempIndex = TempFileIndex().propertiesFrom(existedFile).apply {
+                            this.setTimeout(properties.file.tempFileExpiration)
+                        }
+                        TempFileIndexTable.insert(tempIndex)
+                    }
+                }
+                existedFile
             }
         }
     }
@@ -204,11 +246,15 @@ class FileIndexService(
             objectStorage.deleteObject(filePath)
         }
         return transactionTemplate.execute {
-            val file = FileIndexTable.selectOne(FileIndexTable.id) {
+            val file = FileIndexTable.selectOne(FileIndexTable.id, FileIndexTable.fileType) {
                 andWhere { FileIndexTable.path eq filePath }
             }
             file?.let {
-                FileIndexTable.deleteByPrimaryKey(file.id) == 1
+                val deleted = FileIndexTable.deleteByPrimaryKey(file.id) == 1
+                if(deleted && file.isTempFile()) {
+                    TempFileIndexTable.deleteByPrimaryKey(file.id)
+                }
+                deleted
             } ?: false
         } ?: false
     }
@@ -225,13 +271,19 @@ class FileIndexService(
 
         return transactionTemplate.execute {
 
-            val fileIds = FileIndexTable.selectMany(FileIndexTable.path) {
+            val fileIds = FileIndexTable.selectMany(FileIndexTable.path, FileIndexTable.fileType) {
                 andWhere { FileIndexTable.path inList filePaths }
-            }.map { it.id }
-
-            FileIndexTable.deleteWhere {
-                FileIndexTable.id inList fileIds
             }
+
+            val count = FileIndexTable.deleteWhere {
+                FileIndexTable.id inList fileIds.map { it.id }
+            }
+            if(count > 0) {
+               val tempIds = fileIds.filter { it.isTempFile() }.map { it.id }
+                TempFileIndexTable.deleteWhere { TempFileIndexTable.id inList tempIds }
+            }
+            count
+
         } ?: 0
     }
 
@@ -274,6 +326,7 @@ class FileIndexService(
                     entityId = destEntityId ?: 0
                     fileAccess = destModifierValue
                     timeCreated = System.currentTimeMillis()
+                    sizeIntBytes = index.sizeIntBytes
                 }
                 FileIndexTable.insert(file)
                 file

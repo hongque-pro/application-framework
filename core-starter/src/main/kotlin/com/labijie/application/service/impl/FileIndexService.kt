@@ -17,6 +17,7 @@ import com.labijie.application.data.pojo.dsl.FileIndexDSL.updateByPrimaryKey
 import com.labijie.application.data.pojo.dsl.TempFileIndexDSL.deleteByPrimaryKey
 import com.labijie.application.data.pojo.dsl.TempFileIndexDSL.insert
 import com.labijie.application.data.pojo.dsl.TempFileIndexDSL.selectByPrimaryKey
+import com.labijie.application.data.pojo.dsl.TempFileIndexDSL.selectForward
 import com.labijie.application.exception.FileIndexAlreadyExistedException
 import com.labijie.application.exception.FileIndexNotFoundException
 import com.labijie.application.exception.StoredObjectNotFoundException
@@ -26,10 +27,14 @@ import com.labijie.application.model.ObjectPreSignUrl
 import com.labijie.application.model.toObjectBucket
 import com.labijie.application.service.*
 import com.labijie.infra.IIdGenerator
+import com.labijie.infra.utils.throwIfNecessary
 import org.jetbrains.exposed.sql.Column
+import org.jetbrains.exposed.sql.SortOrder
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.inList
 import org.jetbrains.exposed.sql.andWhere
 import org.jetbrains.exposed.sql.deleteWhere
+import org.slf4j.LoggerFactory
+import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.support.TransactionTemplate
 import java.time.Duration
 import kotlin.io.path.Path
@@ -45,6 +50,10 @@ class FileIndexService(
     private val idGenerator: IIdGenerator,
     private val objectStorage: IObjectStorage
 ) : IFileIndexService {
+
+    companion object {
+        private val logger = LoggerFactory.getLogger(FileIndexService::class.java)
+    }
 
     override fun getFileUrl(filePath: String, modifier: FileModifier): ObjectPreSignUrl {
         if (filePath.isBlank()) {
@@ -335,5 +344,55 @@ class FileIndexService(
             objectStorage.deleteObject(destFilePath, destBucket)
             throw e
         }
+    }
+
+    override fun clearTempFiles(durationAfterExpired: Duration, batchSize: Int, throwIfError: Boolean): Int {
+        var deletedCount = 0
+        try {
+            var list = this.transactionTemplate.executeReadOnly(propagation = Propagation.REQUIRES_NEW) {
+                TempFileIndexTable.selectForward(
+                    TempFileIndexTable.timeExpired,
+                    order = SortOrder.ASC,
+                    pageSize = batchSize
+                )
+            }!!
+
+            while (list.list.isNotEmpty()) {
+                val canDelete = list.list.filter {
+                    it.isSafelyForDelete(durationAfterExpired)
+                }
+
+                val ids = canDelete.map { it.id }
+
+                FileIndexTable.deleteWhere { FileIndexTable.id inList ids }
+                TempFileIndexTable.deleteWhere { TempFileIndexTable.id inList ids }
+                canDelete.forEach {
+                    objectStorage.deleteObject(it.path, it.fileAccess.toObjectBucket())
+                }
+                deletedCount += canDelete.size
+
+                val token = list.forwardToken
+                if(token.isNullOrBlank()) {
+                    break
+                }
+
+                list = this.transactionTemplate.executeReadOnly(propagation = Propagation.REQUIRES_NEW) {
+                    TempFileIndexTable.selectForward(
+                        TempFileIndexTable.timeExpired,
+                        order = SortOrder.ASC,
+                        pageSize = batchSize,
+                        forwardToken = token
+                    )
+                }!!
+            }
+        } catch (e: Throwable) {
+            e.throwIfNecessary()
+            if(!throwIfError) {
+                throw e
+            }else {
+                logger.error("Error while clear temp files.", e)
+            }
+        }
+        return deletedCount
     }
 }

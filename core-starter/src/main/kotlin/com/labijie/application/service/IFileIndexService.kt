@@ -32,6 +32,8 @@ interface IFileIndexService {
     fun deleteFile(filePath: String, deleteObject:Boolean = false):Boolean
     fun deleteFiles(filePaths: List<String>, deleteObject: Boolean = false): Int
     fun copyFile(sourceFilePath: String, destFilePath: String, destModifier: FileModifier? = null, destFileType: String? = null, destEntityId: Long? = null): FileIndex
+
+    fun clearTempFiles(durationAfterExpired: Duration = Duration.ofMinutes(10), batchSize:Int = 50, throwIfError: Boolean = false): Int
 }
 
 

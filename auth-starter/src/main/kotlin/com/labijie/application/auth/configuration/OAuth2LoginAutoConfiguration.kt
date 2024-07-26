@@ -19,13 +19,15 @@ import com.labijie.application.identity.service.IUserService
 import com.labijie.infra.oauth2.component.IOAuth2ServerRSAKeyPair
 import com.labijie.infra.oauth2.resource.configuration.ResourceServerAutoConfiguration
 import org.springframework.boot.autoconfigure.AutoConfigureAfter
+import org.springframework.boot.autoconfigure.AutoConfigureBefore
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.security.oauth2.client.OAuth2ClientProperties
+import org.springframework.boot.autoconfigure.security.oauth2.client.servlet.OAuth2ClientAutoConfiguration
+import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.ComponentScan
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Import
-import org.springframework.core.env.Environment
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository
 import org.springframework.security.oauth2.client.registration.InMemoryClientRegistrationRepository
 import org.springframework.security.oauth2.server.authorization.settings.AuthorizationServerSettings
@@ -36,6 +38,8 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer
 
 @Configuration(proxyBeanMethods = false)
 @AutoConfigureAfter(ResourceServerAutoConfiguration::class)
+@AutoConfigureBefore(OAuth2ClientAutoConfiguration::class)
+@EnableConfigurationProperties(OAuth2ClientProperties::class)
 @ComponentScan(basePackageClasses = [GithubParser::class])
 class OAuth2LoginAutoConfiguration : WebMvcConfigurer {
     override fun addArgumentResolvers(resolvers: MutableList<HandlerMethodArgumentResolver>) {
@@ -44,9 +48,16 @@ class OAuth2LoginAutoConfiguration : WebMvcConfigurer {
 
     @Bean
     @ConditionalOnMissingBean(ClientRegistrationRepository::class)
-    fun clientRegistrationRepository(authProperties: AuthProperties, properties: OAuth2ClientProperties): ClientRegistrationRepository {
-        val clients = ClientRegistrationBuilder.build(authProperties, properties);
-        return if(clients.isEmpty()) NoneClientRegistrationRepository() else InMemoryClientRegistrationRepository(clients)
+    fun clientRegistrationRepository(
+        authProperties: AuthProperties,
+        properties: OAuth2ClientProperties
+    ): ClientRegistrationRepository {
+        val clients = properties.let {
+            ClientRegistrationBuilder.build(authProperties, it)
+        }
+        return if (clients.isEmpty()) NoneClientRegistrationRepository() else InMemoryClientRegistrationRepository(
+            clients
+        )
     }
 
     @Bean

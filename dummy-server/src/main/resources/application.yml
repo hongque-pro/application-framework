@@ -10,13 +10,14 @@ spring:
 
 infra:
   exposed:
-    generate-schema: true
+    generate-schema:
+      enabled: true
     show-sql: true
   oauth2:
-    client-repository: memory
-    default-client:
-      client-id: app
-      secret: 1234567
+    authorization-server:
+      client-repository: memory
+      default-client:
+        enabled: false
 application:
   httpclient:
     logger-enabled: true

@@ -25,7 +25,6 @@ import org.springframework.beans.BeansException
 import org.springframework.beans.factory.ObjectProvider
 import org.springframework.boot.context.event.ApplicationReadyEvent
 import org.springframework.boot.context.logging.LoggingApplicationListener.LOGGING_SYSTEM_BEAN_NAME
-import org.springframework.boot.info.GitProperties
 import org.springframework.boot.logging.LogLevel
 import org.springframework.boot.logging.LoggingSystem
 import org.springframework.boot.web.context.WebServerInitializedEvent
@@ -62,7 +61,6 @@ class ApplicationInitializationRunner<T : ConfigurableApplicationContext>(
     private lateinit var environment: Environment
     private lateinit var errorRegistrations: ObjectProvider<IErrorRegistration>
     private lateinit var errorRegistry: IErrorRegistry
-    private var gitProperties: GitProperties? = null
 
     private val loggingSystem by lazy {
         applicationContext.getBean(LOGGING_SYSTEM_BEAN_NAME, LoggingSystem::class.java)
@@ -87,7 +85,6 @@ class ApplicationInitializationRunner<T : ConfigurableApplicationContext>(
         profiles = applicationContext.environment.activeProfiles.joinToString()
         errorRegistrations = applicationContext.getBeanProvider(IErrorRegistration::class.java)
         errorRegistry = applicationContext.getBean(IErrorRegistry::class.java)
-        gitProperties = applicationContext.getBeanProvider(GitProperties::class.java).ifAvailable
         httpClientProperties = applicationContext.getBeanProvider(HttpClientProperties::class.java).ifAvailable
     }
 
@@ -283,12 +280,15 @@ class ApplicationInitializationRunner<T : ConfigurableApplicationContext>(
 
     private fun reportApplicationStatus(modules: List<IModuleInitializer>) {
         val moduleList = modules.joinToString { it.getModuleName() }
+        val gitProperties = getGitProperties(this::class.java) {
+            val group = it.getProperty("project.group") ?: ""
+            group == "com.labijie.application"
+        }
         println(
             """
 Application '${this.applicationName}' has been started !! 
 
 ${printSystemInfo()}
-
 framework ver: ${gitProperties?.get("build.version")}   
 framework commit: ${gitProperties?.commitTime?.toLocalDateTime()?.toLocalDate()}  
 localization: ${localizationService::class.simpleName}  

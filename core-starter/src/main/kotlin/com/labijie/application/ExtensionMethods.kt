@@ -8,6 +8,7 @@ import com.labijie.application.service.ILocalizationService
 import com.labijie.caching.ICacheManager
 import com.labijie.infra.SecondIntervalTimeoutTimer
 import com.labijie.infra.json.JacksonHelper
+import org.springframework.boot.info.GitProperties
 import org.springframework.context.NoSuchMessageException
 import org.springframework.context.i18n.LocaleContextHolder
 import org.springframework.core.ParameterizedTypeReference
@@ -21,8 +22,11 @@ import org.springframework.transaction.support.*
 import org.springframework.util.LinkedCaseInsensitiveMap
 import org.springframework.web.client.RestTemplate
 import org.springframework.web.util.UriBuilder
+import java.io.IOException
+import java.io.InputStream
 import java.math.BigDecimal
 import java.math.BigInteger
+import java.net.URL
 import java.net.URLEncoder
 import java.nio.ByteOrder
 import java.time.Duration
@@ -88,6 +92,7 @@ fun String.escapeForRegex(): String {
                 builder.append('\\')
                 builder.append(it)
             }
+
             else ->
                 builder.append(it)
         }
@@ -120,7 +125,7 @@ fun String.toKebabCase(): String {
 }
 
 public fun String.paddingLeftAndRight(totalLength: Int, padChar: Char = ' '): String {
-    if(this.length >= totalLength){
+    if (this.length >= totalLength) {
         return this
     }
     val sideLen = (totalLength - length) / 2
@@ -480,11 +485,11 @@ internal class CacheRemoveTransactionSynchronization(
     }
 }
 
-private var localeService: ILocalizationService?  = null
+private var localeService: ILocalizationService? = null
 
 private fun localeService(): ILocalizationService? {
     val service = localeService
-    if(service == null) {
+    if (service == null) {
         localeService = if (SpringContext.isInitialized) {
             SpringContext.current.getBean(ILocalizationService::class.java)
         } else null
@@ -492,19 +497,25 @@ private fun localeService(): ILocalizationService? {
     }
     return service
 }
+
 fun defaultLocale(): Locale {
     val service = localeService()
     return service?.getDefault() ?: Locale.getDefault() ?: Locale.US
 }
 
-fun findLocale(locale: Locale, supportedLocales: List<Locale>) : Locale? {
+fun findLocale(locale: Locale, supportedLocales: List<Locale>): Locale? {
     return supportedLocales.firstOrNull { it.getId().equals(locale.getId(), ignoreCase = true) }
-        ?: supportedLocales.firstOrNull { it.country.isNullOrBlank() && (locale.language ?: "").equals(it.language, ignoreCase = true) }
+        ?: supportedLocales.firstOrNull {
+            it.country.isNullOrBlank() && (locale.language ?: "").equals(
+                it.language,
+                ignoreCase = true
+            )
+        }
         ?: supportedLocales.firstOrNull { (locale.language ?: "").equals(it.language, ignoreCase = true) }
 }
 
 fun localeMessage(locale: Locale, code: String, vararg args: Any): String {
-    return if(SpringContext.isInitialized){
+    return if (SpringContext.isInitialized) {
         SpringContext.current.getMessage(code, args, null, locale) ?: throw NoSuchMessageException(code)
     } else throw ApplicationRuntimeException("Spring context is NULL")
 }
@@ -514,7 +525,7 @@ fun localeMessage(defaultMessage: String, code: String, vararg args: Any): Strin
 }
 
 fun localeMessage(defaultMessage: String, locale: Locale, code: String, vararg args: Any): String {
-    return if(SpringContext.isInitialized){
+    return if (SpringContext.isInitialized) {
         SpringContext.current.getMessage(code, args, defaultMessage, locale) ?: defaultMessage
     } else defaultMessage
 }
@@ -524,20 +535,20 @@ fun localeErrorMessage(errorCode: String, defaultMessage: String? = null): Strin
 }
 
 fun localeErrorMessage(errorCode: String, args: Collection<Any>? = null, defaultMessage: String? = null): String {
-    val e = if(SpringContext.isInitialized){
-        if(SpringContext.errorRegistry.isLocalizationEnabled()) {
+    val e = if (SpringContext.isInitialized) {
+        if (SpringContext.errorRegistry.isLocalizationEnabled()) {
             SpringContext.current.getMessage(
                 "app.err.${errorCode}",
                 args?.toTypedArray(),
                 defaultMessage,
                 LocaleContextHolder.getLocale()
             ) ?: defaultMessage
-        }else {
+        } else {
             defaultMessage ?: SpringContext.errorRegistry.defaultMessages[errorCode].orEmpty()
         }
     } else defaultMessage
 
-    return e?: errorCode.replace("_", " ")
+    return e ?: errorCode.replace("_", " ")
 }
 
 fun <V> Map<out String, V>.toCaseInsensitiveMap(): MutableMap<String, V> {
@@ -548,7 +559,7 @@ fun <V> Map<out String, V>.toCaseInsensitiveMap(): MutableMap<String, V> {
     return map
 }
 
-fun  <V> caseInsensitiveMapOf(vararg pairs: Pair<String, V>): MutableMap<String, V>  {
+fun <V> caseInsensitiveMapOf(vararg pairs: Pair<String, V>): MutableMap<String, V> {
     return LinkedCaseInsensitiveMap<V>(pairs.size).apply {
         pairs.forEach {
             this[it.first] = it.second
@@ -559,8 +570,8 @@ fun  <V> caseInsensitiveMapOf(vararg pairs: Pair<String, V>): MutableMap<String,
 inline fun <reified V> caseInsensitiveMapOf(expectedSize: Int = 0) = LinkedCaseInsensitiveMap<V>(expectedSize)
 
 
-fun syncDatabaseTransaction(commit: (()->Unit)? = null, rollback: (()->Unit)? = null) {
-    if(commit != null || rollback != null) {
+fun syncDatabaseTransaction(commit: (() -> Unit)? = null, rollback: (() -> Unit)? = null) {
+    if (commit != null || rollback != null) {
         TransactionSynchronizationManager.registerSynchronization(object : TransactionSynchronization {
             override fun afterCompletion(status: Int) {
                 if (status == TransactionSynchronization.STATUS_ROLLED_BACK) {
@@ -574,4 +585,84 @@ fun syncDatabaseTransaction(commit: (()->Unit)? = null, rollback: (()->Unit)? = 
     }
 }
 
-fun Locale.getId() = this.toLanguageTag()
+fun Locale.getId(): String = this.toLanguageTag().orEmpty()
+
+@Throws(IOException::class)
+fun <T : Any> loadResources(
+    name: String, classLoader: ClassLoader?,
+    filter: ((InputStream) -> T?)? = null
+): T? {
+    val systemResources: Enumeration<URL> =
+        (classLoader ?: ClassLoader.getSystemClassLoader()).getResources(name)
+    while (systemResources.hasMoreElements()) {
+        systemResources.nextElement().openStream().use { stream ->
+            val content: T? = filter?.invoke(stream)
+            return content
+        }
+    }
+    return null
+}
+
+/**
+ * Git build version
+ */
+val GitProperties.buildVersion: String
+    get() = this.get("build.version").orEmpty()
+
+/**
+ * Gradle project name (Auto gen if use infra-gradle-plugin)
+ */
+val GitProperties.projectGroup: String
+    get() = this.get("project.group").orEmpty()
+
+/**
+ * Gradle project name (Auto gen if use infra-gradle-plugin)
+ */
+val GitProperties.projectName: String
+    get() = this.get("project.name").orEmpty()
+
+/**
+ * Gradle project version (Auto gen if use infra-gradle-plugin)
+ */
+val GitProperties.projectVersion: String
+    get() = this.get("project.version").orEmpty()
+
+
+/**
+ * Get git properties from resource.
+ *
+ * If <strong>infra-gradle-plugin</strong> used,  GitPropertiesFile will be "git-info/git.properties", other tool will be "git.properties"
+ *
+ * @param packageClass The resource belong package.
+ * @param gitPropertiesFile Git properties resource file name. <br/> Default: "git-info/git.properties"
+ * @param filter Filter git properties from resource if found multiple, for example: <br/> it[["project.Group"]] == "com.labijie.com"
+ */
+fun getGitProperties(
+    packageClass: Class<*>,
+    gitPropertiesFile: String = "git-info/git.properties",
+    filter: ((properties: Properties) -> Boolean)? = null
+): GitProperties? {
+    if (gitPropertiesFile.isBlank()) {
+        throw IllegalArgumentException("Git properties file can not be blank.")
+    }
+    return try {
+        loadResources(gitPropertiesFile, packageClass.classLoader) {
+            val properties = Properties().apply {
+                this.load(it)
+            }
+            if (filter?.invoke(properties) != false) {
+                val gitValues = Properties().apply {
+                    properties.forEach {
+                        if (it.value != null) {
+                            this.setProperty(it.key.toString().removePrefix("git."), it.value?.toString())
+                        }
+                    }
+                }
+                GitProperties(gitValues)
+            } else null
+        }
+
+    } catch (e: IOException) {
+        return null
+    }
+}

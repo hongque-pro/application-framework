@@ -13,7 +13,7 @@ include("auth-social-starter")
 
 //include("geo-starter")
 //include("kaptcha-human-starter")
-include("open-api-starter")
+//include("open-api-starter")
 
 //include("minio-starter")
 

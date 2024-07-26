@@ -48,10 +48,11 @@ class DefaultsAutoConfiguration {
     @ConditionalOnBean(TransactionTemplate::class, DataSource::class)
     @ConditionalOnMissingBean(IFileIndexService::class)
     fun fileIndexService(
+        applicationCoreProperties: ApplicationCoreProperties,
         objectStorage: IObjectStorage,
         idGenerator: IIdGenerator,
         transactionTemplate: TransactionTemplate,
     ) : FileIndexService {
-        return FileIndexService(transactionTemplate, idGenerator, objectStorage)
+        return FileIndexService(applicationCoreProperties, transactionTemplate, idGenerator, objectStorage)
     }
 }

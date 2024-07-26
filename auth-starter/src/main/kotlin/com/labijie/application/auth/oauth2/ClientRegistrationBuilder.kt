@@ -6,8 +6,6 @@ package com.labijie.application.auth.oauth2
 
 import com.labijie.application.auth.configuration.AuthProperties
 import org.springframework.boot.autoconfigure.security.oauth2.client.OAuth2ClientProperties
-import org.springframework.boot.autoconfigure.security.oauth2.client.OAuth2ClientPropertiesMapper
-import org.springframework.core.env.Environment
 import org.springframework.security.config.oauth2.client.CommonOAuth2Provider
 import org.springframework.security.oauth2.client.registration.ClientRegistration
 

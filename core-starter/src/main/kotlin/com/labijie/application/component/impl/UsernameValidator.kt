@@ -13,7 +13,7 @@ class UsernameValidator : IUserNameValidator {
 
     companion object {
         val pattern: Pattern by lazy {
-            Pattern.compile("^(?=.{4,16}${'$'})(?![_-])(?!.*[_-]{2})[a-zA-Z0-9_-]+(?<![_-])${'$'}")
+            Pattern.compile("^(?=.{4,16}${'$'})(?![_-])(?!.*([_-]){2})[a-zA-Z0-9_-]+(?<![_-])${'$'}")
         }
     }
 

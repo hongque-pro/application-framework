@@ -5,9 +5,9 @@ import com.labijie.application.component.GenerationURLPurpose
 import com.labijie.application.component.IObjectStorage
 import com.labijie.application.exception.StoredObjectNotFoundException
 import com.labijie.application.model.ObjectPreSignUrl
+import org.springframework.http.HttpHeaders
 import java.io.InputStream
 import java.io.OutputStream
-import java.net.URL
 
 /**
  * Created with IntelliJ IDEA.
@@ -19,12 +19,17 @@ open class NoneObjectStorage : IObjectStorage {
 
     }
 
-    override fun generateObjectUrl(key: String, bucketPolicy: BucketPolicy, purpose: GenerationURLPurpose): ObjectPreSignUrl {
-        return ObjectPreSignUrl(url = "", 0)
-    }
-
     override fun deleteObject(key: String, bucketPolicy: BucketPolicy): Boolean {
         return false
+    }
+
+    override fun generateObjectUrl(
+        key: String,
+        bucketPolicy: BucketPolicy,
+        purpose: GenerationURLPurpose,
+        responseHeaderOverrides: HttpHeaders?
+    ): ObjectPreSignUrl {
+        return ObjectPreSignUrl(url = "", 0)
     }
 
     override fun existObject(key: String, throwIfNotExisted: Boolean, bucketPolicy: BucketPolicy): Boolean {

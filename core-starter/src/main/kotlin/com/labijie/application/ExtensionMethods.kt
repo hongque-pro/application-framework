@@ -570,20 +570,49 @@ fun <V> caseInsensitiveMapOf(vararg pairs: Pair<String, V>): MutableMap<String, 
 inline fun <reified V> caseInsensitiveMapOf(expectedSize: Int = 0) = LinkedCaseInsensitiveMap<V>(expectedSize)
 
 
-fun syncDatabaseTransaction(commit: (() -> Unit)? = null, rollback: (() -> Unit)? = null) {
-    if (commit != null || rollback != null) {
-        TransactionSynchronizationManager.registerSynchronization(object : TransactionSynchronization {
-            override fun afterCompletion(status: Int) {
-                if (status == TransactionSynchronization.STATUS_ROLLED_BACK) {
-                    rollback?.invoke()
-                }
-                if (status == TransactionSynchronization.STATUS_COMMITTED) {
-                    commit?.invoke()
-                }
-            }
-        })
-    }
+fun syncDbTransactionCommitted(commit: () -> Unit) {
+    TransactionSynchronizationManager.registerSynchronization(object : TransactionSynchronization {
+        override fun afterCommit() {
+            commit.invoke()
+        }
+    })
 }
+
+fun syncDbTransactionRollback(rollback: () -> Unit) {
+    TransactionSynchronizationManager.registerSynchronization(object : TransactionSynchronization {
+        override fun afterCompletion(status: Int) {
+            if (status == TransactionSynchronization.STATUS_ROLLED_BACK) {
+                rollback.invoke()
+            }
+        }
+    })
+}
+
+enum class DbTransactionState {
+    Unknown,
+    Committed,
+    Rollback,
+}
+
+fun syncDbTransactionCompleted(completion: (status: DbTransactionState) -> Unit) {
+    TransactionSynchronizationManager.registerSynchronization(object : TransactionSynchronization {
+        override fun afterCompletion(status: Int) {
+            val s = when (status) {
+                TransactionSynchronization.STATUS_ROLLED_BACK -> {
+                    DbTransactionState.Rollback
+                }
+
+                TransactionSynchronization.STATUS_COMMITTED -> {
+                    DbTransactionState.Committed
+                }
+
+                else -> DbTransactionState.Unknown
+            }
+            completion.invoke(s)
+        }
+    })
+}
+
 
 fun Locale.getId(): String = this.toLanguageTag().orEmpty()
 
@@ -628,6 +657,17 @@ val GitProperties.projectVersion: String
     get() = this.get("project.version").orEmpty()
 
 
+fun Properties.toGitProperties(): GitProperties {
+    val gitValues = Properties().also { target ->
+        this.forEach {
+            if (it.value != null) {
+                target.setProperty(it.key.toString().removePrefix("git."), it.value?.toString())
+            }
+        }
+    }
+    return GitProperties(gitValues)
+}
+
 /**
  * Get git properties from resource.
  *
@@ -651,14 +691,7 @@ fun getGitProperties(
                 this.load(it)
             }
             if (filter?.invoke(properties) != false) {
-                val gitValues = Properties().apply {
-                    properties.forEach {
-                        if (it.value != null) {
-                            this.setProperty(it.key.toString().removePrefix("git."), it.value?.toString())
-                        }
-                    }
-                }
-                GitProperties(gitValues)
+                properties.toGitProperties()
             } else null
         }
 
@@ -666,3 +699,4 @@ fun getGitProperties(
         return null
     }
 }
+

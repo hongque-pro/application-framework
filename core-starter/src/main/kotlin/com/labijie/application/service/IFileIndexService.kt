@@ -39,8 +39,8 @@ interface IFileIndexService {
 
 fun FileIndex.isTempFile(): Boolean = this.fileType.equals(IFileIndexService.TEMP_FILE_TYPE, ignoreCase = true)
 
-fun TempFileIndex.isExpired(): Boolean = this.timeExpired > System.currentTimeMillis()
-fun TempFileIndex.isSafelyForDelete(durationAfterExpired: Duration = Duration.ofMinutes(10)): Boolean = (this.timeExpired - durationAfterExpired.toMillis()) > System.currentTimeMillis()
+fun TempFileIndex.isExpired(): Boolean = this.timeExpired < System.currentTimeMillis()
+fun TempFileIndex.isSafelyForDelete(durationAfterExpired: Duration = Duration.ofDays(1)): Boolean = (this.timeExpired + durationAfterExpired.toMillis()) < System.currentTimeMillis()
 
 
 fun TempFileIndex.setTimeout(duration: Duration) {

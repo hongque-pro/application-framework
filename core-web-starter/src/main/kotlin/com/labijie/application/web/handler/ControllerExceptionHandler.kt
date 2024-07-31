@@ -20,6 +20,7 @@ import org.springframework.security.core.AuthenticationException
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException
 import org.springframework.security.oauth2.core.OAuth2ErrorCodes
 import org.springframework.validation.FieldError
+import org.springframework.web.HttpRequestMethodNotSupportedException
 import org.springframework.web.bind.MethodArgumentNotValidException
 import org.springframework.web.bind.MissingServletRequestParameterException
 import org.springframework.web.bind.annotation.ExceptionHandler
@@ -154,6 +155,12 @@ class ControllerExceptionHandler(private val messageSource: MessageSource) : Ord
             ApplicationErrors.BadRequestParameter,
             e.parameter.parameterName
         )
+    }
+
+    @ExceptionHandler(HttpRequestMethodNotSupportedException::class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    fun handle(request: HttpServletRequest, e: HttpRequestMethodNotSupportedException): ErrorResponse {
+        return ErrorResponse(ApplicationErrors.BadRequestMethod)
     }
 
     @ExceptionHandler(ErrorCodedStatusException::class)

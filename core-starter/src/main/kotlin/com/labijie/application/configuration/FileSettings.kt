@@ -8,5 +8,5 @@ import java.time.Duration
 
 
 data class FileSettings(
-    var tempFileExpiration: Duration = Duration.ofHours(1)
+    var tempFileExpiration: Duration = Duration.ofHours(2)
 )

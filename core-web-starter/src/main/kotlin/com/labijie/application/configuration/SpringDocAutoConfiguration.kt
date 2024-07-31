@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.autoconfigure.AutoConfigureOrder
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
+import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication
 import org.springframework.boot.info.GitProperties
 import org.springframework.context.ApplicationContext
 import org.springframework.context.ApplicationContextAware
@@ -21,7 +22,6 @@ import org.springframework.context.annotation.ComponentScan
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Profile
 import org.springframework.core.Ordered
-import org.springframework.core.annotation.AnnotationUtils
 import org.springframework.core.env.Environment
 
 
@@ -34,6 +34,7 @@ import org.springframework.core.env.Environment
 @Configuration(proxyBeanMethods = false)
 @ComponentScan(basePackageClasses = [DocPropertyCustomizer::class])
 @AutoConfigureOrder(Ordered.LOWEST_PRECEDENCE)
+@ConditionalOnWebApplication
 class SpringDocAutoConfiguration(private val environment: Environment): InitializingBean, ApplicationContextAware {
 
     private lateinit var applicationContext: ApplicationContext

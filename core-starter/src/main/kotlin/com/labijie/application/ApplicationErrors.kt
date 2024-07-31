@@ -10,6 +10,8 @@ package com.labijie.application
 object ApplicationErrors {
     @ErrorDescription("服务器系统错误")
     const val UnhandledError = "system_error"
+    @ErrorDescription("知道不到符合此请求的终结点")
+    const val BadRequestMethod  = "bad_request_method"
     @ErrorDescription("请求参数不满足约束条件")
     const val BadRequestParameter  = "bad_request_param"
     @ErrorDescription("请求数据的格式不正确或请求数据中的字段格式不正确")

@@ -1,6 +1,7 @@
 package com.labijie.application.configuration
 
 import org.springframework.boot.autoconfigure.AutoConfigureOrder
+import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication
 import org.springframework.boot.autoconfigure.security.SecurityProperties
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -21,6 +22,7 @@ import org.springframework.web.filter.CorsFilter
  * @Description:
  */
 @Configuration(proxyBeanMethods = false)
+@ConditionalOnWebApplication
 class AllowAllCorsAutoConfiguration {
 
     private fun buildConfig(): CorsConfiguration {

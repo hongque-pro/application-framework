@@ -102,6 +102,7 @@ class FileIndexService(
                 this.timeCreated = System.currentTimeMillis()
                 this.fileAccess = modifier
                 this.sizeIntBytes = fileSizeInBytes ?: 0
+
             }
 
             val tempIndex = TempFileIndex().propertiesFrom(index).apply {
@@ -146,7 +147,14 @@ class FileIndexService(
             return null
         }
 
-        if (checkFileExisted && (fileSizeInBytes != null || existedFile.sizeIntBytes > 0)) {
+        if(fileType == existedFile.fileType) {
+            logger.warn("Save file use the origin file type ( current type: ${existedFile.fileType}, save type: $fileType )")
+            return existedFile
+        }
+
+        val wantToGetFileSize = (fileSizeInBytes == null && existedFile.sizeIntBytes <= 0)
+        //如果后面需要从获取文件大小，这里可以少一次检查， 因为 getObjectSizeInBytes 会检查文件是否存在
+        if (checkFileExisted && !wantToGetFileSize) {
             checkFileInStorage(filePath, true)
         }
 
@@ -155,10 +163,10 @@ class FileIndexService(
 
         if(temp?.isExpired() == true) throw TemporaryFileTimoutException()
 
-        val size = if(existedFile.sizeIntBytes <= 0) {
+        val sizeToUpdate = if(existedFile.sizeIntBytes <= 0) {
             val sizeInBytes =
                 fileSizeInBytes ?: objectStorage.getObjectSizeInBytes(filePath, existedFile.fileAccess.toObjectBucket())
-            if (sizeInBytes == null && checkFileExisted) {
+            if (sizeInBytes == null && checkFileExisted) { //前面跳过了检查，这里补回来
                 throw StoredObjectNotFoundException()
             }
             sizeInBytes
@@ -172,11 +180,11 @@ class FileIndexService(
             existedFile.fileType = fileType
             existedFile.entityId = entityId ?: 0
             existedFile.timeCreated = System.currentTimeMillis()
-            size?.let {
-                existedFile.sizeIntBytes
+            sizeToUpdate?.let {
+                existedFile.sizeIntBytes = sizeToUpdate
             }
 
-            val columns = if(size == null) {
+            val columns = if(sizeToUpdate != null) {
                 arrayOf<Column<*>>(
                     FileIndexTable.fileType,
                     FileIndexTable.entityId,
@@ -188,7 +196,9 @@ class FileIndexService(
                     FileIndexTable.entityId,
                     FileIndexTable.timeCreated)
             }
-            TempFileIndexTable.deleteByPrimaryKey(existedFile.id)
+            temp?.let {
+                TempFileIndexTable.deleteByPrimaryKey(temp.id)
+            }
             val count = FileIndexTable.updateByPrimaryKey(existedFile, *columns)
             if (count > 0) existedFile else null
         }

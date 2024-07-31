@@ -2,6 +2,7 @@ package com.labijie.application.configuration
 
 import com.labijie.application.JsonMode
 import com.labijie.application.component.IHumanChecker
+import com.labijie.application.component.WebBootPrinter
 import com.labijie.application.component.impl.NoneHumanChecker
 import com.labijie.application.service.CaptchaHumanChecker
 import com.labijie.application.web.WrappedResponseBodyAdvice
@@ -79,6 +80,7 @@ class ApplicationWebAutoConfiguration(private val properties: ApplicationWebProp
             .allowedHeaders("*")
     }
 
+
     override fun addFormatters(registry: FormatterRegistry) {
         registry.addConverterFactory(EnhanceStringToEnumConverterFactory())
     }
@@ -125,6 +127,11 @@ class ApplicationWebAutoConfiguration(private val properties: ApplicationWebProp
         if (!environment.isProduction) {
             registry.addRedirectViewController("/swagger", "/swagger-ui.html")
         }
+    }
+
+    @Bean
+    fun webBootPrinter(): WebBootPrinter {
+        return WebBootPrinter()
     }
 
 

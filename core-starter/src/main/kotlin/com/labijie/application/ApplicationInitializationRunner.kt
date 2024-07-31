@@ -1,5 +1,6 @@
 package com.labijie.application
 
+import com.labijie.application.component.IBootPrinter
 import com.labijie.application.component.IHumanChecker
 import com.labijie.application.component.IMessageService
 import com.labijie.application.component.IObjectStorage
@@ -12,6 +13,7 @@ import com.labijie.application.jackson.IObjectMapperCustomizer
 import com.labijie.application.localization.ILocalizationResourceBundle
 import com.labijie.application.localization.LocalizationMessageSource
 import com.labijie.application.service.ILocalizationService
+import com.labijie.caching.ICacheManager
 import com.labijie.infra.getApplicationName
 import com.labijie.infra.json.JacksonHelper
 import com.labijie.infra.orm.withoutSqlLog
@@ -171,6 +173,7 @@ class ApplicationInitializationRunner<T : ConfigurableApplicationContext>(
     }
 
     private fun loadModules() {
+        val printer = this.applicationContext.getBeanProvider(IBootPrinter::class.java).orderedStream().toList()
         val modules = this.applicationContext.getBeanProvider(IModuleInitializer::class.java).orderedStream().map {
             val moduleClass = it::class.java
             val method = tryGetMethod(moduleClass)
@@ -201,7 +204,7 @@ class ApplicationInitializationRunner<T : ConfigurableApplicationContext>(
         }
 
         val list = modules.toList()
-        this.reportApplicationStatus(list)
+        this.reportApplicationStatus(list, printer)
     }
 
     private fun tryGetMethod(moduleClass: Class<out IModuleInitializer>): Method? {
@@ -269,37 +272,61 @@ class ApplicationInitializationRunner<T : ConfigurableApplicationContext>(
         if (beanTypes.isNotEmpty()) {
             return StringBuilder().apply {
                 appendLine("framework components: ")
-                beanTypes.forEach {
-                    val bean = applicationContext.getBean(it.java)
-                    appendLine(" ${it.java.simpleName}: ${ClassUtils.getShortName(bean::class.java)}")
+                beanTypes.forEach { benType ->
+                    val bean = applicationContext.getBeanProvider(benType.java).ifAvailable?.let { ClassUtils.getShortName(it::class.java) }
+                    appendLine(" ${benType.java.simpleName}: ${bean.ifNullOrBlank { "<null>" }}")
                 }
+                try {
+                    val caching = applicationContext.getBeansOfType(ICacheManager::class.java).firstNotNullOf {
+                        it.key
+                    }
+                    appendLine("caching implement: $caching")
+                }catch (_: BeansException) {
+
+                }
+
             }.toString()
         }
         return ""
     }
 
-    private fun reportApplicationStatus(modules: List<IModuleInitializer>) {
+    private fun reportApplicationStatus(modules: List<IModuleInitializer>, printers: List<IBootPrinter>) {
         val moduleList = modules.joinToString { it.getModuleName() }
         val gitProperties = getGitProperties(this::class.java) {
             val group = it.getProperty("project.group") ?: ""
             group == "com.labijie.application"
         }
-        println(
-            """
+
+        val sb = StringBuilder().also {
+            builder->
+            builder.appendLine(
+                """
 Application '${this.applicationName}' has been started !! 
 
 ${printSystemInfo()}
 framework ver: ${gitProperties?.get("build.version")}   
 framework commit: ${gitProperties?.commitTime?.toLocalDateTime()?.toLocalDate()}  
-localization: ${localizationService::class.simpleName}  
-${printComponentImplements(IHumanChecker::class, IObjectStorage::class, IMessageService::class)}
+${printComponentImplements(IHumanChecker::class, IObjectStorage::class, IMessageService::class, ILocalizationService::class)}
 module loaded:  ${moduleList.ifNullOrBlank("<none>")}
 current profiles: $profiles
 --------------------------------------------------------------------
+""".trimIndent()
+            )
+
+            printers.forEach {
+                it.appendBootMessages(builder)
+            }
+
+            builder.appendLine(
+                """
+--------------------------------------------------------------------
 ${if (isWebEnvironment) this.buildWebServerInfo() else "Command line application"}
 --------------------------------------------------------------------
-""".trimIndent()
-        )
+                """.trimIndent()
+            )
+        }
+
+        println(sb.toString())
 
     }
 

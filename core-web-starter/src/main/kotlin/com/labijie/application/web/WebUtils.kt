@@ -53,13 +53,17 @@ private fun String.getFirstValue(): String {
 
 fun HttpServletRequest.getRealIp(): String {
     val ip = this.getHeaderValue("X-Forwarded-For")
-            ?: this.getHeaderValue("X-Real-IP")
-            ?: this.getHeaderValue("WL-Proxy-Client-IP")
-            ?: this.getHeaderValue("Proxy-Client-IP")
+        ?: this.getHeaderValue("X-Real-IP")
+        ?: this.getHeaderValue("WL-Proxy-Client-IP")
+        ?: this.getHeaderValue("Proxy-Client-IP")
 
-    return if(ip.isNullOrBlank()) {
+    return if (ip.isNullOrBlank()) {
         val remoteIP = this.remoteAddr
-        val i = if (LOCALHOST_IP.equals(remoteIP, ignoreCase = true) || LOCALHOST_IPV6.equals(remoteIP, ignoreCase = true)) {
+        val i = if (LOCALHOST_IP.equals(remoteIP, ignoreCase = true) || LOCALHOST_IPV6.equals(
+                remoteIP,
+                ignoreCase = true
+            )
+        ) {
             try {
                 InetAddress.getLocalHost()?.hostAddress ?: EMPTY_IPV4
             } catch (e: UnknownHostException) {
@@ -72,7 +76,7 @@ fun HttpServletRequest.getRealIp(): String {
                 it.getFirstValue()
             } else EMPTY_IPV4
         }
-    }else {
+    } else {
         EMPTY_IPV4
     }
 }
@@ -89,8 +93,8 @@ private val HttpServletRequest.isFormPost: Boolean
 
 
 private fun getBodyFromServletRequestParameters(
-        request: HttpServletRequest,
-        charset: Charset = Charsets.UTF_8
+    request: HttpServletRequest,
+    charset: Charset = Charsets.UTF_8
 ): InputStream {
     val bos = ByteArrayOutputStream(1024)
     OutputStreamWriter(bos, charset).use { writer ->
@@ -122,12 +126,21 @@ private fun getBodyFromServletRequestParameters(
 }
 
 @Throws(IOException::class)
-fun HttpServletRequest.getBody(): InputStream {
-    if (this.isFormPost) {
-        return getBodyFromServletRequestParameters(this)
+fun HttpServletRequest.getBody(): InputStream? {
+    return if (this.isFormPost) {
+        getBodyFromServletRequestParameters(this)
     } else {
-        return this.inputStream
+        this.inputStream
     }
+}
+
+@Throws(IOException::class)
+fun HttpServletRequest.getBodyBytes(): ByteArray {
+    return this.getBody()?.use {
+        if (it.available() > 0) {
+            it.readAllBytes()
+        } else null
+    } ?: ByteArray(0)
 }
 
 fun HttpServletRequest.toPrettyString(body: ByteArray): String {
@@ -160,7 +173,10 @@ val HttpServletRequest.isFromWechat: Boolean
     }
 
 fun HandlerMethod.hasAnnotationOnMethodOrClass(annotation: KClass<out Annotation>): Boolean {
-    return this.hasMethodAnnotation(annotation.java) || AnnotationUtils.isAnnotationDeclaredLocally(annotation.java, this.method.declaringClass)
+    return this.hasMethodAnnotation(annotation.java) || AnnotationUtils.isAnnotationDeclaredLocally(
+        annotation.java,
+        this.method.declaringClass
+    )
 }
 
 private const val ROLE_PREFIX = OAuth2Constants.ROLE_AUTHORITY_PREFIX
@@ -172,7 +188,7 @@ fun roleAuthority(role: String): SimpleGrantedAuthority {
 fun TwoFactorPrincipal.hasRole(role: String): Boolean {
     if (role.startsWith(ROLE_PREFIX)) {
         throw IllegalArgumentException(
-                "role name should not start with '$ROLE_PREFIX' since it is automatically inserted. Got '$role'"
+            "role name should not start with '$ROLE_PREFIX' since it is automatically inserted. Got '$role'"
         )
     }
 
@@ -189,7 +205,7 @@ fun TwoFactorPrincipal.hasAnyRole(vararg roles: String): Boolean {
         return false
     }
     return this.authorities.any {
-        roles.map { r->"$ROLE_PREFIX$r" }.contains(it.authority)
+        roles.map { r -> "$ROLE_PREFIX$r" }.contains(it.authority)
     }
 }
 
@@ -197,12 +213,16 @@ object WebUtils {
     val currentRequest: String
         get() {
             val requestAttributes = (RequestContextHolder.getRequestAttributes() as? ServletRequestAttributes)
-                    ?: throw RuntimeException("Get ServletRequestAttributes fault.")
+                ?: throw RuntimeException("Get ServletRequestAttributes fault.")
             return requestAttributes.request.getRealIp()
         }
 }
 
-fun AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry.antMatchers(vararg antPatterns: String, ignoreCase: Boolean = false, method: HttpMethod? = null): AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizedUrl {
+fun AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry.antMatchers(
+    vararg antPatterns: String,
+    ignoreCase: Boolean = false,
+    method: HttpMethod? = null
+): AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizedUrl {
     val matchers = antPatterns.toList().map {
         AntPathRequestMatcher(it, method?.name(), !ignoreCase)
     }.toTypedArray()

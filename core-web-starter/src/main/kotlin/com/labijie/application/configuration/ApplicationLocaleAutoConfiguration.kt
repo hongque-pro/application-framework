@@ -6,7 +6,9 @@ package com.labijie.application.configuration
 
 import com.labijie.application.component.ApplicationLocaleResolver
 import com.labijie.application.service.ILocalizationService
+import org.springframework.boot.autoconfigure.AutoConfigureAfter
 import org.springframework.boot.autoconfigure.AutoConfigureBefore
+import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication
 import org.springframework.boot.autoconfigure.web.servlet.WebMvcAutoConfiguration
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -17,6 +19,8 @@ import org.springframework.web.servlet.i18n.AcceptHeaderLocaleResolver
 
 @Configuration(proxyBeanMethods = false)
 @AutoConfigureBefore(WebMvcAutoConfiguration::class)
+@AutoConfigureAfter(ApplicationWebAutoConfiguration::class)
+@ConditionalOnWebApplication
 class ApplicationLocaleAutoConfiguration(
     private val localizationService: ILocalizationService,
     private val properties: ApplicationWebProperties) : DelegatingWebMvcConfiguration() {

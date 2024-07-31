@@ -56,13 +56,13 @@ jobs:
         cat gradle.properties
     - name: Build with Gradle
       run: gradle clean build -x test -x kspKotlin --no-daemon "-Dorg.gradle.jvmargs=${{ env.JVM_SETTINGS }}" -Dfile.encoding=UTF-8
-        - name: Publish To GitHub Packages
-          run: |
-            if [ "$PUB_GITHUB" == "Yes" ]; then
-              gradle publishToGitHubPackages
-            else
-              echo "Skip github packages publish"
-            fi
+    - name: Publish To GitHub Packages
+      run: |
+        if [ "$PUB_GITHUB" == "Yes" ]; then
+          gradle publishToGitHubPackages
+        else
+          echo "Skip github packages publish"
+        fi
     - name: Publish To Maven Central
       run: |
         if [ "PUB_MAVEN" == "No" ]; then

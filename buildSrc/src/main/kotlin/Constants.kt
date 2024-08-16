@@ -18,7 +18,7 @@ object Versions {
     const val infraPlugin = "2.0.4"
     const val infraCommons = "3.0.0"
     const val infraCaching = "1.4.2"
-    const val infraOAuth2 = "2.0.3"
+    const val infraOAuth2 = "2.0.4"
 
     const val bouncyCastle = "1.77"
 

@@ -44,11 +44,8 @@ class FileController(private val fileIndexService: IFileIndexService) {
                 val suffix = if(it.contains('.')) FilenameUtils.getExtension(it) else it
                 if(suffix.isNotBlank()) ".${suffix}" else ""
             }
-            do {
-                val name = if (short) ShortId.newId() else UUID.randomUUID().toString().replace("-", "").lowercase()
-                fullName = "${name}${ext}"
-            }while (!short || !fileIndexService.existed(fullName))
-            fullName
+            val name = if (short) ShortId.newId() else UUID.randomUUID().toString().replace("-", "").lowercase()
+            "${name}${ext}"
         }
 
         val fullPath = "${normalizedFolder}/$name"

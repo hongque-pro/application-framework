@@ -31,21 +31,16 @@ class FileController(private val fileIndexService: IFileIndexService) {
     fun touch(
         @RequestParam("folder", required = true) @Length(min = 1, max = 128) folder: String,
         @RequestParam("ext", required = false) fileExtensions: String?,
-        @RequestParam("filename", required = false) filename: String?,
         @RequestParam("modifier", required = true) modifier: FileModifier,
         @RequestParam("short", required = false) short: Boolean = false
     ): TouchedFile {
         val normalizedFolder = folder.trim('/')
-        val name = if(fileExtensions.isNullOrBlank() && !filename.isNullOrBlank()) {
-            FilenameUtils.getName(filename)
-        }else {
-            val ext = fileExtensions.orEmpty().removePrefix(".").let {
-                val suffix = if(it.contains('.')) FilenameUtils.getExtension(it) else it
-                if(suffix.isNotBlank()) ".${suffix}" else ""
-            }
-            val name = if (short) ShortId.newId() else UUID.randomUUID().toString().replace("-", "").lowercase()
-            "${name}${ext}"
+        val ext = fileExtensions.orEmpty().removePrefix(".").let {
+            val suffix = if(it.contains('.')) FilenameUtils.getExtension(it) else it
+            if(suffix.isNotBlank()) ".${suffix}" else ""
         }
+        val id = if (short) ShortId.newId() else UUID.randomUUID().toString().replace("-", "").lowercase()
+        val name = "${id}${ext}"
 
         val fullPath = "${normalizedFolder}/$name"
         return fileIndexService.touchFile(fullPath, modifier)

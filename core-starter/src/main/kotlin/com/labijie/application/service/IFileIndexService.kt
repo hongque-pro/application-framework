@@ -19,6 +19,8 @@ interface IFileIndexService {
 
     fun getIndex(filePath: String): FileIndex?
 
+    fun existed(filePath: String): Boolean
+
     fun getIndexes(filePaths: Iterable<String>): Map<String, FileIndex?>
 
     fun getIndexById(fileIndexId: Long): FileIndex?

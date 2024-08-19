@@ -77,6 +77,14 @@ class FileIndexService(
         return map
     }
 
+    override fun existed(filePath: String): Boolean {
+        return transactionTemplate.executeReadOnly {
+            FileIndexTable.selectOne(FileIndexTable.id) {
+                andWhere { FileIndexTable.path eq filePath }
+            } != null
+        } ?: false
+    }
+
     override fun touchFile(
         filePath: String,
         modifier: FileModifier,

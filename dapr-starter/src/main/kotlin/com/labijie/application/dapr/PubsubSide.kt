@@ -5,6 +5,7 @@ package com.labijie.application.dapr
  * @date 2023-12-04
  */
 enum class PubsubSide {
+    None,
     Pub,
     Sub
 }

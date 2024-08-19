@@ -1,6 +1,10 @@
 package com.labijie.application.dapr.condition
 
-import org.springframework.boot.autoconfigure.condition.*
+import com.labijie.application.dapr.PubsubSide
+import org.springframework.boot.autoconfigure.condition.ConditionMessage
+import org.springframework.boot.autoconfigure.condition.ConditionOutcome
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
+import org.springframework.boot.autoconfigure.condition.SpringBootCondition
 import org.springframework.context.annotation.ConditionContext
 import org.springframework.core.annotation.AnnotationAttributes
 import org.springframework.core.annotation.MergedAnnotation
@@ -39,24 +43,31 @@ class DaprSideCondition : SpringBootCondition() {
         annotationAttributes: AnnotationAttributes,
         resolver: PropertyResolver
     ): ConditionOutcome {
-        val conditionSide = annotationAttributes["side"]?.toString()?.lowercase() ?: "pub"
+        val conditionSide = annotationAttributes["side"] as? PubsubSide ?: PubsubSide.None
 
         val pubEnabled = resolver.getProperty("application.dapr.pub-service-enabled")?.toBooleanStrictOrNull() ?: false
         val subEnabled = resolver.getProperty("application.dapr.sub-service-enabled")?.toBooleanStrictOrNull() ?: false
 
-        return if (conditionSide == "sub" && !pubEnabled) {
+        return if (conditionSide == PubsubSide.None && (pubEnabled || subEnabled)) {
+            val message = ConditionMessage.forCondition(ConditionalOnDaprPubsub::class.java)
+                .found(
+                    "application.dapr.pub-service-enabled is $pubEnabled" + System.lineSeparator() +
+                            "application.dapr.sub-service-enabled is $subEnabled" + System.lineSeparator() +
+                            "side condition is ${PubsubSide.None}"
+                )
+                .items()
+            ConditionOutcome.noMatch(message)
+        } else if (conditionSide == PubsubSide.Pub && !pubEnabled) {
             val message = ConditionMessage.forCondition(ConditionalOnDaprPubsub::class.java)
                 .found("application.dapr.pub-service-enabled is false")
                 .items()
             ConditionOutcome.noMatch(message)
-        }
-        else if(conditionSide == "sub" && !subEnabled) {
+        } else if (conditionSide == PubsubSide.Sub && !subEnabled) {
             val message = ConditionMessage.forCondition(ConditionalOnDaprPubsub::class.java)
                 .found("application.dapr.sub-service-enabled is false")
                 .items()
             ConditionOutcome.noMatch(message)
-        }
-        else {
+        } else {
             ConditionOutcome
                 .match(ConditionMessage.forCondition(ConditionalOnProperty::class.java).because("matched"))
         }

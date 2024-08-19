@@ -24,7 +24,7 @@ class DaprClusterEventPublisher(
         try {
             daprClient.invokeBinding(bindingConfig.bindingName, bindingConfig.operation, daprClusterEvent).block()
         }catch (e: Throwable) {
-            logger.error("Call dapr output binding (name: ${bindingConfig.bindingName}, operation: ${bindingConfig.operation}) failed .", e)
+            logger.error("[DaprClusterEvent] Call dapr output binding (name: ${bindingConfig.bindingName}, operation: ${bindingConfig.operation}) failed .", e)
             e.throwIfNecessary()
             if(throwIfError) {
                 throw e

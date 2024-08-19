@@ -107,7 +107,8 @@ object ApplicationErrors {
 }
 ```
 
-注册你异常代码, 创建一个实现了 IErrorRegistration 接口得 bean （该 bean 每个模块一个）：
+
+注册你错误代码, 创建一个实现了 IErrorRegistration 接口得 bean （该 bean 每个模块一个）：
 
 ```kotlin
 @Component
@@ -117,6 +118,18 @@ class AppErrorsRegistration : IErrorRegistration {
     }
 }
 ```
+
+也可以通过注解定义
+
+```kotlin
+@Component
+
+@ErrorDefine(classes = [AppErrorsRegistration::class]) //定义错误代码
+@Configuration(proxyBeanMethods = false)
+class MyAutoConfiguration : IErrorRegistration
+```
+
+> <mark>注意：</mark> 使用注解定义异常代码时，异常代码类必须声明为 `object`
 
 为已知的异常代码定义异常类型：
 

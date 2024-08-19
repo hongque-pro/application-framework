@@ -39,7 +39,6 @@ class FileController(private val fileIndexService: IFileIndexService) {
         val name = if(fileExtensions.isNullOrBlank() && !filename.isNullOrBlank()) {
             filename
         }else {
-            var fullName: String
             val ext = fileExtensions.orEmpty().removePrefix(".").let {
                 val suffix = if(it.contains('.')) FilenameUtils.getExtension(it) else it
                 if(suffix.isNotBlank()) ".${suffix}" else ""

@@ -37,7 +37,7 @@ class FileController(private val fileIndexService: IFileIndexService) {
     ): TouchedFile {
         val normalizedFolder = folder.trim('/')
         val name = if(fileExtensions.isNullOrBlank() && !filename.isNullOrBlank()) {
-            filename
+            FilenameUtils.getName(filename)
         }else {
             val ext = fileExtensions.orEmpty().removePrefix(".").let {
                 val suffix = if(it.contains('.')) FilenameUtils.getExtension(it) else it

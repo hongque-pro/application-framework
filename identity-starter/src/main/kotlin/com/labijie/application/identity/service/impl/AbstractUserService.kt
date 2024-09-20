@@ -1,5 +1,9 @@
 package com.labijie.application.identity.service.impl
 
+import com.labijie.application.component.IEmailAddressValidator
+import com.labijie.application.component.IPhoneValidator
+import com.labijie.application.component.impl.EmailAddressValidator
+import com.labijie.application.component.impl.NationalPhoneValidator
 import com.labijie.application.configuration.ValidationProperties
 import com.labijie.application.configure
 import com.labijie.application.exception.OperationConcurrencyException
@@ -8,10 +12,6 @@ import com.labijie.application.executeReadOnly
 import com.labijie.application.identity.IdentityCacheKeys
 import com.labijie.application.identity.IdentityCacheKeys.getUserCacheKey
 import com.labijie.application.identity.IdentityUtils
-import com.labijie.application.component.impl.NationalPhoneValidator
-import com.labijie.application.component.impl.EmailAddressValidator
-import com.labijie.application.component.IEmailAddressValidator
-import com.labijie.application.component.IPhoneValidator
 import com.labijie.application.identity.component.IUserRegistrationIntegration
 import com.labijie.application.identity.configuration.IdentityProperties
 import com.labijie.application.identity.data.RoleTable
@@ -148,7 +148,11 @@ abstract class AbstractUserService(
 
     protected open fun onUserRegisteredAfterTransactionCommitted(user: UserAndRoles, addition:Map<String, String>) {}
 
-    override fun registerUser(register: RegisterInfo, by: RegisterBy): UserAndRoles {
+    override fun registerUser(
+        register: RegisterInfo,
+        by: RegisterBy,
+        customizer: ((user: UserAndRoles) -> Unit)?
+    ): UserAndRoles {
 
         val phoneCountry = register.dialingCode ?: 86
         register.email = register.email.trim()
@@ -204,6 +208,7 @@ abstract class AbstractUserService(
             }
 
             val userAndRoles = this.createUser(user, register.password, *this.getDefaultUserRoles())
+            customizer?.invoke(userAndRoles)
             integrations.forEach {
                 it.onUserRegisteredInTransaction(userAndRoles, register.addition)
             }

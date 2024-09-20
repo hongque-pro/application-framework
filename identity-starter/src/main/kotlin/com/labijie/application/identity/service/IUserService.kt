@@ -6,7 +6,6 @@ import com.labijie.application.identity.model.RegisterBy
 import com.labijie.application.identity.model.RegisterInfo
 import com.labijie.application.identity.model.UserAndRoles
 import com.labijie.application.model.OrderBy
-import org.springframework.security.crypto.password.PasswordEncoder
 
 /**
  * Created with IntelliJ IDEA.
@@ -33,7 +32,7 @@ interface IUserService {
 
     fun getOrCreateRole(roleName: String): Role
     fun createUser(user: User, plainPassword: String, vararg roles: String): UserAndRoles
-    fun registerUser(register: RegisterInfo, by: RegisterBy = RegisterBy.Phone): UserAndRoles
+    fun registerUser(register: RegisterInfo, by: RegisterBy = RegisterBy.Phone, customizer: ((user: UserAndRoles)->Unit)? = null): UserAndRoles
 
 
     fun updateUser(userId: Long, user: User): Boolean

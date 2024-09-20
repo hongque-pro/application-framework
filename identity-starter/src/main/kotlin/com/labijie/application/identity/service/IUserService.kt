@@ -32,7 +32,7 @@ interface IUserService {
 
     fun getOrCreateRole(roleName: String): Role
     fun createUser(user: User, plainPassword: String, vararg roles: String): UserAndRoles
-    fun registerUser(register: RegisterInfo, by: RegisterBy = RegisterBy.Phone, customizer: ((user: UserAndRoles)->Unit)? = null): UserAndRoles
+    fun registerUser(register: RegisterInfo, by: RegisterBy = RegisterBy.Phone, customizer: ((user: User)->Unit)? = null): UserAndRoles
 
 
     fun updateUser(userId: Long, user: User): Boolean

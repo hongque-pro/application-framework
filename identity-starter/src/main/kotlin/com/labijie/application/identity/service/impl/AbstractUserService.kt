@@ -38,6 +38,7 @@ import com.labijie.application.identity.model.UserAndRoles
 import com.labijie.application.identity.service.IUserService
 import com.labijie.application.model.OrderBy
 import com.labijie.application.removeAfterTransactionCommit
+import com.labijie.application.syncDbTransactionCommitted
 import com.labijie.caching.ICacheManager
 import com.labijie.caching.getOrSet
 import com.labijie.infra.IIdGenerator
@@ -151,7 +152,7 @@ abstract class AbstractUserService(
     override fun registerUser(
         register: RegisterInfo,
         by: RegisterBy,
-        customizer: ((user: UserAndRoles) -> Unit)?
+        customizer: ((user: User) -> Unit)?
     ): UserAndRoles {
 
         val phoneCountry = register.dialingCode ?: 86
@@ -207,19 +208,23 @@ abstract class AbstractUserService(
                 }
             }
 
+            customizer?.invoke(user)
             val userAndRoles = this.createUser(user, register.password, *this.getDefaultUserRoles())
-            customizer?.invoke(userAndRoles)
             integrations.forEach {
                 it.onUserRegisteredInTransaction(userAndRoles, register.addition)
             }
             this.onUserRegisteredInTransaction(userAndRoles, register.addition)
+
+            syncDbTransactionCommitted {
+                integrations.forEach {
+                    it.onUserRegisteredAfterTransactionCommitted(userAndRoles, register.addition)
+                }
+                this.onUserRegisteredAfterTransactionCommitted(userAndRoles, register.addition)
+            }
+
             userAndRoles
         }!!
 
-        integrations.forEach {
-            it.onUserRegisteredAfterTransactionCommitted(u, register.addition)
-        }
-        this.onUserRegisteredAfterTransactionCommitted(u, register.addition)
         return u
     }
 

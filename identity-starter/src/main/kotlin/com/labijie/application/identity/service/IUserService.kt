@@ -50,4 +50,6 @@ interface IUserService {
     }
 
     fun getDefaultUserRoles(): Array<String>
+
+    fun refreshUserCache(userId: Long)
 }

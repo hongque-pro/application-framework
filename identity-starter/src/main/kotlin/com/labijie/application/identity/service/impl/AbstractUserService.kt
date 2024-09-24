@@ -511,4 +511,11 @@ abstract class AbstractUserService(
             count > 0
         } ?: false
     }
+
+    override fun refreshUserCache(userId: Long) {
+        if(userId > 0) {
+            val cacheKey = getUserCacheKey(userId)
+            cacheManager.remove(cacheKey)
+        }
+    }
 }

@@ -36,6 +36,7 @@ import org.jetbrains.exposed.sql.deleteWhere
 import org.slf4j.LoggerFactory
 import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.support.TransactionTemplate
+import java.io.InputStream
 import java.time.Duration
 import kotlin.io.path.Path
 import kotlin.io.path.extension
@@ -66,7 +67,7 @@ class FileIndexService(
     override fun getIndexes(filePaths: Iterable<String>): Map<String, FileIndex?> {
         val files = transactionTemplate.executeReadOnly {
             FileIndexTable.selectMany {
-                FileIndexTable.path.inList(filePaths)
+                andWhere { FileIndexTable.path.inList(filePaths) }
             }
         } ?: listOf()
 
@@ -132,6 +133,27 @@ class FileIndexService(
             mime = MimeUtils.getMimeByExtensions(Path(filePath).extension),
             timeoutMills = url.timeoutMills
         )
+    }
+
+    override fun makeTemp(stream: InputStream, filePath: String, modifier: FileModifier, length: Long?): FileIndex {
+        if(filePath.isBlank()) {
+            throw IllegalArgumentException("")
+        }
+        val index = FileIndex().apply {
+            id = idGenerator.newId()
+            fileType = IFileIndexService.TEMP_FILE_TYPE
+            fileAccess = modifier
+            path = filePath
+            sizeIntBytes = length ?: 0
+            timeCreated = System.currentTimeMillis()
+        }
+        transactionTemplate.execute {
+            FileIndexTable.insert(index)
+            syncDbTransactionCommitted {
+                objectStorage.uploadObject(filePath, stream, modifier.toObjectBucket())
+            }
+        }
+        return index
     }
 
     override fun saveFile(

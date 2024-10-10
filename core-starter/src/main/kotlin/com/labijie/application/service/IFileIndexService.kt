@@ -8,6 +8,7 @@ import com.labijie.application.data.pojo.FileIndex
 import com.labijie.application.data.pojo.TempFileIndex
 import com.labijie.application.model.FileModifier
 import com.labijie.application.model.ObjectPreSignUrl
+import java.io.InputStream
 import java.time.Duration
 
 
@@ -36,6 +37,8 @@ interface IFileIndexService {
     fun copyFile(sourceFilePath: String, destFilePath: String, destModifier: FileModifier? = null, destFileType: String? = null, destEntityId: Long? = null): FileIndex
 
     fun clearTempFiles(durationAfterExpired: Duration = Duration.ofMinutes(10), batchSize:Int = 50, throwIfError: Boolean = false): Int
+
+    fun makeTemp(stream: InputStream, filePath: String, modifier: FileModifier, length: Long? = null): FileIndex
 }
 
 

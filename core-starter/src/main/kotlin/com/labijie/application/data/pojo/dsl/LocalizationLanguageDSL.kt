@@ -20,7 +20,6 @@ import kotlin.Comparable
 import kotlin.Int
 import kotlin.Long
 import kotlin.Number
-import kotlin.Pair
 import kotlin.String
 import kotlin.Unit
 import kotlin.collections.Collection
@@ -33,7 +32,6 @@ import kotlin.reflect.KClass
 import kotlin.text.Charsets
 import kotlin.text.toByteArray
 import org.jetbrains.exposed.sql.Column
-import org.jetbrains.exposed.sql.Expression
 import org.jetbrains.exposed.sql.Op
 import org.jetbrains.exposed.sql.Query
 import org.jetbrains.exposed.sql.ResultRow
@@ -50,6 +48,7 @@ import org.jetbrains.exposed.sql.statements.InsertStatement
 import org.jetbrains.exposed.sql.statements.ReplaceStatement
 import org.jetbrains.exposed.sql.statements.UpdateBuilder
 import org.jetbrains.exposed.sql.statements.UpdateStatement
+import org.jetbrains.exposed.sql.statements.UpsertBuilder
 import org.jetbrains.exposed.sql.statements.UpsertStatement
 import org.jetbrains.exposed.sql.update
 import org.jetbrains.exposed.sql.upsert
@@ -187,8 +186,8 @@ public object LocalizationLanguageDSL {
 
   public fun LocalizationLanguageTable.upsert(
     raw: LocalizationLanguage,
-    onUpdate: List<Pair<Column<*>, Expression<*>>>? = null,
     onUpdateExclude: List<Column<*>>? = null,
+    onUpdate: (UpsertBuilder.(UpdateStatement) -> Unit)? = null,
     `where`: (SqlExpressionBuilder.() -> Op<Boolean>)? = null,
   ): UpsertStatement<Long> = upsert(where = where, onUpdate = onUpdate, onUpdateExclude =
       onUpdateExclude) {
@@ -247,14 +246,14 @@ public object LocalizationLanguageDSL {
   }
 
   public fun LocalizationLanguageTable.selectMany(vararg selective: Column<*>,
-      `where`: Query.() -> Unit): List<LocalizationLanguage> {
+      `where`: Query.() -> Query?): List<LocalizationLanguage> {
     val query = selectSlice(*selective)
     `where`.invoke(query)
     return query.toLocalizationLanguageList(*selective)
   }
 
   public fun LocalizationLanguageTable.selectOne(vararg selective: Column<*>,
-      `where`: Query.() -> Unit): LocalizationLanguage? {
+      `where`: Query.() -> Query?): LocalizationLanguage? {
     val query = selectSlice(*selective)
     `where`.invoke(query)
     return query.firstOrNull()?.toLocalizationLanguage(*selective)
@@ -265,7 +264,7 @@ public object LocalizationLanguageDSL {
     order: SortOrder = SortOrder.DESC,
     pageSize: Int = 50,
     selective: Collection<Column<*>> = listOf(),
-    `where`: (Query.() -> Unit)? = null,
+    `where`: (Query.() -> Query?)? = null,
   ): OffsetList<LocalizationLanguage> {
     if(pageSize < 1) {
       return OffsetList.empty()
@@ -298,7 +297,7 @@ public object LocalizationLanguageDSL {
     order: SortOrder = SortOrder.DESC,
     pageSize: Int = 50,
     selective: Collection<Column<*>> = listOf(),
-    `where`: (Query.() -> Unit)? = null,
+    `where`: (Query.() -> Query?)? = null,
   ): OffsetList<LocalizationLanguage> {
     if(pageSize < 1) {
       return OffsetList.empty()

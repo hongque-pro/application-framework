@@ -19,7 +19,6 @@ import kotlin.Comparable
 import kotlin.Int
 import kotlin.Long
 import kotlin.Number
-import kotlin.Pair
 import kotlin.String
 import kotlin.Unit
 import kotlin.collections.Collection
@@ -34,7 +33,6 @@ import kotlin.text.Charsets
 import kotlin.text.toByteArray
 import kotlin.text.toLong
 import org.jetbrains.exposed.sql.Column
-import org.jetbrains.exposed.sql.Expression
 import org.jetbrains.exposed.sql.Op
 import org.jetbrains.exposed.sql.Query
 import org.jetbrains.exposed.sql.ResultRow
@@ -51,6 +49,7 @@ import org.jetbrains.exposed.sql.statements.InsertStatement
 import org.jetbrains.exposed.sql.statements.ReplaceStatement
 import org.jetbrains.exposed.sql.statements.UpdateBuilder
 import org.jetbrains.exposed.sql.statements.UpdateStatement
+import org.jetbrains.exposed.sql.statements.UpsertBuilder
 import org.jetbrains.exposed.sql.statements.UpsertStatement
 import org.jetbrains.exposed.sql.update
 import org.jetbrains.exposed.sql.upsert
@@ -175,8 +174,8 @@ public object UserClaimDSL {
 
   public fun UserClaimTable.upsert(
     raw: UserClaim,
-    onUpdate: List<Pair<Column<*>, Expression<*>>>? = null,
     onUpdateExclude: List<Column<*>>? = null,
+    onUpdate: (UpsertBuilder.(UpdateStatement) -> Unit)? = null,
     `where`: (SqlExpressionBuilder.() -> Op<Boolean>)? = null,
   ): UpsertStatement<Long> = upsert(where = where, onUpdate = onUpdate, onUpdateExclude =
       onUpdateExclude) {
@@ -233,14 +232,14 @@ public object UserClaimDSL {
     return query.toUserClaimList(*selective)
   }
 
-  public fun UserClaimTable.selectMany(vararg selective: Column<*>, `where`: Query.() -> Unit):
+  public fun UserClaimTable.selectMany(vararg selective: Column<*>, `where`: Query.() -> Query?):
       List<UserClaim> {
     val query = selectSlice(*selective)
     `where`.invoke(query)
     return query.toUserClaimList(*selective)
   }
 
-  public fun UserClaimTable.selectOne(vararg selective: Column<*>, `where`: Query.() -> Unit):
+  public fun UserClaimTable.selectOne(vararg selective: Column<*>, `where`: Query.() -> Query?):
       UserClaim? {
     val query = selectSlice(*selective)
     `where`.invoke(query)
@@ -252,7 +251,7 @@ public object UserClaimDSL {
     order: SortOrder = SortOrder.DESC,
     pageSize: Int = 50,
     selective: Collection<Column<*>> = listOf(),
-    `where`: (Query.() -> Unit)? = null,
+    `where`: (Query.() -> Query?)? = null,
   ): OffsetList<UserClaim> {
     if(pageSize < 1) {
       return OffsetList.empty()
@@ -285,7 +284,7 @@ public object UserClaimDSL {
     order: SortOrder = SortOrder.DESC,
     pageSize: Int = 50,
     selective: Collection<Column<*>> = listOf(),
-    `where`: (Query.() -> Unit)? = null,
+    `where`: (Query.() -> Query?)? = null,
   ): OffsetList<UserClaim> {
     if(pageSize < 1) {
       return OffsetList.empty()

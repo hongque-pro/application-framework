@@ -43,7 +43,6 @@ import kotlin.Comparable
 import kotlin.Int
 import kotlin.Long
 import kotlin.Number
-import kotlin.Pair
 import kotlin.Short
 import kotlin.String
 import kotlin.Unit
@@ -59,7 +58,6 @@ import kotlin.text.Charsets
 import kotlin.text.toByteArray
 import kotlin.text.toLong
 import org.jetbrains.exposed.sql.Column
-import org.jetbrains.exposed.sql.Expression
 import org.jetbrains.exposed.sql.Op
 import org.jetbrains.exposed.sql.Query
 import org.jetbrains.exposed.sql.ResultRow
@@ -76,6 +74,7 @@ import org.jetbrains.exposed.sql.statements.InsertStatement
 import org.jetbrains.exposed.sql.statements.ReplaceStatement
 import org.jetbrains.exposed.sql.statements.UpdateBuilder
 import org.jetbrains.exposed.sql.statements.UpdateStatement
+import org.jetbrains.exposed.sql.statements.UpsertBuilder
 import org.jetbrains.exposed.sql.statements.UpsertStatement
 import org.jetbrains.exposed.sql.update
 import org.jetbrains.exposed.sql.upsert
@@ -407,8 +406,8 @@ public object UserDSL {
 
   public fun UserTable.upsert(
     raw: User,
-    onUpdate: List<Pair<Column<*>, Expression<*>>>? = null,
     onUpdateExclude: List<Column<*>>? = null,
+    onUpdate: (UpsertBuilder.(UpdateStatement) -> Unit)? = null,
     `where`: (SqlExpressionBuilder.() -> Op<Boolean>)? = null,
   ): UpsertStatement<Long> = upsert(where = where, onUpdate = onUpdate, onUpdateExclude =
       onUpdateExclude) {
@@ -464,14 +463,14 @@ public object UserDSL {
     return query.toUserList(*selective)
   }
 
-  public fun UserTable.selectMany(vararg selective: Column<*>, `where`: Query.() -> Unit):
+  public fun UserTable.selectMany(vararg selective: Column<*>, `where`: Query.() -> Query?):
       List<User> {
     val query = selectSlice(*selective)
     `where`.invoke(query)
     return query.toUserList(*selective)
   }
 
-  public fun UserTable.selectOne(vararg selective: Column<*>, `where`: Query.() -> Unit): User? {
+  public fun UserTable.selectOne(vararg selective: Column<*>, `where`: Query.() -> Query?): User? {
     val query = selectSlice(*selective)
     `where`.invoke(query)
     return query.firstOrNull()?.toUser(*selective)
@@ -482,7 +481,7 @@ public object UserDSL {
     order: SortOrder = SortOrder.DESC,
     pageSize: Int = 50,
     selective: Collection<Column<*>> = listOf(),
-    `where`: (Query.() -> Unit)? = null,
+    `where`: (Query.() -> Query?)? = null,
   ): OffsetList<User> {
     if(pageSize < 1) {
       return OffsetList.empty()
@@ -515,7 +514,7 @@ public object UserDSL {
     order: SortOrder = SortOrder.DESC,
     pageSize: Int = 50,
     selective: Collection<Column<*>> = listOf(),
-    `where`: (Query.() -> Unit)? = null,
+    `where`: (Query.() -> Query?)? = null,
   ): OffsetList<User> {
     if(pageSize < 1) {
       return OffsetList.empty()

@@ -14,7 +14,6 @@ import kotlin.Boolean
 import kotlin.Int
 import kotlin.Long
 import kotlin.Number
-import kotlin.Pair
 import kotlin.String
 import kotlin.Unit
 import kotlin.collections.Iterable
@@ -23,7 +22,6 @@ import kotlin.collections.isNotEmpty
 import kotlin.collections.toList
 import kotlin.reflect.KClass
 import org.jetbrains.exposed.sql.Column
-import org.jetbrains.exposed.sql.Expression
 import org.jetbrains.exposed.sql.Op
 import org.jetbrains.exposed.sql.Query
 import org.jetbrains.exposed.sql.ResultRow
@@ -40,6 +38,7 @@ import org.jetbrains.exposed.sql.statements.InsertStatement
 import org.jetbrains.exposed.sql.statements.ReplaceStatement
 import org.jetbrains.exposed.sql.statements.UpdateBuilder
 import org.jetbrains.exposed.sql.statements.UpdateStatement
+import org.jetbrains.exposed.sql.statements.UpsertBuilder
 import org.jetbrains.exposed.sql.statements.UpsertStatement
 import org.jetbrains.exposed.sql.update
 import org.jetbrains.exposed.sql.upsert
@@ -165,8 +164,8 @@ public object UserLoginDSL {
 
   public fun UserLoginTable.upsert(
     raw: UserLogin,
-    onUpdate: List<Pair<Column<*>, Expression<*>>>? = null,
     onUpdateExclude: List<Column<*>>? = null,
+    onUpdate: (UpsertBuilder.(UpdateStatement) -> Unit)? = null,
     `where`: (SqlExpressionBuilder.() -> Op<Boolean>)? = null,
   ): UpsertStatement<Long> = upsert(where = where, onUpdate = onUpdate, onUpdateExclude =
       onUpdateExclude) {
@@ -224,14 +223,14 @@ public object UserLoginDSL {
     return query.firstOrNull()?.toUserLogin(*selective)
   }
 
-  public fun UserLoginTable.selectMany(vararg selective: Column<*>, `where`: Query.() -> Unit):
+  public fun UserLoginTable.selectMany(vararg selective: Column<*>, `where`: Query.() -> Query?):
       List<UserLogin> {
     val query = selectSlice(*selective)
     `where`.invoke(query)
     return query.toUserLoginList(*selective)
   }
 
-  public fun UserLoginTable.selectOne(vararg selective: Column<*>, `where`: Query.() -> Unit):
+  public fun UserLoginTable.selectOne(vararg selective: Column<*>, `where`: Query.() -> Query?):
       UserLogin? {
     val query = selectSlice(*selective)
     `where`.invoke(query)

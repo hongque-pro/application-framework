@@ -109,7 +109,7 @@ abstract class AbstractUserService(
         loginProvider: String? = null
     ): UserAndRoles {
         val user = UserTable.selectOne {
-            UserTable.phoneNumber eq phoneNumber
+            andWhere { UserTable.phoneNumber eq phoneNumber }
         } ?: throw UserNotFoundException(
             if(loginProvider.isNullOrBlank()) "User was not existed." else "User was not existed (provider: $loginProvider)."
         )
@@ -348,7 +348,7 @@ abstract class AbstractUserService(
             } else {
                 query.orderBy(UserTable.id to SortOrder.DESC)
             }
-            query.limit(pageSize, 0)
+            query.limit(pageSize)
 
             query.toUserList()
         } ?: listOf()

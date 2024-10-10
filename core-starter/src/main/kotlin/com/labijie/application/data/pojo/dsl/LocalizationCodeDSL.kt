@@ -16,7 +16,6 @@ import kotlin.Comparable
 import kotlin.Int
 import kotlin.Long
 import kotlin.Number
-import kotlin.Pair
 import kotlin.String
 import kotlin.Unit
 import kotlin.collections.Collection
@@ -29,7 +28,6 @@ import kotlin.reflect.KClass
 import kotlin.text.Charsets
 import kotlin.text.toByteArray
 import org.jetbrains.exposed.sql.Column
-import org.jetbrains.exposed.sql.Expression
 import org.jetbrains.exposed.sql.Op
 import org.jetbrains.exposed.sql.Query
 import org.jetbrains.exposed.sql.ResultRow
@@ -46,6 +44,7 @@ import org.jetbrains.exposed.sql.statements.InsertStatement
 import org.jetbrains.exposed.sql.statements.ReplaceStatement
 import org.jetbrains.exposed.sql.statements.UpdateBuilder
 import org.jetbrains.exposed.sql.statements.UpdateStatement
+import org.jetbrains.exposed.sql.statements.UpsertBuilder
 import org.jetbrains.exposed.sql.statements.UpsertStatement
 import org.jetbrains.exposed.sql.update
 import org.jetbrains.exposed.sql.upsert
@@ -145,8 +144,8 @@ public object LocalizationCodeDSL {
 
   public fun LocalizationCodeTable.upsert(
     raw: LocalizationCode,
-    onUpdate: List<Pair<Column<*>, Expression<*>>>? = null,
     onUpdateExclude: List<Column<*>>? = null,
+    onUpdate: (UpsertBuilder.(UpdateStatement) -> Unit)? = null,
     `where`: (SqlExpressionBuilder.() -> Op<Boolean>)? = null,
   ): UpsertStatement<Long> = upsert(where = where, onUpdate = onUpdate, onUpdateExclude =
       onUpdateExclude) {
@@ -205,14 +204,14 @@ public object LocalizationCodeDSL {
   }
 
   public fun LocalizationCodeTable.selectMany(vararg selective: Column<*>,
-      `where`: Query.() -> Unit): List<LocalizationCode> {
+      `where`: Query.() -> Query?): List<LocalizationCode> {
     val query = selectSlice(*selective)
     `where`.invoke(query)
     return query.toLocalizationCodeList(*selective)
   }
 
   public fun LocalizationCodeTable.selectOne(vararg selective: Column<*>,
-      `where`: Query.() -> Unit): LocalizationCode? {
+      `where`: Query.() -> Query?): LocalizationCode? {
     val query = selectSlice(*selective)
     `where`.invoke(query)
     return query.firstOrNull()?.toLocalizationCode(*selective)
@@ -223,7 +222,7 @@ public object LocalizationCodeDSL {
     order: SortOrder = SortOrder.DESC,
     pageSize: Int = 50,
     selective: Collection<Column<*>> = listOf(),
-    `where`: (Query.() -> Unit)? = null,
+    `where`: (Query.() -> Query?)? = null,
   ): OffsetList<LocalizationCode> {
     if(pageSize < 1) {
       return OffsetList.empty()
@@ -256,7 +255,7 @@ public object LocalizationCodeDSL {
     order: SortOrder = SortOrder.DESC,
     pageSize: Int = 50,
     selective: Collection<Column<*>> = listOf(),
-    `where`: (Query.() -> Unit)? = null,
+    `where`: (Query.() -> Query?)? = null,
   ): OffsetList<LocalizationCode> {
     if(pageSize < 1) {
       return OffsetList.empty()

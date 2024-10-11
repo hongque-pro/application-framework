@@ -27,5 +27,5 @@ data class RegisterInfo(
 
     var email: String = "",
 
-    var language: String = "en-US"
+    var language: String? = null
 ) : SmsAssociated()

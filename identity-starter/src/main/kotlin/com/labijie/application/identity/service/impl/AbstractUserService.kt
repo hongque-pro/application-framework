@@ -176,8 +176,10 @@ abstract class AbstractUserService(
             idGenerator.newId(),
             register.username.ifNullOrBlank { "u${id}" },
             getDefaultUserType()
-        ).apply {
-            this.language = register.language
+        )
+
+        register.language?.let {
+            user.language = it
         }
 
 

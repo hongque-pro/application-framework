@@ -156,7 +156,7 @@ abstract class AbstractUserService(
     ): UserAndRoles {
 
         val phoneCountry = register.dialingCode ?: 86
-        register.email = register.email.trim()
+        register.email = register.email
         register.phoneNumber = register.phoneNumber.trim()
 
         val isByEmail = by == RegisterBy.Email || by == RegisterBy.Both

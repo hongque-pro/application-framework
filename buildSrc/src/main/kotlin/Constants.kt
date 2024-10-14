@@ -8,7 +8,7 @@ object Versions {
     const val kotlin = "1.9.21"
     const val springBoot = "3.2.0"
     const val antisamy="1.7.4"
-    const val springDoc="2.2.0"
+    const val springDoc="2.5.0"
     const val uberH3 = "3.7.1"
 
     const val mysqlVersion="9.0.0"

@@ -5,6 +5,7 @@
 package com.labijie.application.configuration
 
 import com.labijie.application.JsonMode
+import com.labijie.application.UrlProtocol
 import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.boot.context.properties.NestedConfigurationProperty
 
@@ -15,6 +16,8 @@ data class ApplicationWebProperties(
      * 当配置为 JsonMode.JAVASCRIPT 时，整个网站的 json 响应将兼容 javascript (long 等类型自动变为 string).
      */
     var jsonMode: JsonMode = JsonMode.JAVASCRIPT,
+
+    var docServerUrlProtocol: UrlProtocol = UrlProtocol.AUTO,
 
     @NestedConfigurationProperty
     val localeResolver: LocaleResolverSettings = LocaleResolverSettings()

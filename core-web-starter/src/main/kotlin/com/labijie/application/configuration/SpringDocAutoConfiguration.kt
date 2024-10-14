@@ -1,6 +1,7 @@
 package com.labijie.application.configuration
 
 import com.labijie.application.doc.DocPropertyCustomizer
+import com.labijie.application.doc.DocServerBaseUrlCustomizer
 import com.labijie.application.doc.DocUtils
 import com.labijie.infra.getApplicationName
 import com.labijie.infra.oauth2.TwoFactorPrincipal
@@ -41,6 +42,11 @@ class SpringDocAutoConfiguration(private val environment: Environment): Initiali
 
     @Autowired(required = false)
     private var gitProperties: GitProperties? = null
+
+    @Bean
+    fun docServerBaseUrlCustomizer(webProperties: ApplicationWebProperties): DocServerBaseUrlCustomizer {
+        return DocServerBaseUrlCustomizer(environment, webProperties)
+    }
 
     @Bean
     @ConditionalOnMissingBean(OpenAPI::class)

@@ -31,6 +31,13 @@
       "type": "com.labijie.application.JsonMode",
       "sourceType": "com.labijie.application.configuration.ApplicationWebProperties",
       "defaultValue": "javascript"
+    },
+    {
+      "name": "application.web.doc-server-url-protocol",
+      "description": "Swagger doc url protocol",
+      "type": "com.labijie.application.UrlProtocol",
+      "sourceType": "com.labijie.application.configuration.ApplicationWebProperties",
+      "defaultValue": "auto"
     }
   ]
 }

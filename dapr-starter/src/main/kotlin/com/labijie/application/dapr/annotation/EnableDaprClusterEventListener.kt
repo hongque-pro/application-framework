@@ -11,4 +11,4 @@ import org.springframework.context.annotation.Import
 @Retention(AnnotationRetention.RUNTIME)
 @Target(AnnotationTarget.CLASS)
 @Import(ClusterEventListenerImportSelector::class)
-annotation class EnableClusterEventListener(val events: Array<String> = ["*"], val excludeEvents:Array<String> = [])
+annotation class EnableDaprClusterEventListener(val events: Array<String> = ["*"], val excludeEvents:Array<String> = [])

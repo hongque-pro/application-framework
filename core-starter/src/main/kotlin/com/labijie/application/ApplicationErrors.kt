@@ -10,6 +10,8 @@ package com.labijie.application
 object ApplicationErrors {
     @ErrorDescription("服务器系统错误")
     const val UnhandledError = "system_error"
+    @ErrorDescription("HTTP 请求中未包含正文 ( body )")
+    const val HttpBodyIsMissing  = "http_body_is_missing"
     @ErrorDescription("知道不到符合此请求的终结点")
     const val BadRequestMethod  = "bad_request_method"
     @ErrorDescription("请求参数不满足约束条件")

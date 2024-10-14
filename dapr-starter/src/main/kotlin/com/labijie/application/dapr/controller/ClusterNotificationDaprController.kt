@@ -5,8 +5,8 @@
 package com.labijie.application.dapr.controller
 
 import com.labijie.application.dapr.DaprClusterEvent
-import com.labijie.application.dapr.components.IClusterEventListener
 import com.labijie.application.dapr.components.IClusterEventPublisher
+import com.labijie.application.dapr.components.IDaprClusterEventListener
 import com.labijie.application.dapr.configuration.ClusterEventListenerImportSelector
 import com.labijie.infra.utils.throwIfNecessary
 import io.dapr.Topic
@@ -21,18 +21,18 @@ import reactor.core.publisher.Mono
 
 
 @RestController("/dapr/sub")
-class ClusterNotificationDaprBindingController: ApplicationContextAware {
+class ClusterNotificationDaprController: ApplicationContextAware {
 
     companion object {
         private val logger by lazy {
-            LoggerFactory.getLogger(ClusterNotificationDaprBindingController::class.java)
+            LoggerFactory.getLogger(ClusterNotificationDaprController::class.java)
         }
     }
 
     private lateinit var applicationContext: ApplicationContext
 
     private val listeners by lazy {
-        applicationContext.getBeanProvider(IClusterEventListener::class.java).orderedStream().toList()
+        applicationContext.getBeanProvider(IDaprClusterEventListener::class.java).orderedStream().toList()
     }
 
     @Topic(
@@ -47,7 +47,9 @@ class ClusterNotificationDaprBindingController: ApplicationContextAware {
                 listeners.forEach {
                     if(ClusterEventListenerImportSelector.includeEvent(data.eventName)) {
                         try {
-                            it.onEvent(data)
+                            if(it.forEvents.contains(data.eventName)) {
+                                it.onEvent(data)
+                            }
                         }catch (e: Throwable) {
                             e.throwIfNecessary()
                             logger.error("An error occurred while listening to cluster event (listener: ${it::class.java.simpleName}, event: ${data.eventName}).", e)

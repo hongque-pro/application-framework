@@ -5,7 +5,7 @@ plugins {
 
 allprojects {
     group = "com.labijie.application"
-    version = "3.1.7"
+    version = "3.1.8"
 }
 
 allprojects {

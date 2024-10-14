@@ -8,7 +8,9 @@ import com.labijie.application.dapr.DaprClusterEvent
 import org.springframework.core.Ordered
 
 
-interface IClusterEventListener : Ordered {
+interface IDaprClusterEventListener : Ordered {
     override fun getOrder() = 0
+
+    val forEvents: Set<String>
     fun onEvent(event: DaprClusterEvent)
 }

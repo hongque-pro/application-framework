@@ -7,10 +7,12 @@ package com.labijie.application.dapr.localization
 import com.labijie.application.dapr.BuiltInClusterEvents
 import com.labijie.application.dapr.components.IClusterEventPublisher
 import com.labijie.application.localization.ILocalizationChangedListener
+import org.springframework.beans.factory.annotation.Autowired
 
 
-class DaprLocalLocalizationListener(
-    private val clusterEventPublisher: IClusterEventPublisher) : ILocalizationChangedListener {
+class LocalLocalizationEventListener(
+    private val clusterEventPublisher: IClusterEventPublisher
+) : ILocalizationChangedListener {
 
     override fun onChanged() {
         clusterEventPublisher.publishEvent(BuiltInClusterEvents.LOCALIZATION_CHANGED)

@@ -4,8 +4,10 @@
  */
 package com.labijie.application.dapr.configuration
 
-import com.labijie.application.dapr.annotation.EnableClusterEventListener
-import com.labijie.application.dapr.controller.ClusterNotificationDaprBindingController
+import com.labijie.application.dapr.BuiltInClusterEvents
+import com.labijie.application.dapr.annotation.EnableDaprClusterEventListener
+import com.labijie.application.dapr.controller.ClusterNotificationDaprController
+import com.labijie.application.dapr.localization.DaprClusterLocalizationEventListener
 import org.springframework.context.annotation.ImportSelector
 import org.springframework.core.type.AnnotationMetadata
 
@@ -21,12 +23,12 @@ class ClusterEventListenerImportSelector : ImportSelector {
     }
 
     override fun selectImports(importingClassMetadata: AnnotationMetadata): Array<String> {
-        val events = importingClassMetadata.getAnnotationAttributes(EnableClusterEventListener::class.java.name)
-            ?.get(EnableClusterEventListener::events.name)
+        val events = importingClassMetadata.getAnnotationAttributes(EnableDaprClusterEventListener::class.java.name)
+            ?.get(EnableDaprClusterEventListener::events.name)
                 as? Array<*> ?: arrayOf<String>()
 
-        val exclude = importingClassMetadata.getAnnotationAttributes(EnableClusterEventListener::class.java.name)
-            ?.get(EnableClusterEventListener::events.name)
+        val exclude = importingClassMetadata.getAnnotationAttributes(EnableDaprClusterEventListener::class.java.name)
+            ?.get(EnableDaprClusterEventListener::excludeEvents.name)
                 as? Array<*> ?: arrayOf<String>()
 
         if (exclude.isNotEmpty()) {
@@ -50,7 +52,11 @@ class ClusterEventListenerImportSelector : ImportSelector {
                 }
             }
             if (count > 0 && !excludeEvents.contains("*")) {
-                return arrayOf(ClusterNotificationDaprBindingController::class.java.name)
+                val beans = mutableListOf(ClusterNotificationDaprController::class.java.name)
+                if(includeEvent(BuiltInClusterEvents.LOCALIZATION_CHANGED)) {
+                    beans.add(DaprClusterLocalizationEventListener::class.java.name)
+                }
+                return beans.toTypedArray()
             }
         }
         return arrayOf()

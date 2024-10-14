@@ -14,11 +14,11 @@ object Versions {
     const val mysqlVersion="9.0.0"
 
     const val infraBom = "3.2.0"
-    const val infraOrm = "2.0.7"
+    const val infraOrm = "2.0.8"
     const val infraPlugin = "2.0.4"
     const val infraCommons = "3.0.0"
     const val infraCaching = "1.4.2"
-    const val infraOAuth2 = "2.0.4"
+    const val infraOAuth2 = "2.0.5"
 
     const val bouncyCastle = "1.77"
 

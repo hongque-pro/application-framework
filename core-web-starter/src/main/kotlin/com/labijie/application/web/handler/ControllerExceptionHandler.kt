@@ -178,12 +178,13 @@ class ControllerExceptionHandler(private val messageSource: MessageSource) : Ord
     }
 
     @ExceptionHandler(HttpMessageNotReadableException::class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
     fun handleHttpMessageNotReadableExceptionHandler(
         request: HttpServletRequest,
         e: HttpMessageNotReadableException
-    ): ResponseEntity<ErrorResponse> {
+    ): ErrorResponse {
         val jsonException = e.getCauseFromChain(JacksonException::class)
-        if (jsonException != null) {
+        return if (jsonException != null) {
             val details = if (jsonException is JsonMappingException) {
                 mutableMapOf(
                     jsonException.pathReference to jsonException.localizedMessage.ifNullOrBlank {
@@ -191,12 +192,10 @@ class ControllerExceptionHandler(private val messageSource: MessageSource) : Ord
                     }
                 )
             } else null
-            val error = ErrorResponse(ApplicationErrors.InvalidRequestFormat, details = details)
-            return ResponseEntity(error, HttpStatus.BAD_REQUEST)
+            ErrorResponse(ApplicationErrors.InvalidRequestFormat, details = details)
+        }else {
+            ErrorResponse(ApplicationErrors.HttpBodyIsMissing)
         }
-
-        val response = handleUnhandledException(request, e)
-        return response
     }
 
     @ExceptionHandler(NoHandlerFoundException::class)

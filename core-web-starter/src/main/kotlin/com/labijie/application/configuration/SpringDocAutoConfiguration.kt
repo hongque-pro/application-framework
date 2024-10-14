@@ -21,7 +21,6 @@ import org.springframework.context.ApplicationContextAware
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.ComponentScan
 import org.springframework.context.annotation.Configuration
-import org.springframework.context.annotation.Profile
 import org.springframework.core.Ordered
 import org.springframework.core.env.Environment
 
@@ -56,7 +55,6 @@ class SpringDocAutoConfiguration(private val environment: Environment): Initiali
 
 
     @Bean
-    @Profile("!prod", "!production")
     fun applicationApi(): GroupedOpenApi {
         return GroupedOpenApi.builder()
             .group("Application")
@@ -72,7 +70,6 @@ class SpringDocAutoConfiguration(private val environment: Environment): Initiali
 
     @Bean
     @ConditionalOnClass(name = ["com.labijie.application.dapr.configuration.ApplicationDaprAutoConfiguration"])
-    @Profile("!prod", "!production")
     fun daprApi(): GroupedOpenApi {
         return GroupedOpenApi.builder()
             .group("Dapr")
@@ -95,7 +92,6 @@ class SpringDocAutoConfiguration(private val environment: Environment): Initiali
 
     @Bean
     @ConditionalOnClass(name=["org.springframework.security.oauth2.server.authorization.OAuth2Authorization"])
-    @Profile("!prod", "!production")
     fun oauth2Api(): GroupedOpenApi {
         return GroupedOpenApi.builder()
             .group("OAuth2 Server")

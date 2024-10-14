@@ -38,12 +38,6 @@
       "defaultValue": true
     },
     {
-      "name": "application.dapr.cluster-notification.subscribe-event",
-      "type": "java.lang.Boolean",
-      "sourceType": "com.labijie.application.dapr.configuration.ClusterNotificationSettings",
-      "defaultValue": false
-    },
-    {
       "name": "application.dapr.cluster-notification.pubsub",
       "type": "java.lang.String",
       "sourceType": "com.labijie.application.dapr.configuration.ClusterNotificationSettings",

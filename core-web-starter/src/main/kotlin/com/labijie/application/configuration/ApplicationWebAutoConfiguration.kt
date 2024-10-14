@@ -36,14 +36,12 @@ import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Import
 import org.springframework.core.env.Environment
 import org.springframework.format.FormatterRegistry
-import org.springframework.http.HttpMethod
 import org.springframework.http.MediaType
 import org.springframework.http.converter.HttpMessageConverter
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configurers.AuthorizeHttpRequestsConfigurer
 import org.springframework.validation.beanvalidation.MethodValidationPostProcessor
-import org.springframework.web.bind.annotation.RequestMethod
 import org.springframework.web.method.support.HandlerMethodArgumentResolver
 import org.springframework.web.servlet.config.annotation.*
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping
@@ -191,42 +189,26 @@ class ApplicationWebAutoConfiguration(private val properties: ApplicationWebProp
 
     }
 
-    private fun getPermitAllUrlsFromAnnotations(): Map<HttpMethod, MutableSet<String>> {
-        val sets = mutableMapOf<HttpMethod, MutableSet<String>>()
+    private fun getPermitAllUrlsFromAnnotations(): MutableSet<String> {
         val requestMappingHandlerMapping = applicationContext.getBean(RequestMappingHandlerMapping::class.java)
         val handlerMethodMap = requestMappingHandlerMapping.handlerMethods
+        val urlList = mutableSetOf<String>()
         handlerMethodMap.forEach { (key, value) ->
             val anno = value.getMethodAnnotation(PermitAll::class.java) ?: value.beanType.getAnnotation(PermitAll::class.java)
             if (anno != null) {
                 key.pathPatternsCondition?.patterns?.let { urls ->
-                    key.methodsCondition.methods.forEach { method ->
-                        val httpMethod = when (method) {
-                            RequestMethod.GET -> HttpMethod.GET
-                            RequestMethod.POST -> HttpMethod.POST
-                            RequestMethod.PUT -> HttpMethod.PUT
-                            RequestMethod.DELETE -> HttpMethod.DELETE
-                            RequestMethod.PATCH -> HttpMethod.PATCH
-                            RequestMethod.HEAD -> HttpMethod.HEAD
-                            RequestMethod.OPTIONS -> HttpMethod.OPTIONS
-                            RequestMethod.TRACE -> HttpMethod.TRACE
-                            else -> null
-                        }
-                        httpMethod?.let {
-                            val urlList = sets.getOrPut(it) { mutableSetOf() }
-                            urls.forEach { u -> urlList.add(u.patternString) }
-                        }
+                    urls.forEach {
+                        urlList.add(it.patternString)
                     }
                 }
             }
         }
-        return sets
+        return urlList
     }
 
     override fun configure(registry: AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry) {
         val list = getPermitAllUrlsFromAnnotations()
-        list.forEach { (method, urls) ->
-            registry.antMatchers(*urls.toTypedArray(), ignoreCase = true, method = method).permitAll()
-        }
+        registry.antMatchers(*list.toTypedArray(), ignoreCase = true).permitAll()
     }
 
     override fun setApplicationContext(applicationContext: ApplicationContext) {

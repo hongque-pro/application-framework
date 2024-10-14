@@ -39,7 +39,7 @@ class JdbcLocalizationService(
     private val cacheManager = MemoryCacheManager()
     private val localePreferences: ConcurrentHashMap<String, Optional<Locale>> = ConcurrentHashMap()
 
-    private var springContext : ApplicationContext? = null
+    private var springContext: ApplicationContext? = null
 
     private val listeners by lazy {
         springContext?.getBeanProvider(ILocalizationChangedListener::class.java)?.orderedStream()?.toList() ?: listOf()
@@ -48,7 +48,7 @@ class JdbcLocalizationService(
     companion object {
         private const val ALL_LOCALES_CACHE_KEY = "loc:all_locales"
         private const val DEFAULT_LOCAL_KEY = "loc:default"
-        private val DEFAULT_TIMEOUT =  Duration.ofDays(365)
+        private val DEFAULT_TIMEOUT = Duration.ofDays(365)
         private val MESSAGE_TIMEOUT = Duration.ofDays(1)
     }
 
@@ -73,6 +73,9 @@ class JdbcLocalizationService(
     }
 
     override fun findSupportedLocale(locale: Locale): Locale? {
+        if (locale.language.isNullOrBlank()) {
+            return null
+        }
         return localePreferences.getOrPut(locale.getId()) {
             val l = findLocale(locale, allLocales())
             Optional.ofNullable(l)
@@ -88,13 +91,12 @@ class JdbcLocalizationService(
 
 
             val newDefault = list.firstOrNull { it.locale.equals(id, ignoreCase = true) }
-            if(newDefault == null) {
+            if (newDefault == null) {
                 return@execute false
             }
 
             var changed = false
-            list.firstOrNull { it.default }?.let {
-                old->
+            list.firstOrNull { it.default }?.let { old ->
                 changed = LocalizationLanguageTable.updateByPrimaryKey(old.locale) {
                     it[default] = false
                 } > 0
@@ -104,7 +106,7 @@ class JdbcLocalizationService(
                 it[default] = true
             } > 0
 
-            if(changed) {
+            if (changed) {
                 cacheManager.removeAfterTransactionCommit(DEFAULT_LOCAL_KEY)
                 syncDbTransactionCommitted {
                     listeners.forEach { it.onChanged() }
@@ -142,9 +144,9 @@ class JdbcLocalizationService(
                 }
                 if (count.insertedCount > 0 && refreshCache) {
                     syncDbTransactionCommitted {
-                       cacheManager.remove(ALL_LOCALES_CACHE_KEY)
-                       localePreferences.clear()
-                   }
+                        cacheManager.remove(ALL_LOCALES_CACHE_KEY)
+                        localePreferences.clear()
+                    }
                 }
                 count.insertedCount > 0
             } ?: false
@@ -195,7 +197,7 @@ class JdbcLocalizationService(
                 val newLoc = LocalizationCode().apply { this.code = code }
                 LocalizationCodeTable.upsert(newLoc)
                 true
-            }else {
+            } else {
                 false
             }
         } ?: false
@@ -217,7 +219,7 @@ class JdbcLocalizationService(
             val added = addOrUpdateMessage(code, message, locale, override)
 
             val changed = localAdded || codeAdded || added
-            if(changed) {
+            if (changed) {
                 syncDbTransactionCommitted {
                     listeners.forEach { it.onChanged() }
                 }
@@ -233,28 +235,27 @@ class JdbcLocalizationService(
         var messageCount = 0
 
         transactionTemplate.execute {
-            if(localAdded.add(locale.getId()) && addLocaleIfNotExisted(locale, false))
-            {
+            if (localAdded.add(locale.getId()) && addLocaleIfNotExisted(locale, false)) {
                 newLocal++
             }
 
             messages.forEach {
                 val code = it.key.toString()
-                if(addCoded.add(code)){
+                if (addCoded.add(code)) {
                     addCodeIfNotExisted(code)
                 }
-                if(addOrUpdateMessage(code, it.value.toString(), locale, override, true)) {
+                if (addOrUpdateMessage(code, it.value.toString(), locale, override, true)) {
                     messageCount++
                 }
             }
-            if(newLocal >0) {
+            if (newLocal > 0) {
                 syncDbTransactionCommitted {
                     cacheManager.remove(ALL_LOCALES_CACHE_KEY)
                     localePreferences.clear()
                 }
             }
 
-            if(newLocal > 0 || messageCount > 0) {
+            if (newLocal > 0 || messageCount > 0) {
                 syncDbTransactionCommitted {
                     listeners.forEach { it.onChanged() }
                 }

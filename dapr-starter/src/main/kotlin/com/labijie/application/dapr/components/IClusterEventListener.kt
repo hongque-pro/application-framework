@@ -10,7 +10,5 @@ import org.springframework.core.Ordered
 
 interface IClusterEventListener : Ordered {
     override fun getOrder() = 0
-
-    fun supportEvent(eventName: String): Boolean
     fun onEvent(event: DaprClusterEvent)
 }

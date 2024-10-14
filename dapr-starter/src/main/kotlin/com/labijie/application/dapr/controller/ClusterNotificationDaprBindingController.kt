@@ -7,7 +7,10 @@ package com.labijie.application.dapr.controller
 import com.labijie.application.dapr.DaprClusterEvent
 import com.labijie.application.dapr.components.IClusterEventListener
 import com.labijie.application.dapr.components.IClusterEventPublisher
+import com.labijie.application.dapr.configuration.ClusterEventListenerImportSelector
 import com.labijie.infra.utils.throwIfNecessary
+import io.dapr.Topic
+import io.dapr.client.domain.CloudEvent
 import org.slf4j.LoggerFactory
 import org.springframework.context.ApplicationContext
 import org.springframework.context.ApplicationContextAware
@@ -17,7 +20,7 @@ import org.springframework.web.bind.annotation.RestController
 import reactor.core.publisher.Mono
 
 
-@RestController("/dapr/bindings")
+@RestController("/dapr/sub")
 class ClusterNotificationDaprBindingController: ApplicationContextAware {
 
     companion object {
@@ -32,17 +35,22 @@ class ClusterNotificationDaprBindingController: ApplicationContextAware {
         applicationContext.getBeanProvider(IClusterEventListener::class.java).orderedStream().toList()
     }
 
-    @PostMapping("/\${application.dapr.cluster-notification.binding.binding-name:cluster-notification}")
-    fun onClusterNotify(@RequestBody(required = true) event: DaprClusterEvent) : Mono<String> {
+    @Topic(
+        name = "\${application.dapr.cluster-notification.topic:cluster-event}",
+        pubsubName = "\${application.dapr.cluster-notification.pubsub:pubsub}"
+    )
+    @PostMapping("/cluster-event")
+    fun onClusterNotify(@RequestBody(required = true) cloudEvent: CloudEvent<DaprClusterEvent>) : Mono<String> {
         return Mono.fromRunnable {
-            if(event.publisherId != IClusterEventPublisher.PublisherId) {
+            val data = cloudEvent.data
+            if(data.publisherId != IClusterEventPublisher.PublisherId) {
                 listeners.forEach {
-                    if(it.supportEvent(event.eventName)) {
+                    if(ClusterEventListenerImportSelector.includeEvent(data.eventName)) {
                         try {
-                            it.onEvent(event)
+                            it.onEvent(data)
                         }catch (e: Throwable) {
                             e.throwIfNecessary()
-                            logger.error("An error occurred while listening to cluster event (listener: ${it::class.java.simpleName}).", e)
+                            logger.error("An error occurred while listening to cluster event (listener: ${it::class.java.simpleName}, event: ${data.eventName}).", e)
                         }
                     }
                 }

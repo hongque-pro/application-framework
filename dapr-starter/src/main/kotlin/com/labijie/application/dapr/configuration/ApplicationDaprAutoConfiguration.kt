@@ -11,7 +11,6 @@ import com.labijie.application.dapr.components.DaprJsonSerializer
 import com.labijie.application.dapr.components.DaprMessagePubService
 import com.labijie.application.dapr.components.IClusterEventPublisher
 import com.labijie.application.dapr.condition.ConditionalOnDaprPubsub
-import com.labijie.application.dapr.controller.ClusterNotificationDaprBindingController
 import com.labijie.application.dapr.localization.DaprClusterLocationEventListener
 import com.labijie.application.dapr.localization.DaprLocalLocalizationListener
 import com.labijie.application.service.ILocalizationService
@@ -24,10 +23,7 @@ import io.dapr.client.DaprClientBuilder
 import org.springframework.beans.factory.ObjectProvider
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.autoconfigure.AutoConfigureBefore
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBean
-import org.springframework.boot.autoconfigure.condition.ConditionalOnClass
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
+import org.springframework.boot.autoconfigure.condition.*
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -96,26 +92,23 @@ class ApplicationDaprAutoConfiguration {
         }
     }
 
+    @Bean
+    fun daprClusterEventPublisher(
+        properties: DaprProperties,
+        daprClient: DaprClient,
+    ): DaprClusterEventPublisher {
+        return DaprClusterEventPublisher(properties, daprClient)
+    }
+
+
     @Configuration(proxyBeanMethods = false)
     @ConditionalOnProperty(
-        name = ["application.dapr.cluster-event.enabled"],
+        name = ["application.dapr.cluster-event.subscribe-event"],
         havingValue = "true",
         matchIfMissing = false
     )
+    @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
     protected class DaprClusterNotificationAutoConfig {
-
-        @Bean
-        fun clusterEventBindingController(
-            properties: DaprProperties,
-            daprClient: DaprClient,
-        ): DaprClusterEventPublisher {
-            return DaprClusterEventPublisher(properties, daprClient)
-        }
-
-        @Bean
-        fun clusterEventBindingController(): ClusterNotificationDaprBindingController {
-            return ClusterNotificationDaprBindingController()
-        }
 
         @Bean
         fun daprLocalizationListener(clusterEventPublisher: IClusterEventPublisher): DaprLocalLocalizationListener {

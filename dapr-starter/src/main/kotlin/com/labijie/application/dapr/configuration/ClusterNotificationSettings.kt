@@ -4,13 +4,9 @@
  */
 package com.labijie.application.dapr.configuration
 
-import org.springframework.boot.context.properties.NestedConfigurationProperty
-
 
 data class ClusterNotificationSettings(
-
-    var enabled: Boolean = false,
-
-    @NestedConfigurationProperty
-    val binding: BindingConfig = BindingConfig(bindingName = "cluster-notification")
+    var subscribeEvent: Boolean = false,
+    var pubsub: String = "pubsub",
+    var topic : String = "cluster-event"
 )

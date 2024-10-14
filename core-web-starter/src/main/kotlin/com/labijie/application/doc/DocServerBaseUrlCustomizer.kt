@@ -26,7 +26,7 @@ class DocServerBaseUrlCustomizer(
         var baseUrl = serverBaseUrl
         try {
             val url = URL(serverBaseUrl)
-            baseUrl = URL(getProtocol(url), url.host, url.file).toString()
+            baseUrl = URL(getProtocol(url), url.host, url.port, url.file).toString()
         } catch (ex: MalformedURLException) {
             // nothing we can do
         }

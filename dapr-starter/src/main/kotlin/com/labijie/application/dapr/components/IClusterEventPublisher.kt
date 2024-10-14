@@ -4,6 +4,7 @@
  */
 package com.labijie.application.dapr.components
 
+import java.time.Duration
 import java.util.*
 
 
@@ -12,5 +13,5 @@ interface IClusterEventPublisher {
         val PublisherId = UUID.randomUUID().toString().replace("-", "").lowercase()
     }
 
-    fun publishEvent(eventName: String, args: String? = null, throwIfError: Boolean = false)
+    fun publishEvent(eventName: String, args: String? = null, ttl: Duration = Duration.ofSeconds(30), throwIfError: Boolean = false)
 }

@@ -93,11 +93,14 @@ class ApplicationWebAutoConfiguration(private val properties: ApplicationWebProp
         }
         val mapper =
             if (properties.jsonMode == JsonMode.JAVASCRIPT) JacksonHelper.webCompatibilityMapper else JacksonHelper.defaultObjectMapper
+        val converter = MappingJackson2HttpMessageConverter(mapper).apply {
+            this.defaultCharset = Charsets.UTF_8
+        }
         if (index >= 0) {
             converters.removeAt(index)
-            converters.add(index, MappingJackson2HttpMessageConverter(mapper))
+            converters.add(index, converter)
         } else {
-            converters.add(converters.size, MappingJackson2HttpMessageConverter(mapper))
+            converters.add(converters.size, converter)
             super.configureMessageConverters(converters)
         }
     }

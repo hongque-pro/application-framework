@@ -20,6 +20,8 @@ interface IFileIndexService {
 
     fun getIndex(filePath: String): FileIndex?
 
+    fun getIndexAndRefreshFileSize(filePath: String, checkFileExisted: Boolean = true): FileIndex?
+
     fun existed(filePath: String): Boolean
 
     fun getIndexes(filePaths: Iterable<String>): Map<String, FileIndex?>
@@ -30,6 +32,7 @@ interface IFileIndexService {
     fun touchFile(filePath: String, modifier: FileModifier, fileSizeInBytes: Long? = null, expiration: Duration? = null): TouchedFile
 
     fun setToTemp(filePath: String, throwIfNotStored: Boolean): FileIndex?
+    fun saveFileIfTemp(filePath: String, fileType:String,  entityId: Long? = null, fileSizeInBytes: Long? = null, checkFileExisted: Boolean = true): FileIndex?
     fun saveFile(filePath: String, fileType:String,  entityId: Long? = null, fileSizeInBytes: Long? = null, checkFileExisted: Boolean = true): FileIndex?
     fun checkFileInStorage(filePath:String, throwIfNotStored: Boolean) : Boolean
     fun deleteFile(filePath: String, deleteObject:Boolean = false):Boolean

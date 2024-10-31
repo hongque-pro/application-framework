@@ -45,7 +45,7 @@ import kotlin.io.path.extension
  * @author Anders Xiao
  * @date 2023-12-05
  */
-class FileIndexService(
+open class FileIndexService(
     private val properties: ApplicationCoreProperties,
     private val transactionTemplate: TransactionTemplate,
     private val idGenerator: IIdGenerator,
@@ -136,7 +136,7 @@ class FileIndexService(
     }
 
     override fun makeTemp(stream: InputStream, filePath: String, modifier: FileModifier, length: Long?): FileIndex {
-        if(filePath.isBlank()) {
+        if (filePath.isBlank()) {
             throw IllegalArgumentException("")
         }
         val index = FileIndex().apply {
@@ -156,6 +156,137 @@ class FileIndexService(
         return index
     }
 
+    enum class CustomizerResult {
+        Continue,
+        Return,
+    }
+
+    private fun getFileIndex(filePath: String, checkFileExisted: Boolean, vararg selective: Column<*>): FileIndex? {
+        val existedFile = transactionTemplate.executeReadOnly {
+            FileIndexTable.selectOne(*selective) {
+                andWhere { FileIndexTable.path eq filePath }
+            }
+        }
+        if (existedFile == null) {
+            if (checkFileExisted) {
+                throw FileIndexNotFoundException(filePath)
+            }
+            return null
+        }
+        return existedFile
+    }
+
+    override fun getIndexAndRefreshFileSize(filePath: String, checkFileExisted: Boolean): FileIndex? {
+        val index = getFileIndex(filePath, false)?.also {
+            file->
+            if(file.sizeIntBytes <= 0) {
+                val size = objectStorage.getObjectSizeInBytes(key = filePath, file.fileAccess.toObjectBucket())
+                size?.let {
+                    this.transactionTemplate.execute {
+                        FileIndexTable.updateByPrimaryKey(file.id) {
+                            it[sizeIntBytes] = size
+                        }
+                    }
+                }
+            }
+        }
+
+        if(index == null && checkFileExisted) {
+            throw FileIndexNotFoundException()
+        }
+        return index
+    }
+
+    private fun saveFileCore(
+        filePath: String,
+        fileType: String,
+        entityId: Long?,
+        fileSizeInBytes: Long?,
+        checkFileExisted: Boolean,
+        customizer: ((fileIndex: FileIndex)->CustomizerResult)? = null
+    ): FileIndex? {
+
+        val existedFile = getFileIndex(filePath, checkFileExisted) ?: return null
+
+        val r = customizer?.invoke(existedFile)
+        if(r == CustomizerResult.Return) return existedFile
+
+        if (fileType == existedFile.fileType) {
+            logger.warn("Save file use the origin file type ( current type: ${existedFile.fileType}, save type: $fileType )")
+            return existedFile
+        }
+
+
+        val wantToGetFileSize = (fileSizeInBytes == null && existedFile.sizeIntBytes <= 0)
+        //如果后面需要从获取文件大小，这里可以少一次检查， 因为 getObjectSizeInBytes 会检查文件是否存在
+        if (checkFileExisted && !wantToGetFileSize) {
+            checkFileInStorage(existedFile.path, true)
+        }
+
+        val temp = TempFileIndexTable.selectByPrimaryKey(existedFile.id)
+
+
+        if (temp?.isExpired() == true) throw TemporaryFileTimoutException()
+
+        val sizeToUpdate = if (existedFile.sizeIntBytes <= 0) {
+            val sizeInBytes =
+                fileSizeInBytes ?: objectStorage.getObjectSizeInBytes(existedFile.path, existedFile.fileAccess.toObjectBucket())
+            if (sizeInBytes == null && checkFileExisted) { //前面跳过了检查，这里补回来
+                throw StoredObjectNotFoundException()
+            }
+            sizeInBytes
+        } else null
+
+        existedFile.fileType = fileType
+        existedFile.entityId = entityId ?: 0
+        existedFile.timeCreated = System.currentTimeMillis()
+        sizeToUpdate?.let {
+            existedFile.sizeIntBytes = sizeToUpdate
+        }
+
+
+        return transactionTemplate.execute {
+
+            if (!existedFile.isTempFile()) {
+                throw FileIndexAlreadyExistedException(existedFile.path)
+            }
+
+
+
+            val columns = if (sizeToUpdate != null) {
+                arrayOf<Column<*>>(
+                    FileIndexTable.fileType,
+                    FileIndexTable.entityId,
+                    FileIndexTable.timeCreated,
+                    FileIndexTable.sizeIntBytes
+                )
+            } else {
+                arrayOf<Column<*>>(
+                    FileIndexTable.fileType,
+                    FileIndexTable.entityId,
+                    FileIndexTable.timeCreated
+                )
+            }
+            temp?.let {
+                TempFileIndexTable.deleteByPrimaryKey(temp.id)
+            }
+            val count = FileIndexTable.updateByPrimaryKey(existedFile, *columns)
+            if (count > 0) existedFile else null
+        }
+    }
+
+    override fun saveFileIfTemp(
+        filePath: String,
+        fileType: String,
+        entityId: Long?,
+        fileSizeInBytes: Long?,
+        checkFileExisted: Boolean
+    ): FileIndex? {
+        return saveFileCore(filePath, fileType, entityId, fileSizeInBytes, checkFileExisted) {
+            if(!it.isTempFile()) CustomizerResult.Return else CustomizerResult.Continue
+        }
+    }
+
     override fun saveFile(
         filePath: String,
         fileType: String,
@@ -164,74 +295,7 @@ class FileIndexService(
         checkFileExisted: Boolean
     ): FileIndex? {
 
-        val existedFile = transactionTemplate.executeReadOnly {
-            FileIndexTable.selectOne {
-                andWhere { FileIndexTable.path eq filePath }
-            }
-        }
-
-        if (existedFile == null) {
-            if (checkFileExisted) {
-                throw FileIndexNotFoundException(filePath)
-            }
-            return null
-        }
-
-        if(fileType == existedFile.fileType) {
-            logger.warn("Save file use the origin file type ( current type: ${existedFile.fileType}, save type: $fileType )")
-            return existedFile
-        }
-
-        val wantToGetFileSize = (fileSizeInBytes == null && existedFile.sizeIntBytes <= 0)
-        //如果后面需要从获取文件大小，这里可以少一次检查， 因为 getObjectSizeInBytes 会检查文件是否存在
-        if (checkFileExisted && !wantToGetFileSize) {
-            checkFileInStorage(filePath, true)
-        }
-
-        val temp = TempFileIndexTable.selectByPrimaryKey(existedFile.id)
-
-
-        if(temp?.isExpired() == true) throw TemporaryFileTimoutException()
-
-        val sizeToUpdate = if(existedFile.sizeIntBytes <= 0) {
-            val sizeInBytes =
-                fileSizeInBytes ?: objectStorage.getObjectSizeInBytes(filePath, existedFile.fileAccess.toObjectBucket())
-            if (sizeInBytes == null && checkFileExisted) { //前面跳过了检查，这里补回来
-                throw StoredObjectNotFoundException()
-            }
-            sizeInBytes
-        } else null
-
-        return transactionTemplate.execute {
-            if (!existedFile.isTempFile()) {
-                throw FileIndexAlreadyExistedException(filePath)
-            }
-
-            existedFile.fileType = fileType
-            existedFile.entityId = entityId ?: 0
-            existedFile.timeCreated = System.currentTimeMillis()
-            sizeToUpdate?.let {
-                existedFile.sizeIntBytes = sizeToUpdate
-            }
-
-            val columns = if(sizeToUpdate != null) {
-                arrayOf<Column<*>>(
-                    FileIndexTable.fileType,
-                    FileIndexTable.entityId,
-                    FileIndexTable.timeCreated,
-                    FileIndexTable.sizeIntBytes)
-            }else {
-                arrayOf<Column<*>>(
-                    FileIndexTable.fileType,
-                    FileIndexTable.entityId,
-                    FileIndexTable.timeCreated)
-            }
-            temp?.let {
-                TempFileIndexTable.deleteByPrimaryKey(temp.id)
-            }
-            val count = FileIndexTable.updateByPrimaryKey(existedFile, *columns)
-            if (count > 0) existedFile else null
-        }
+        return saveFileCore(filePath, fileType, entityId, fileSizeInBytes, checkFileExisted)
     }
 
     override fun setToTemp(filePath: String, throwIfNotStored: Boolean): FileIndex? {
@@ -246,14 +310,14 @@ class FileIndexService(
                 }
                 null
             } else {
-                if(!existedFile.fileType.equals(IFileIndexService.TEMP_FILE_TYPE, ignoreCase = true)) {
+                if (!existedFile.fileType.equals(IFileIndexService.TEMP_FILE_TYPE, ignoreCase = true)) {
 
                     existedFile.fileType = IFileIndexService.TEMP_FILE_TYPE
                     existedFile.entityId = 0
 
                     val count =
                         FileIndexTable.updateByPrimaryKey(existedFile, FileIndexTable.fileType, FileIndexTable.entityId)
-                    if(count > 0 ){
+                    if (count > 0) {
                         val tempIndex = TempFileIndex().propertiesFrom(existedFile).apply {
                             this.setTimeout(properties.file.tempFileExpiration)
                         }
@@ -300,7 +364,7 @@ class FileIndexService(
             }
             file?.let {
                 val deleted = FileIndexTable.deleteByPrimaryKey(file.id) == 1
-                if(deleted && file.isTempFile()) {
+                if (deleted && file.isTempFile()) {
                     TempFileIndexTable.deleteByPrimaryKey(file.id)
                 }
                 deleted
@@ -327,8 +391,8 @@ class FileIndexService(
             val count = FileIndexTable.deleteWhere {
                 FileIndexTable.id inList fileIds.map { it.id }
             }
-            if(count > 0) {
-               val tempIds = fileIds.filter { it.isTempFile() }.map { it.id }
+            if (count > 0) {
+                val tempIds = fileIds.filter { it.isTempFile() }.map { it.id }
                 TempFileIndexTable.deleteWhere { TempFileIndexTable.id inList tempIds }
             }
             count
@@ -412,7 +476,7 @@ class FileIndexService(
                 deletedCount += canDelete.size
 
                 val token = list.forwardToken
-                if(token.isNullOrBlank()) {
+                if (token.isNullOrBlank()) {
                     break
                 }
 
@@ -427,9 +491,9 @@ class FileIndexService(
             }
         } catch (e: Throwable) {
             e.throwIfNecessary()
-            if(!throwIfError) {
+            if (!throwIfError) {
                 throw e
-            }else {
+            } else {
                 logger.error("Error while clear temp files.", e)
             }
         }

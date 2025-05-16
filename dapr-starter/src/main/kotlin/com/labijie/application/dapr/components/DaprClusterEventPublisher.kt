@@ -8,6 +8,7 @@ import com.labijie.application.dapr.DaprClusterEvent
 import com.labijie.application.dapr.configuration.DaprProperties
 import com.labijie.infra.utils.throwIfNecessary
 import io.dapr.client.DaprClient
+import io.dapr.exceptions.DaprException
 import org.slf4j.LoggerFactory
 import java.time.Duration
 
@@ -24,7 +25,24 @@ class DaprClusterEventPublisher(
         //Using Dapr SDK to invoke output binding
         try {
             daprClient.publishEvent(settings.pubsub, settings.topic, daprClusterEvent, ).block()
-        }catch (e: Throwable) {
+        }
+        catch (e: DaprException) {
+            if(e.errorCode == "UNAVAILABLE") {
+                logger.error(
+                    "[DaprClusterEvent] Call dapr publish (pubsub: ${settings.pubsub}, topic: ${settings.topic}) failed, server unavailable."
+                )
+            }else {
+                logger.error(
+                    "[DaprClusterEvent] Call dapr publish (pubsub: ${settings.pubsub}, topic: ${settings.topic}) failed .",
+                    e
+                )
+            }
+            e.throwIfNecessary()
+            if(throwIfError) {
+                throw e
+            }
+        }
+        catch (e: Throwable) {
             logger.error("[DaprClusterEvent] Call dapr publish (pubsub: ${settings.pubsub}, topic: ${settings.topic}) failed .", e)
             e.throwIfNecessary()
             if(throwIfError) {

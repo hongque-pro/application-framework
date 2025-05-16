@@ -147,13 +147,13 @@ class ApplicationInitializationRunner<T : ConfigurableApplicationContext>(
 
     private fun initErrorRegistrations() {
         try {
-            thread {
-                withoutSqlLog {
-                    errorRegistrations.orderedStream().forEach {
-                        it.register(errorRegistry, localizationService)
-                    }
+            withoutSqlLog {
+                errorRegistrations.orderedStream().forEach {
+                    it.register(errorRegistry, localizationService)
                 }
             }
+            errorRegistry.persistMessages()
+
         } catch (e: Throwable) {
             logger.error("Application '$applicationName' initialize fault.", e)
             exitProcess(-3333)

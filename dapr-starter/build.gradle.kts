@@ -7,6 +7,8 @@ dependencies {
         exclude(group="org.springframework")
         exclude(group="org.springframework.boot")
     }
+
+
     api("org.springframework.boot:spring-boot-starter-web")
     api(project(":core-starter"))
 

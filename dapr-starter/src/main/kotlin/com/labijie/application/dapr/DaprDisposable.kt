@@ -11,13 +11,18 @@ import org.springframework.beans.factory.DisposableBean
  * @date 2023-12-09
  */
 open class DaprDisposable(
-    private val daprClient: DaprClient,
     private val daprProperties: DaprProperties) : IModuleInitializer, DisposableBean {
 
     companion object {
         private val logger by lazy {
             LoggerFactory.getLogger(DaprDisposable::class.java)
         }
+    }
+
+    private var daprClient: DaprClient? = null
+
+    fun initialize(client: DaprClient) {
+        daprClient = client
     }
 
     override fun getModuleName(): String {
@@ -30,7 +35,7 @@ open class DaprDisposable(
             logger.info("Shutdown dapr ...")
             while (true) {
                 try {
-                    daprClient.shutdown()?.block()
+                    daprClient?.shutdown()?.block()
                 } catch (e: Throwable) {
                     retryCount++
                     Thread.sleep(500)
@@ -44,7 +49,7 @@ open class DaprDisposable(
                 logger.warn("Shutdown dapr failed.", it)
             }
             try {
-                daprClient.close()
+                daprClient?.close()
             } catch (e: Throwable) {
                 logger.warn("Close dapr failed.", e)
             }

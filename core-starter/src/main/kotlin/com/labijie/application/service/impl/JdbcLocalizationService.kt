@@ -244,7 +244,7 @@ class JdbcLocalizationService(
                 if (addCoded.add(code)) {
                     addCodeIfNotExisted(code)
                 }
-                if (addOrUpdateMessage(code, it.value.toString(), locale, override, true)) {
+                if (addOrUpdateMessage(code, it.value.toString(), locale, override, false)) {
                     messageCount++
                 }
             }
@@ -304,9 +304,7 @@ class JdbcLocalizationService(
 
     override fun saveLocaleMessages(message: LocalizationMessages, override: Boolean) {
         transactionTemplate.execute {
-            message.messages.forEach { (code, msg) ->
-                setMessage(code, msg, message.locale, override)
-            }
+            setMessages(message.messages, message.locale, override)
         }
     }
 

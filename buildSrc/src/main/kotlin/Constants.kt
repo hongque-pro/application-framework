@@ -29,7 +29,8 @@ object Versions {
     const val easyCaptcha = "2.2.3"
 
     const val minio = "8.5.7"
-    const val dapr = "1.11.0"
+    const val dapr = "1.14.1"
+    const val daprSpring = "0.14.1"
 
     const val libphonenumber = "8.13.37"
 }

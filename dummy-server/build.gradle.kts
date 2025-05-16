@@ -10,7 +10,7 @@ dependencies {
 //    implementation project(":kaptcha-human-starter")
 //    implementation project(":open-api-starter")
     implementation("com.h2database:h2")
-//    implementation(project(":dapr-starter"))
+    implementation(project(":dapr-starter"))
     //implementation(project(":minio-starter"))
     implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-xml")
 }

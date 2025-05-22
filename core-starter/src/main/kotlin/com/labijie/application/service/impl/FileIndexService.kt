@@ -207,7 +207,19 @@ open class FileIndexService(
         customizer: ((fileIndex: FileIndex)->CustomizerResult)? = null
     ): FileIndex? {
 
-        val existedFile = getFileIndex(filePath, checkFileExisted) ?: return null
+        val (existedFile,temp) = this.transactionTemplate.execute {
+            val file = getFileIndex(filePath, checkFileExisted)
+            val temp = file?.let {
+                TempFileIndexTable.selectByPrimaryKey(file.id)
+            }
+            Pair(file, temp)
+        } ?: Pair(null, null)
+
+        if(existedFile == null && checkFileExisted) {
+            throw FileIndexNotFoundException(filePath)
+        }
+
+        if(existedFile == null) return existedFile
 
         if (!existedFile.isTempFile()) {
             throw FileIndexAlreadyExistedException(existedFile.path)
@@ -221,14 +233,11 @@ open class FileIndexService(
             return existedFile
         }
 
-
         val wantToGetFileSize = (fileSizeInBytes == null && existedFile.sizeIntBytes <= 0)
         //如果后面需要从获取文件大小，这里可以少一次检查， 因为 getObjectSizeInBytes 会检查文件是否存在
         if (checkFileExisted && !wantToGetFileSize) {
             checkFileInStorage(existedFile.path, true)
         }
-
-        val temp = TempFileIndexTable.selectByPrimaryKey(existedFile.id)
 
 
         if (temp?.isExpired() == true) throw TemporaryFileTimoutException()

@@ -27,7 +27,8 @@ open class NoneObjectStorage : IObjectStorage {
         key: String,
         bucketPolicy: BucketPolicy,
         purpose: GenerationURLPurpose,
-        responseHeaderOverrides: HttpHeaders?
+        responseHeaderOverrides: HttpHeaders?,
+        mimeToWrite: String?
     ): ObjectPreSignUrl {
         return ObjectPreSignUrl(url = "", 0)
     }

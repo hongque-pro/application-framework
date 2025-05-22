@@ -29,7 +29,7 @@ interface IFileIndexService {
     fun getIndexById(fileIndexId: Long): FileIndex?
 
     fun getFileUrl(filePath: String, modifier: FileModifier): ObjectPreSignUrl
-    fun touchFile(filePath: String, modifier: FileModifier, fileSizeInBytes: Long? = null, expiration: Duration? = null): TouchedFile
+    fun touchFile(filePath: String, modifier: FileModifier, fileSizeInBytes: Long? = null, expiration: Duration? = null, mime: String? = null): TouchedFile
 
     fun setToTemp(filePath: String, throwIfNotStored: Boolean): FileIndex?
     fun saveFileIfTemp(filePath: String, fileType:String,  entityId: Long? = null, fileSizeInBytes: Long? = null, checkFileExisted: Boolean = true): FileIndex?

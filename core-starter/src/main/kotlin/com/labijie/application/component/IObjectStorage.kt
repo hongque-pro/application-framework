@@ -24,7 +24,7 @@ interface IObjectStorage {
     ): Boolean
 
     fun deleteObject(key: String, bucketPolicy: BucketPolicy = BucketPolicy.PRIVATE): Boolean
-    fun generateObjectUrl(key: String, bucketPolicy: BucketPolicy = BucketPolicy.PRIVATE, purpose: GenerationURLPurpose = GenerationURLPurpose.Read, responseHeaderOverrides: HttpHeaders? = null): ObjectPreSignUrl
+    fun generateObjectUrl(key: String, bucketPolicy: BucketPolicy = BucketPolicy.PRIVATE, purpose: GenerationURLPurpose = GenerationURLPurpose.Read, responseHeaderOverrides: HttpHeaders? = null, mimeToWrite: String? = null): ObjectPreSignUrl
 
     fun generateObjectReadUrl(key: String, bucketPolicy: BucketPolicy = BucketPolicy.PRIVATE): ObjectPreSignUrl {
         if(key.isBlank()) {
@@ -44,11 +44,11 @@ interface IObjectStorage {
         return generateObjectUrl(key, bucketPolicy, purpose = GenerationURLPurpose.Read, headers)
     }
 
-    fun generateObjectUploadUrl(key: String, bucketPolicy: BucketPolicy = BucketPolicy.PRIVATE): ObjectPreSignUrl {
+    fun generateObjectUploadUrl(key: String, mime: String, bucketPolicy: BucketPolicy = BucketPolicy.PRIVATE): ObjectPreSignUrl {
         if(key.isBlank()) {
             throw IllegalArgumentException("Object key can not be empty.")
         }
-        return generateObjectUrl(key, bucketPolicy, purpose = GenerationURLPurpose.Write)
+        return generateObjectUrl(key, bucketPolicy, purpose = GenerationURLPurpose.Write, null, mime)
     }
 
     fun uploadObject(

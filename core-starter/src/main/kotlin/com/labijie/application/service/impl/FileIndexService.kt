@@ -90,12 +90,13 @@ open class FileIndexService(
         filePath: String,
         modifier: FileModifier,
         fileSizeInBytes: Long?,
-        expiration: Duration?
+        expiration: Duration?,
+        mime: String?
     ): TouchedFile {
         if (filePath.isBlank()) {
             throw IllegalArgumentException("File path can not be null or empty string when touch file.")
         }
-
+        val inputMime = mime ?: MimeUtils.getMimeByExtensions(Path(filePath).extension)
         val fileIndex = transactionTemplate.execute {
             val file = FileIndexTable.selectOne(FileIndexTable.id) {
                 andWhere { FileIndexTable.path eq filePath }
@@ -130,7 +131,7 @@ open class FileIndexService(
             fileIndexId = fileIndex.id,
             filePath = filePath,
             uploadUrl = url.url,
-            mime = MimeUtils.getMimeByExtensions(Path(filePath).extension),
+            mime = inputMime,
             timeoutMills = url.timeoutMills
         )
     }
@@ -208,6 +209,10 @@ open class FileIndexService(
 
         val existedFile = getFileIndex(filePath, checkFileExisted) ?: return null
 
+        if (!existedFile.isTempFile()) {
+            throw FileIndexAlreadyExistedException(existedFile.path)
+        }
+
         val r = customizer?.invoke(existedFile)
         if(r == CustomizerResult.Return) return existedFile
 
@@ -246,12 +251,6 @@ open class FileIndexService(
 
 
         return transactionTemplate.execute {
-
-            if (!existedFile.isTempFile()) {
-                throw FileIndexAlreadyExistedException(existedFile.path)
-            }
-
-
 
             val columns = if (sizeToUpdate != null) {
                 arrayOf<Column<*>>(

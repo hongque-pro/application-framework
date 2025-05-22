@@ -32,7 +32,8 @@ class FileController(private val fileIndexService: IFileIndexService) {
         @RequestParam("folder", required = true) @Length(min = 1, max = 128) folder: String,
         @RequestParam("ext", required = false) fileExtensions: String?,
         @RequestParam("modifier", required = true) modifier: FileModifier,
-        @RequestParam("short", required = false) short: Boolean = false
+        @RequestParam("short", required = false) short: Boolean = false,
+        @RequestParam("mime", required = false) mime: String? = null,
     ): TouchedFile {
         val normalizedFolder = folder.trim('/')
         val ext = fileExtensions.orEmpty().removePrefix(".").let {
@@ -43,7 +44,7 @@ class FileController(private val fileIndexService: IFileIndexService) {
         val name = "${id}${ext}"
 
         val fullPath = "${normalizedFolder}/$name"
-        return fileIndexService.touchFile(fullPath, modifier)
+        return fileIndexService.touchFile(fullPath, modifier, mime = mime)
     }
 
 }

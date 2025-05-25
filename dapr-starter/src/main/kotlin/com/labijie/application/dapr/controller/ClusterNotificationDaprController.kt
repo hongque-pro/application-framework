@@ -16,11 +16,13 @@ import org.springframework.context.ApplicationContext
 import org.springframework.context.ApplicationContextAware
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
+import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 import reactor.core.publisher.Mono
 
 
-@RestController("/dapr/sub")
+@RestController
+@RequestMapping("/dapr/sub")
 class ClusterNotificationDaprController: ApplicationContextAware {
 
     companion object {

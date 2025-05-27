@@ -30,8 +30,10 @@ import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.andWhere
 import org.jetbrains.exposed.sql.batchInsert
+import org.jetbrains.exposed.sql.batchUpsert
 import org.jetbrains.exposed.sql.deleteWhere
 import org.jetbrains.exposed.sql.insert
+import org.jetbrains.exposed.sql.insertIgnore
 import org.jetbrains.exposed.sql.replace
 import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.statements.InsertStatement
@@ -103,6 +105,29 @@ public object UserLoginDSL {
     else->throw IllegalArgumentException("""Unknown column <${column.name}> for 'UserLogin'""")
   }
 
+  private fun <T> UserLogin.getColumnValueString(column: Column<T>): String = when(column) {
+    UserLoginTable.loginProvider->this.loginProvider
+    UserLoginTable.providerKey->this.providerKey
+    UserLoginTable.providerDisplayName->this.providerDisplayName
+    UserLoginTable.userId->this.userId.toString()
+
+    else->throw
+        IllegalArgumentException("""Can ot converter value of UserLogin::${column.name} to string.""")
+  }
+
+  @kotlin.Suppress("UNCHECKED_CAST")
+  private fun <T> parseColumnValue(valueString: String, column: Column<T>): T {
+    val value = when(column) {
+      UserLoginTable.loginProvider -> valueString
+      UserLoginTable.providerKey -> valueString
+      UserLoginTable.providerDisplayName -> valueString
+      UserLoginTable.userId ->valueString.toLong()
+      else->throw
+          IllegalArgumentException("""Can ot converter value of UserLogin::${column.name} to string.""")
+    }
+    return value as T
+  }
+
   @kotlin.Suppress("UNCHECKED_CAST")
   public fun <T> UserLogin.getColumnValue(column: Column<T>): T = when(column) {
     UserLoginTable.loginProvider->this.loginProvider as T
@@ -162,6 +187,10 @@ public object UserLoginDSL {
     assign(it, raw)
   }
 
+  public fun UserLoginTable.insertIgnore(raw: UserLogin): InsertStatement<Long> = insertIgnore {
+    assign(it, raw)
+  }
+
   public fun UserLoginTable.upsert(
     raw: UserLogin,
     onUpdateExclude: List<Column<*>>? = null,
@@ -179,6 +208,21 @@ public object UserLoginDSL {
   ): List<ResultRow> {
     val rows = batchInsert(list, ignoreErrors, shouldReturnGeneratedValues) {
       entry -> assign(this, entry)
+    }
+    return rows
+  }
+
+  public fun UserLoginTable.batchUpsert(
+    list: Iterable<UserLogin>,
+    onUpdateExclude: List<Column<*>>? = null,
+    onUpdate: (UpsertBuilder.(UpdateStatement) -> Unit)? = null,
+    shouldReturnGeneratedValues: Boolean = false,
+    `where`: (SqlExpressionBuilder.() -> Op<Boolean>)? = null,
+  ): List<ResultRow> {
+    val rows =  batchUpsert(data = list, keys = arrayOf(loginProvider, providerKey), onUpdate =
+        onUpdate, onUpdateExclude = onUpdateExclude, where = where, shouldReturnGeneratedValues =
+        shouldReturnGeneratedValues) {
+      data: UserLogin-> assign(this, data)
     }
     return rows
   }

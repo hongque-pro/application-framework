@@ -38,7 +38,9 @@ import org.jetbrains.exposed.sql.Query
 import org.jetbrains.exposed.sql.ResultRow
 import org.jetbrains.exposed.sql.SqlExpressionBuilder
 import org.jetbrains.exposed.sql.batchInsert
+import org.jetbrains.exposed.sql.batchUpsert
 import org.jetbrains.exposed.sql.insert
+import org.jetbrains.exposed.sql.insertIgnore
 import org.jetbrains.exposed.sql.replace
 import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.statements.InsertStatement
@@ -176,6 +178,57 @@ public object OAuth2ClientDSL {
     else->throw IllegalArgumentException("""Unknown column <${column.name}> for 'OAuth2Client'""")
   }
 
+  private fun <T> OAuth2Client.getColumnValueString(column: Column<T>): String = when(column) {
+    OAuth2ClientTable.clientId->this.clientId
+    OAuth2ClientTable.resourceIds->this.resourceIds
+    OAuth2ClientTable.clientSecret->this.clientSecret
+    OAuth2ClientTable.scopes->this.scopes
+    OAuth2ClientTable.authorizedGrantTypes->this.authorizedGrantTypes
+    OAuth2ClientTable.redirectUrls->this.redirectUrls
+    OAuth2ClientTable.authorities->this.authorities
+    OAuth2ClientTable.additionalInformation->this.additionalInformation
+    OAuth2ClientTable.autoApprove->this.autoApprove.toString()
+
+    OAuth2ClientTable.enabled->this.enabled.toString()
+
+    OAuth2ClientTable.accessTokenLiveSeconds->this.accessTokenLiveSeconds.toString()
+
+    OAuth2ClientTable.refreshTokenLiveSeconds->this.refreshTokenLiveSeconds.toString()
+
+    OAuth2ClientTable.authorizationCodeLiveSeconds->this.authorizationCodeLiveSeconds.toString()
+
+    OAuth2ClientTable.deviceCodeLiveSeconds->this.deviceCodeLiveSeconds.toString()
+
+    OAuth2ClientTable.reuseRefreshTokens->this.reuseRefreshTokens.toString()
+
+    else->throw
+        IllegalArgumentException("""Can ot converter value of OAuth2Client::${column.name} to string.""")
+  }
+
+  @kotlin.Suppress("UNCHECKED_CAST")
+  private fun <T> parseColumnValue(valueString: String, column: Column<T>): T {
+    val value = when(column) {
+      OAuth2ClientTable.clientId -> valueString
+      OAuth2ClientTable.resourceIds -> valueString
+      OAuth2ClientTable.clientSecret -> valueString
+      OAuth2ClientTable.scopes -> valueString
+      OAuth2ClientTable.authorizedGrantTypes -> valueString
+      OAuth2ClientTable.redirectUrls -> valueString
+      OAuth2ClientTable.authorities -> valueString
+      OAuth2ClientTable.additionalInformation -> valueString
+      OAuth2ClientTable.autoApprove ->valueString.toBoolean()
+      OAuth2ClientTable.enabled ->valueString.toBoolean()
+      OAuth2ClientTable.accessTokenLiveSeconds ->valueString.toInt()
+      OAuth2ClientTable.refreshTokenLiveSeconds ->valueString.toInt()
+      OAuth2ClientTable.authorizationCodeLiveSeconds ->valueString.toInt()
+      OAuth2ClientTable.deviceCodeLiveSeconds ->valueString.toInt()
+      OAuth2ClientTable.reuseRefreshTokens ->valueString.toBoolean()
+      else->throw
+          IllegalArgumentException("""Can ot converter value of OAuth2Client::${column.name} to string.""")
+    }
+    return value as T
+  }
+
   @kotlin.Suppress("UNCHECKED_CAST")
   public fun <T> OAuth2Client.getColumnValue(column: Column<T>): T = when(column) {
     OAuth2ClientTable.clientId->this.clientId as T
@@ -273,6 +326,11 @@ public object OAuth2ClientDSL {
     assign(it, raw)
   }
 
+  public fun OAuth2ClientTable.insertIgnore(raw: OAuth2Client): InsertStatement<Long> =
+      insertIgnore {
+    assign(it, raw)
+  }
+
   public fun OAuth2ClientTable.upsert(
     raw: OAuth2Client,
     onUpdateExclude: List<Column<*>>? = null,
@@ -290,6 +348,20 @@ public object OAuth2ClientDSL {
   ): List<ResultRow> {
     val rows = batchInsert(list, ignoreErrors, shouldReturnGeneratedValues) {
       entry -> assign(this, entry)
+    }
+    return rows
+  }
+
+  public fun OAuth2ClientTable.batchUpsert(
+    list: Iterable<OAuth2Client>,
+    onUpdateExclude: List<Column<*>>? = null,
+    onUpdate: (UpsertBuilder.(UpdateStatement) -> Unit)? = null,
+    shouldReturnGeneratedValues: Boolean = false,
+    `where`: (SqlExpressionBuilder.() -> Op<Boolean>)? = null,
+  ): List<ResultRow> {
+    val rows =  batchUpsert(data = list, keys = arrayOf(), onUpdate = onUpdate, onUpdateExclude =
+        onUpdateExclude, where = where, shouldReturnGeneratedValues = shouldReturnGeneratedValues) {
+      data: OAuth2Client-> assign(this, data)
     }
     return rows
   }

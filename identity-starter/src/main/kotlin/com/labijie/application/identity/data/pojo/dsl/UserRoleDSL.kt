@@ -12,6 +12,7 @@ import kotlin.Boolean
 import kotlin.Int
 import kotlin.Long
 import kotlin.Number
+import kotlin.String
 import kotlin.Unit
 import kotlin.collections.Iterable
 import kotlin.collections.List
@@ -27,8 +28,10 @@ import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.andWhere
 import org.jetbrains.exposed.sql.batchInsert
+import org.jetbrains.exposed.sql.batchUpsert
 import org.jetbrains.exposed.sql.deleteWhere
 import org.jetbrains.exposed.sql.insert
+import org.jetbrains.exposed.sql.insertIgnore
 import org.jetbrains.exposed.sql.replace
 import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.statements.InsertStatement
@@ -88,6 +91,26 @@ public object UserRoleDSL {
     else->throw IllegalArgumentException("""Unknown column <${column.name}> for 'UserRole'""")
   }
 
+  private fun <T> UserRole.getColumnValueString(column: Column<T>): String = when(column) {
+    UserRoleTable.userId->this.userId.toString()
+
+    UserRoleTable.roleId->this.roleId.toString()
+
+    else->throw
+        IllegalArgumentException("""Can ot converter value of UserRole::${column.name} to string.""")
+  }
+
+  @kotlin.Suppress("UNCHECKED_CAST")
+  private fun <T> parseColumnValue(valueString: String, column: Column<T>): T {
+    val value = when(column) {
+      UserRoleTable.userId ->valueString.toLong()
+      UserRoleTable.roleId ->valueString.toLong()
+      else->throw
+          IllegalArgumentException("""Can ot converter value of UserRole::${column.name} to string.""")
+    }
+    return value as T
+  }
+
   @kotlin.Suppress("UNCHECKED_CAST")
   public fun <T> UserRole.getColumnValue(column: Column<T>): T = when(column) {
     UserRoleTable.userId->this.userId as T
@@ -140,6 +163,10 @@ public object UserRoleDSL {
     assign(it, raw)
   }
 
+  public fun UserRoleTable.insertIgnore(raw: UserRole): InsertStatement<Long> = insertIgnore {
+    assign(it, raw)
+  }
+
   public fun UserRoleTable.upsert(
     raw: UserRole,
     onUpdateExclude: List<Column<*>>? = null,
@@ -157,6 +184,21 @@ public object UserRoleDSL {
   ): List<ResultRow> {
     val rows = batchInsert(list, ignoreErrors, shouldReturnGeneratedValues) {
       entry -> assign(this, entry)
+    }
+    return rows
+  }
+
+  public fun UserRoleTable.batchUpsert(
+    list: Iterable<UserRole>,
+    onUpdateExclude: List<Column<*>>? = null,
+    onUpdate: (UpsertBuilder.(UpdateStatement) -> Unit)? = null,
+    shouldReturnGeneratedValues: Boolean = false,
+    `where`: (SqlExpressionBuilder.() -> Op<Boolean>)? = null,
+  ): List<ResultRow> {
+    val rows =  batchUpsert(data = list, keys = arrayOf(userId, roleId), onUpdate = onUpdate,
+        onUpdateExclude = onUpdateExclude, where = where, shouldReturnGeneratedValues =
+        shouldReturnGeneratedValues) {
+      data: UserRole-> assign(this, data)
     }
     return rows
   }

@@ -9,8 +9,6 @@ import com.labijie.application.identity.`data`.UserClaimTable.id
 import com.labijie.application.identity.`data`.UserClaimTable.userId
 import com.labijie.application.identity.`data`.pojo.UserClaim
 import com.labijie.infra.orm.OffsetList
-import com.labijie.infra.orm.OffsetList.Companion.decodeToken
-import com.labijie.infra.orm.OffsetList.Companion.encodeToken
 import java.lang.IllegalArgumentException
 import java.util.Base64
 import kotlin.Array
@@ -26,12 +24,10 @@ import kotlin.collections.Iterable
 import kotlin.collections.List
 import kotlin.collections.isNotEmpty
 import kotlin.collections.last
-import kotlin.collections.map
 import kotlin.collections.toList
 import kotlin.reflect.KClass
 import kotlin.text.Charsets
 import kotlin.text.toByteArray
-import kotlin.text.toLong
 import org.jetbrains.exposed.sql.Column
 import org.jetbrains.exposed.sql.Op
 import org.jetbrains.exposed.sql.Query
@@ -41,8 +37,10 @@ import org.jetbrains.exposed.sql.SqlExpressionBuilder
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.andWhere
 import org.jetbrains.exposed.sql.batchInsert
+import org.jetbrains.exposed.sql.batchUpsert
 import org.jetbrains.exposed.sql.deleteWhere
 import org.jetbrains.exposed.sql.insert
+import org.jetbrains.exposed.sql.insertIgnore
 import org.jetbrains.exposed.sql.replace
 import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.statements.InsertStatement
@@ -114,6 +112,30 @@ public object UserClaimDSL {
     else->throw IllegalArgumentException("""Unknown column <${column.name}> for 'UserClaim'""")
   }
 
+  private fun <T> UserClaim.getColumnValueString(column: Column<T>): String = when(column) {
+    UserClaimTable.claimType->this.claimType
+    UserClaimTable.claimValue->this.claimValue
+    UserClaimTable.userId->this.userId.toString()
+
+    UserClaimTable.id->this.id.toString()
+
+    else->throw
+        IllegalArgumentException("""Can ot converter value of UserClaim::${column.name} to string.""")
+  }
+
+  @kotlin.Suppress("UNCHECKED_CAST")
+  private fun <T> parseColumnValue(valueString: String, column: Column<T>): T {
+    val value = when(column) {
+      UserClaimTable.claimType -> valueString
+      UserClaimTable.claimValue -> valueString
+      UserClaimTable.userId ->valueString.toLong()
+      UserClaimTable.id ->valueString.toLong()
+      else->throw
+          IllegalArgumentException("""Can ot converter value of UserClaim::${column.name} to string.""")
+    }
+    return value as T
+  }
+
   @kotlin.Suppress("UNCHECKED_CAST")
   public fun <T> UserClaim.getColumnValue(column: Column<T>): T = when(column) {
     UserClaimTable.claimType->this.claimType as T
@@ -172,6 +194,10 @@ public object UserClaimDSL {
     assign(it, raw)
   }
 
+  public fun UserClaimTable.insertIgnore(raw: UserClaim): InsertStatement<Long> = insertIgnore {
+    assign(it, raw)
+  }
+
   public fun UserClaimTable.upsert(
     raw: UserClaim,
     onUpdateExclude: List<Column<*>>? = null,
@@ -189,6 +215,20 @@ public object UserClaimDSL {
   ): List<ResultRow> {
     val rows = batchInsert(list, ignoreErrors, shouldReturnGeneratedValues) {
       entry -> assign(this, entry)
+    }
+    return rows
+  }
+
+  public fun UserClaimTable.batchUpsert(
+    list: Iterable<UserClaim>,
+    onUpdateExclude: List<Column<*>>? = null,
+    onUpdate: (UpsertBuilder.(UpdateStatement) -> Unit)? = null,
+    shouldReturnGeneratedValues: Boolean = false,
+    `where`: (SqlExpressionBuilder.() -> Op<Boolean>)? = null,
+  ): List<ResultRow> {
+    val rows =  batchUpsert(data = list, keys = arrayOf(id), onUpdate = onUpdate, onUpdateExclude =
+        onUpdateExclude, where = where, shouldReturnGeneratedValues = shouldReturnGeneratedValues) {
+      data: UserClaim-> assign(this, data)
     }
     return rows
   }
@@ -259,18 +299,22 @@ public object UserClaimDSL {
     val offsetKey = forwardToken?.let { Base64.getUrlDecoder().decode(it).toString(Charsets.UTF_8) }
     val query = selectSlice(*selective.toTypedArray())
     offsetKey?.let {
+      val keyValue = parseColumnValue(it, id)
       when(order) {
         SortOrder.DESC, SortOrder.DESC_NULLS_FIRST, SortOrder.DESC_NULLS_LAST->
-        query.andWhere { id less it.toLong() }
-        else-> query.andWhere { id greater it.toLong() }
+        query.andWhere { id less keyValue }
+        else-> query.andWhere { id greater keyValue }
       }
     }
     `where`?.invoke(query)
     val sorted = query.orderBy(id, order)
-    val list = sorted.limit(pageSize).toUserClaimList(*selective.toTypedArray())
-    val token = if(list.size >= pageSize) {
-      val lastId = list.last().id.toString().toByteArray(Charsets.UTF_8)
-      Base64.getUrlEncoder().encodeToString(lastId)
+    val list = sorted.limit(pageSize + 1).toUserClaimList(*selective.toTypedArray()).toMutableList()
+    val dataCount = list.size
+    val token = if(dataCount > pageSize) {
+      list.removeLast()
+      val idString = list.last().getColumnValueString(id)
+      val idArray = idString.toByteArray(Charsets.UTF_8)
+      Base64.getUrlEncoder().encodeToString(idArray)
     }
     else {
       null
@@ -292,9 +336,12 @@ public object UserClaimDSL {
     if(sortColumn == id) {
       return this.selectForwardByPrimaryKey(forwardToken, order, pageSize, selective, `where`)
     }
-    val kp = forwardToken?.let { decodeToken(it) }
-    val offsetKey = kp?.first
-    val excludeKeys = kp?.second?.map { it.toLong() }
+    val sortColAndId = forwardToken?.let { if(it.isNotBlank())
+        Base64.getUrlDecoder().decode(it).toString(Charsets.UTF_8) else null }
+    val kp = sortColAndId?.split(":::")
+    val offsetKey = if(!kp.isNullOrEmpty()) parseColumnValue(kp.first(), sortColumn) else null
+    val lastId = if(kp != null && kp.size > 1 && kp[1].isNotBlank()) parseColumnValue(kp[1], id)
+        else null
     val query = selectSlice(*selective.toTypedArray())
     offsetKey?.let {
       when(order) {
@@ -303,16 +350,25 @@ public object UserClaimDSL {
         else-> query.andWhere { sortColumn greaterEq it }
       }
     }
-    excludeKeys?.let {
-      if(it.isNotEmpty()) {
-        query.andWhere { id notInList it }
+    lastId?.let {
+      when(order) {
+        SortOrder.DESC, SortOrder.DESC_NULLS_FIRST, SortOrder.DESC_NULLS_LAST->
+        query.andWhere { id less it }
+        else-> query.andWhere { id greater it }
       }
     }
     `where`?.invoke(query)
     val sorted = query.orderBy(Pair(sortColumn, order), Pair(id, order))
-    val list = sorted.limit(pageSize).toUserClaimList(*selective.toTypedArray())
-    val token = if(list.size < pageSize) null else encodeToken(list, { getColumnValue(sortColumn) },
-        UserClaim::id)
+    val list = sorted.limit(pageSize + 1).toUserClaimList(*selective.toTypedArray()).toMutableList()
+    val dataCount = list.size
+    val token = if(dataCount > pageSize) {
+      list.removeLast()
+      val idToEncode = list.last().getColumnValueString(id)
+      val sortKey = list.last().getColumnValueString(sortColumn)
+      val tokenValue = """${idToEncode}:::${sortKey}""".toByteArray(Charsets.UTF_8)
+      Base64.getUrlEncoder().encodeToString(tokenValue)
+    }
+    else null
     return OffsetList(list, token)
   }
 

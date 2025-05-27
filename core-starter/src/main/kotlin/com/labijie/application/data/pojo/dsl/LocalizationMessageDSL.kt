@@ -29,8 +29,10 @@ import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.andWhere
 import org.jetbrains.exposed.sql.batchInsert
+import org.jetbrains.exposed.sql.batchUpsert
 import org.jetbrains.exposed.sql.deleteWhere
 import org.jetbrains.exposed.sql.insert
+import org.jetbrains.exposed.sql.insertIgnore
 import org.jetbrains.exposed.sql.replace
 import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.statements.InsertStatement
@@ -98,6 +100,27 @@ public object LocalizationMessageDSL {
         IllegalArgumentException("""Unknown column <${column.name}> for 'LocalizationMessage'""")
   }
 
+  private fun <T> LocalizationMessage.getColumnValueString(column: Column<T>): String =
+      when(column) {
+    LocalizationMessageTable.locale->this.locale
+    LocalizationMessageTable.code->this.code
+    LocalizationMessageTable.message->this.message
+    else->throw
+        IllegalArgumentException("""Can ot converter value of LocalizationMessage::${column.name} to string.""")
+  }
+
+  @kotlin.Suppress("UNCHECKED_CAST")
+  private fun <T> parseColumnValue(valueString: String, column: Column<T>): T {
+    val value = when(column) {
+      LocalizationMessageTable.locale -> valueString
+      LocalizationMessageTable.code -> valueString
+      LocalizationMessageTable.message -> valueString
+      else->throw
+          IllegalArgumentException("""Can ot converter value of LocalizationMessage::${column.name} to string.""")
+    }
+    return value as T
+  }
+
   @kotlin.Suppress("UNCHECKED_CAST")
   public fun <T> LocalizationMessage.getColumnValue(column: Column<T>): T = when(column) {
     LocalizationMessageTable.locale->this.locale as T
@@ -155,6 +178,11 @@ public object LocalizationMessageDSL {
     assign(it, raw)
   }
 
+  public fun LocalizationMessageTable.insertIgnore(raw: LocalizationMessage): InsertStatement<Long>
+      = insertIgnore {
+    assign(it, raw)
+  }
+
   public fun LocalizationMessageTable.upsert(
     raw: LocalizationMessage,
     onUpdateExclude: List<Column<*>>? = null,
@@ -172,6 +200,21 @@ public object LocalizationMessageDSL {
   ): List<ResultRow> {
     val rows = batchInsert(list, ignoreErrors, shouldReturnGeneratedValues) {
       entry -> assign(this, entry)
+    }
+    return rows
+  }
+
+  public fun LocalizationMessageTable.batchUpsert(
+    list: Iterable<LocalizationMessage>,
+    onUpdateExclude: List<Column<*>>? = null,
+    onUpdate: (UpsertBuilder.(UpdateStatement) -> Unit)? = null,
+    shouldReturnGeneratedValues: Boolean = false,
+    `where`: (SqlExpressionBuilder.() -> Op<Boolean>)? = null,
+  ): List<ResultRow> {
+    val rows =  batchUpsert(data = list, keys = arrayOf(locale, code), onUpdate = onUpdate,
+        onUpdateExclude = onUpdateExclude, where = where, shouldReturnGeneratedValues =
+        shouldReturnGeneratedValues) {
+      data: LocalizationMessage-> assign(this, data)
     }
     return rows
   }

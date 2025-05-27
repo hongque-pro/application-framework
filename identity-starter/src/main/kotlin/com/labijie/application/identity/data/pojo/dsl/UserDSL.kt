@@ -32,8 +32,6 @@ import com.labijie.application.identity.`data`.UserTable.userName
 import com.labijie.application.identity.`data`.UserTable.userType
 import com.labijie.application.identity.`data`.pojo.User
 import com.labijie.infra.orm.OffsetList
-import com.labijie.infra.orm.OffsetList.Companion.decodeToken
-import com.labijie.infra.orm.OffsetList.Companion.encodeToken
 import java.lang.IllegalArgumentException
 import java.util.Base64
 import kotlin.Array
@@ -51,12 +49,10 @@ import kotlin.collections.Iterable
 import kotlin.collections.List
 import kotlin.collections.isNotEmpty
 import kotlin.collections.last
-import kotlin.collections.map
 import kotlin.collections.toList
 import kotlin.reflect.KClass
 import kotlin.text.Charsets
 import kotlin.text.toByteArray
-import kotlin.text.toLong
 import org.jetbrains.exposed.sql.Column
 import org.jetbrains.exposed.sql.Op
 import org.jetbrains.exposed.sql.Query
@@ -66,8 +62,10 @@ import org.jetbrains.exposed.sql.SqlExpressionBuilder
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.andWhere
 import org.jetbrains.exposed.sql.batchInsert
+import org.jetbrains.exposed.sql.batchUpsert
 import org.jetbrains.exposed.sql.deleteWhere
 import org.jetbrains.exposed.sql.insert
+import org.jetbrains.exposed.sql.insertIgnore
 import org.jetbrains.exposed.sql.replace
 import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.statements.InsertStatement
@@ -277,6 +275,89 @@ public object UserDSL {
     else->throw IllegalArgumentException("""Unknown column <${column.name}> for 'User'""")
   }
 
+  private fun <T> User.getColumnValueString(column: Column<T>): String = when(column) {
+    UserTable.userName->this.userName
+    UserTable.userType->this.userType.toString()
+
+    UserTable.accessFailedCount->this.accessFailedCount.toString()
+
+    UserTable.concurrencyStamp->this.concurrencyStamp
+    UserTable.email->this.email
+    UserTable.emailConfirmed->this.emailConfirmed.toString()
+
+    UserTable.language->this.language
+    UserTable.lockoutEnabled->this.lockoutEnabled.toString()
+
+    UserTable.lockoutEnd->this.lockoutEnd.toString()
+
+    UserTable.passwordHash->this.passwordHash
+    UserTable.phoneCountryCode->this.phoneCountryCode.toString()
+
+    UserTable.phoneNumber->this.phoneNumber
+    UserTable.phoneNumberConfirmed->this.phoneNumberConfirmed.toString()
+
+    UserTable.securityStamp->this.securityStamp
+    UserTable.timeZone->this.timeZone
+    UserTable.twoFactorEnabled->this.twoFactorEnabled.toString()
+
+    UserTable.approved->this.approved.toString()
+
+    UserTable.approverId->this.approverId.toString()
+
+    UserTable.timeExpired->this.timeExpired.toString()
+
+    UserTable.timeLastLogin->this.timeLastLogin.toString()
+
+    UserTable.timeLastActivity->this.timeLastActivity.toString()
+
+    UserTable.timeCreated->this.timeCreated.toString()
+
+    UserTable.lastSignInIp->this.lastSignInIp
+    UserTable.lastSignInPlatform->this.lastSignInPlatform
+    UserTable.lastSignInArea->this.lastSignInArea
+    UserTable.lastClientVersion->this.lastClientVersion
+    UserTable.id->this.id.toString()
+
+    else->throw
+        IllegalArgumentException("""Can ot converter value of User::${column.name} to string.""")
+  }
+
+  @kotlin.Suppress("UNCHECKED_CAST")
+  private fun <T> parseColumnValue(valueString: String, column: Column<T>): T {
+    val value = when(column) {
+      UserTable.userName -> valueString
+      UserTable.userType ->com.labijie.infra.orm.ExposedConverter.stringToByteArray(valueString)
+      UserTable.accessFailedCount ->valueString.toShort()
+      UserTable.concurrencyStamp -> valueString
+      UserTable.email -> valueString
+      UserTable.emailConfirmed ->valueString.toBoolean()
+      UserTable.language -> valueString
+      UserTable.lockoutEnabled ->valueString.toBoolean()
+      UserTable.lockoutEnd ->valueString.toLong()
+      UserTable.passwordHash -> valueString
+      UserTable.phoneCountryCode ->valueString.toShort()
+      UserTable.phoneNumber -> valueString
+      UserTable.phoneNumberConfirmed ->valueString.toBoolean()
+      UserTable.securityStamp -> valueString
+      UserTable.timeZone -> valueString
+      UserTable.twoFactorEnabled ->valueString.toBoolean()
+      UserTable.approved ->valueString.toBoolean()
+      UserTable.approverId ->valueString.toLong()
+      UserTable.timeExpired ->valueString.toLong()
+      UserTable.timeLastLogin ->valueString.toLong()
+      UserTable.timeLastActivity ->valueString.toLong()
+      UserTable.timeCreated ->valueString.toLong()
+      UserTable.lastSignInIp -> valueString
+      UserTable.lastSignInPlatform -> valueString
+      UserTable.lastSignInArea -> valueString
+      UserTable.lastClientVersion -> valueString
+      UserTable.id ->valueString.toLong()
+      else->throw
+          IllegalArgumentException("""Can ot converter value of User::${column.name} to string.""")
+    }
+    return value as T
+  }
+
   @kotlin.Suppress("UNCHECKED_CAST")
   public fun <T> User.getColumnValue(column: Column<T>): T = when(column) {
     UserTable.userName->this.userName as T
@@ -404,6 +485,10 @@ public object UserDSL {
     assign(it, raw)
   }
 
+  public fun UserTable.insertIgnore(raw: User): InsertStatement<Long> = insertIgnore {
+    assign(it, raw)
+  }
+
   public fun UserTable.upsert(
     raw: User,
     onUpdateExclude: List<Column<*>>? = null,
@@ -421,6 +506,20 @@ public object UserDSL {
   ): List<ResultRow> {
     val rows = batchInsert(list, ignoreErrors, shouldReturnGeneratedValues) {
       entry -> assign(this, entry)
+    }
+    return rows
+  }
+
+  public fun UserTable.batchUpsert(
+    list: Iterable<User>,
+    onUpdateExclude: List<Column<*>>? = null,
+    onUpdate: (UpsertBuilder.(UpdateStatement) -> Unit)? = null,
+    shouldReturnGeneratedValues: Boolean = false,
+    `where`: (SqlExpressionBuilder.() -> Op<Boolean>)? = null,
+  ): List<ResultRow> {
+    val rows =  batchUpsert(data = list, keys = arrayOf(id), onUpdate = onUpdate, onUpdateExclude =
+        onUpdateExclude, where = where, shouldReturnGeneratedValues = shouldReturnGeneratedValues) {
+      data: User-> assign(this, data)
     }
     return rows
   }
@@ -489,18 +588,22 @@ public object UserDSL {
     val offsetKey = forwardToken?.let { Base64.getUrlDecoder().decode(it).toString(Charsets.UTF_8) }
     val query = selectSlice(*selective.toTypedArray())
     offsetKey?.let {
+      val keyValue = parseColumnValue(it, id)
       when(order) {
         SortOrder.DESC, SortOrder.DESC_NULLS_FIRST, SortOrder.DESC_NULLS_LAST->
-        query.andWhere { id less it.toLong() }
-        else-> query.andWhere { id greater it.toLong() }
+        query.andWhere { id less keyValue }
+        else-> query.andWhere { id greater keyValue }
       }
     }
     `where`?.invoke(query)
     val sorted = query.orderBy(id, order)
-    val list = sorted.limit(pageSize).toUserList(*selective.toTypedArray())
-    val token = if(list.size >= pageSize) {
-      val lastId = list.last().id.toString().toByteArray(Charsets.UTF_8)
-      Base64.getUrlEncoder().encodeToString(lastId)
+    val list = sorted.limit(pageSize + 1).toUserList(*selective.toTypedArray()).toMutableList()
+    val dataCount = list.size
+    val token = if(dataCount > pageSize) {
+      list.removeLast()
+      val idString = list.last().getColumnValueString(id)
+      val idArray = idString.toByteArray(Charsets.UTF_8)
+      Base64.getUrlEncoder().encodeToString(idArray)
     }
     else {
       null
@@ -522,9 +625,12 @@ public object UserDSL {
     if(sortColumn == id) {
       return this.selectForwardByPrimaryKey(forwardToken, order, pageSize, selective, `where`)
     }
-    val kp = forwardToken?.let { decodeToken(it) }
-    val offsetKey = kp?.first
-    val excludeKeys = kp?.second?.map { it.toLong() }
+    val sortColAndId = forwardToken?.let { if(it.isNotBlank())
+        Base64.getUrlDecoder().decode(it).toString(Charsets.UTF_8) else null }
+    val kp = sortColAndId?.split(":::")
+    val offsetKey = if(!kp.isNullOrEmpty()) parseColumnValue(kp.first(), sortColumn) else null
+    val lastId = if(kp != null && kp.size > 1 && kp[1].isNotBlank()) parseColumnValue(kp[1], id)
+        else null
     val query = selectSlice(*selective.toTypedArray())
     offsetKey?.let {
       when(order) {
@@ -533,16 +639,25 @@ public object UserDSL {
         else-> query.andWhere { sortColumn greaterEq it }
       }
     }
-    excludeKeys?.let {
-      if(it.isNotEmpty()) {
-        query.andWhere { id notInList it }
+    lastId?.let {
+      when(order) {
+        SortOrder.DESC, SortOrder.DESC_NULLS_FIRST, SortOrder.DESC_NULLS_LAST->
+        query.andWhere { id less it }
+        else-> query.andWhere { id greater it }
       }
     }
     `where`?.invoke(query)
     val sorted = query.orderBy(Pair(sortColumn, order), Pair(id, order))
-    val list = sorted.limit(pageSize).toUserList(*selective.toTypedArray())
-    val token = if(list.size < pageSize) null else encodeToken(list, { getColumnValue(sortColumn) },
-        User::id)
+    val list = sorted.limit(pageSize + 1).toUserList(*selective.toTypedArray()).toMutableList()
+    val dataCount = list.size
+    val token = if(dataCount > pageSize) {
+      list.removeLast()
+      val idToEncode = list.last().getColumnValueString(id)
+      val sortKey = list.last().getColumnValueString(sortColumn)
+      val tokenValue = """${idToEncode}:::${sortKey}""".toByteArray(Charsets.UTF_8)
+      Base64.getUrlEncoder().encodeToString(tokenValue)
+    }
+    else null
     return OffsetList(list, token)
   }
 

@@ -6,8 +6,6 @@ import com.labijie.application.`data`.LocalizationCodeTable
 import com.labijie.application.`data`.LocalizationCodeTable.code
 import com.labijie.application.`data`.pojo.LocalizationCode
 import com.labijie.infra.orm.OffsetList
-import com.labijie.infra.orm.OffsetList.Companion.decodeToken
-import com.labijie.infra.orm.OffsetList.Companion.encodeToken
 import java.lang.IllegalArgumentException
 import java.util.Base64
 import kotlin.Array
@@ -36,8 +34,10 @@ import org.jetbrains.exposed.sql.SqlExpressionBuilder
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.andWhere
 import org.jetbrains.exposed.sql.batchInsert
+import org.jetbrains.exposed.sql.batchUpsert
 import org.jetbrains.exposed.sql.deleteWhere
 import org.jetbrains.exposed.sql.insert
+import org.jetbrains.exposed.sql.insertIgnore
 import org.jetbrains.exposed.sql.replace
 import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.statements.InsertStatement
@@ -92,6 +92,22 @@ public object LocalizationCodeDSL {
         IllegalArgumentException("""Unknown column <${column.name}> for 'LocalizationCode'""")
   }
 
+  private fun <T> LocalizationCode.getColumnValueString(column: Column<T>): String = when(column) {
+    LocalizationCodeTable.code->this.code
+    else->throw
+        IllegalArgumentException("""Can ot converter value of LocalizationCode::${column.name} to string.""")
+  }
+
+  @kotlin.Suppress("UNCHECKED_CAST")
+  private fun <T> parseColumnValue(valueString: String, column: Column<T>): T {
+    val value = when(column) {
+      LocalizationCodeTable.code -> valueString
+      else->throw
+          IllegalArgumentException("""Can ot converter value of LocalizationCode::${column.name} to string.""")
+    }
+    return value as T
+  }
+
   @kotlin.Suppress("UNCHECKED_CAST")
   public fun <T> LocalizationCode.getColumnValue(column: Column<T>): T = when(column) {
     LocalizationCodeTable.code->this.code as T
@@ -142,6 +158,11 @@ public object LocalizationCodeDSL {
     assign(it, raw)
   }
 
+  public fun LocalizationCodeTable.insertIgnore(raw: LocalizationCode): InsertStatement<Long> =
+      insertIgnore {
+    assign(it, raw)
+  }
+
   public fun LocalizationCodeTable.upsert(
     raw: LocalizationCode,
     onUpdateExclude: List<Column<*>>? = null,
@@ -159,6 +180,21 @@ public object LocalizationCodeDSL {
   ): List<ResultRow> {
     val rows = batchInsert(list, ignoreErrors, shouldReturnGeneratedValues) {
       entry -> assign(this, entry)
+    }
+    return rows
+  }
+
+  public fun LocalizationCodeTable.batchUpsert(
+    list: Iterable<LocalizationCode>,
+    onUpdateExclude: List<Column<*>>? = null,
+    onUpdate: (UpsertBuilder.(UpdateStatement) -> Unit)? = null,
+    shouldReturnGeneratedValues: Boolean = false,
+    `where`: (SqlExpressionBuilder.() -> Op<Boolean>)? = null,
+  ): List<ResultRow> {
+    val rows =  batchUpsert(data = list, keys = arrayOf(code), onUpdate = onUpdate, onUpdateExclude
+        = onUpdateExclude, where = where, shouldReturnGeneratedValues =
+        shouldReturnGeneratedValues) {
+      data: LocalizationCode-> assign(this, data)
     }
     return rows
   }
@@ -230,18 +266,23 @@ public object LocalizationCodeDSL {
     val offsetKey = forwardToken?.let { Base64.getUrlDecoder().decode(it).toString(Charsets.UTF_8) }
     val query = selectSlice(*selective.toTypedArray())
     offsetKey?.let {
+      val keyValue = parseColumnValue(it, code)
       when(order) {
         SortOrder.DESC, SortOrder.DESC_NULLS_FIRST, SortOrder.DESC_NULLS_LAST->
-        query.andWhere { code less it }
-        else-> query.andWhere { code greater it }
+        query.andWhere { code less keyValue }
+        else-> query.andWhere { code greater keyValue }
       }
     }
     `where`?.invoke(query)
     val sorted = query.orderBy(code, order)
-    val list = sorted.limit(pageSize).toLocalizationCodeList(*selective.toTypedArray())
-    val token = if(list.size >= pageSize) {
-      val lastId = list.last().code.toString().toByteArray(Charsets.UTF_8)
-      Base64.getUrlEncoder().encodeToString(lastId)
+    val list = sorted.limit(pageSize +
+        1).toLocalizationCodeList(*selective.toTypedArray()).toMutableList()
+    val dataCount = list.size
+    val token = if(dataCount > pageSize) {
+      list.removeLast()
+      val idString = list.last().getColumnValueString(code)
+      val idArray = idString.toByteArray(Charsets.UTF_8)
+      Base64.getUrlEncoder().encodeToString(idArray)
     }
     else {
       null
@@ -263,9 +304,12 @@ public object LocalizationCodeDSL {
     if(sortColumn == code) {
       return this.selectForwardByPrimaryKey(forwardToken, order, pageSize, selective, `where`)
     }
-    val kp = forwardToken?.let { decodeToken(it) }
-    val offsetKey = kp?.first
-    val excludeKeys = kp?.second
+    val sortColAndId = forwardToken?.let { if(it.isNotBlank())
+        Base64.getUrlDecoder().decode(it).toString(Charsets.UTF_8) else null }
+    val kp = sortColAndId?.split(":::")
+    val offsetKey = if(!kp.isNullOrEmpty()) parseColumnValue(kp.first(), sortColumn) else null
+    val lastId = if(kp != null && kp.size > 1 && kp[1].isNotBlank()) parseColumnValue(kp[1], code)
+        else null
     val query = selectSlice(*selective.toTypedArray())
     offsetKey?.let {
       when(order) {
@@ -274,16 +318,26 @@ public object LocalizationCodeDSL {
         else-> query.andWhere { sortColumn greaterEq it }
       }
     }
-    excludeKeys?.let {
-      if(it.isNotEmpty()) {
-        query.andWhere { code notInList it }
+    lastId?.let {
+      when(order) {
+        SortOrder.DESC, SortOrder.DESC_NULLS_FIRST, SortOrder.DESC_NULLS_LAST->
+        query.andWhere { code less it }
+        else-> query.andWhere { code greater it }
       }
     }
     `where`?.invoke(query)
     val sorted = query.orderBy(Pair(sortColumn, order), Pair(code, order))
-    val list = sorted.limit(pageSize).toLocalizationCodeList(*selective.toTypedArray())
-    val token = if(list.size < pageSize) null else encodeToken(list, { getColumnValue(sortColumn) },
-        LocalizationCode::code)
+    val list = sorted.limit(pageSize +
+        1).toLocalizationCodeList(*selective.toTypedArray()).toMutableList()
+    val dataCount = list.size
+    val token = if(dataCount > pageSize) {
+      list.removeLast()
+      val idToEncode = list.last().getColumnValueString(code)
+      val sortKey = list.last().getColumnValueString(sortColumn)
+      val tokenValue = """${idToEncode}:::${sortKey}""".toByteArray(Charsets.UTF_8)
+      Base64.getUrlEncoder().encodeToString(tokenValue)
+    }
+    else null
     return OffsetList(list, token)
   }
 

@@ -8,8 +8,6 @@ import com.labijie.application.identity.`data`.RoleTable.id
 import com.labijie.application.identity.`data`.RoleTable.name
 import com.labijie.application.identity.`data`.pojo.Role
 import com.labijie.infra.orm.OffsetList
-import com.labijie.infra.orm.OffsetList.Companion.decodeToken
-import com.labijie.infra.orm.OffsetList.Companion.encodeToken
 import java.lang.IllegalArgumentException
 import java.util.Base64
 import kotlin.Array
@@ -25,12 +23,10 @@ import kotlin.collections.Iterable
 import kotlin.collections.List
 import kotlin.collections.isNotEmpty
 import kotlin.collections.last
-import kotlin.collections.map
 import kotlin.collections.toList
 import kotlin.reflect.KClass
 import kotlin.text.Charsets
 import kotlin.text.toByteArray
-import kotlin.text.toLong
 import org.jetbrains.exposed.sql.Column
 import org.jetbrains.exposed.sql.Op
 import org.jetbrains.exposed.sql.Query
@@ -40,8 +36,10 @@ import org.jetbrains.exposed.sql.SqlExpressionBuilder
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.andWhere
 import org.jetbrains.exposed.sql.batchInsert
+import org.jetbrains.exposed.sql.batchUpsert
 import org.jetbrains.exposed.sql.deleteWhere
 import org.jetbrains.exposed.sql.insert
+import org.jetbrains.exposed.sql.insertIgnore
 import org.jetbrains.exposed.sql.replace
 import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.statements.InsertStatement
@@ -107,6 +105,27 @@ public object RoleDSL {
     else->throw IllegalArgumentException("""Unknown column <${column.name}> for 'Role'""")
   }
 
+  private fun <T> Role.getColumnValueString(column: Column<T>): String = when(column) {
+    RoleTable.concurrencyStamp->this.concurrencyStamp
+    RoleTable.name->this.name
+    RoleTable.id->this.id.toString()
+
+    else->throw
+        IllegalArgumentException("""Can ot converter value of Role::${column.name} to string.""")
+  }
+
+  @kotlin.Suppress("UNCHECKED_CAST")
+  private fun <T> parseColumnValue(valueString: String, column: Column<T>): T {
+    val value = when(column) {
+      RoleTable.concurrencyStamp -> valueString
+      RoleTable.name -> valueString
+      RoleTable.id ->valueString.toLong()
+      else->throw
+          IllegalArgumentException("""Can ot converter value of Role::${column.name} to string.""")
+    }
+    return value as T
+  }
+
   @kotlin.Suppress("UNCHECKED_CAST")
   public fun <T> Role.getColumnValue(column: Column<T>): T = when(column) {
     RoleTable.concurrencyStamp->this.concurrencyStamp as T
@@ -161,6 +180,10 @@ public object RoleDSL {
     assign(it, raw)
   }
 
+  public fun RoleTable.insertIgnore(raw: Role): InsertStatement<Long> = insertIgnore {
+    assign(it, raw)
+  }
+
   public fun RoleTable.upsert(
     raw: Role,
     onUpdateExclude: List<Column<*>>? = null,
@@ -178,6 +201,20 @@ public object RoleDSL {
   ): List<ResultRow> {
     val rows = batchInsert(list, ignoreErrors, shouldReturnGeneratedValues) {
       entry -> assign(this, entry)
+    }
+    return rows
+  }
+
+  public fun RoleTable.batchUpsert(
+    list: Iterable<Role>,
+    onUpdateExclude: List<Column<*>>? = null,
+    onUpdate: (UpsertBuilder.(UpdateStatement) -> Unit)? = null,
+    shouldReturnGeneratedValues: Boolean = false,
+    `where`: (SqlExpressionBuilder.() -> Op<Boolean>)? = null,
+  ): List<ResultRow> {
+    val rows =  batchUpsert(data = list, keys = arrayOf(id), onUpdate = onUpdate, onUpdateExclude =
+        onUpdateExclude, where = where, shouldReturnGeneratedValues = shouldReturnGeneratedValues) {
+      data: Role-> assign(this, data)
     }
     return rows
   }
@@ -246,18 +283,22 @@ public object RoleDSL {
     val offsetKey = forwardToken?.let { Base64.getUrlDecoder().decode(it).toString(Charsets.UTF_8) }
     val query = selectSlice(*selective.toTypedArray())
     offsetKey?.let {
+      val keyValue = parseColumnValue(it, id)
       when(order) {
         SortOrder.DESC, SortOrder.DESC_NULLS_FIRST, SortOrder.DESC_NULLS_LAST->
-        query.andWhere { id less it.toLong() }
-        else-> query.andWhere { id greater it.toLong() }
+        query.andWhere { id less keyValue }
+        else-> query.andWhere { id greater keyValue }
       }
     }
     `where`?.invoke(query)
     val sorted = query.orderBy(id, order)
-    val list = sorted.limit(pageSize).toRoleList(*selective.toTypedArray())
-    val token = if(list.size >= pageSize) {
-      val lastId = list.last().id.toString().toByteArray(Charsets.UTF_8)
-      Base64.getUrlEncoder().encodeToString(lastId)
+    val list = sorted.limit(pageSize + 1).toRoleList(*selective.toTypedArray()).toMutableList()
+    val dataCount = list.size
+    val token = if(dataCount > pageSize) {
+      list.removeLast()
+      val idString = list.last().getColumnValueString(id)
+      val idArray = idString.toByteArray(Charsets.UTF_8)
+      Base64.getUrlEncoder().encodeToString(idArray)
     }
     else {
       null
@@ -279,9 +320,12 @@ public object RoleDSL {
     if(sortColumn == id) {
       return this.selectForwardByPrimaryKey(forwardToken, order, pageSize, selective, `where`)
     }
-    val kp = forwardToken?.let { decodeToken(it) }
-    val offsetKey = kp?.first
-    val excludeKeys = kp?.second?.map { it.toLong() }
+    val sortColAndId = forwardToken?.let { if(it.isNotBlank())
+        Base64.getUrlDecoder().decode(it).toString(Charsets.UTF_8) else null }
+    val kp = sortColAndId?.split(":::")
+    val offsetKey = if(!kp.isNullOrEmpty()) parseColumnValue(kp.first(), sortColumn) else null
+    val lastId = if(kp != null && kp.size > 1 && kp[1].isNotBlank()) parseColumnValue(kp[1], id)
+        else null
     val query = selectSlice(*selective.toTypedArray())
     offsetKey?.let {
       when(order) {
@@ -290,16 +334,25 @@ public object RoleDSL {
         else-> query.andWhere { sortColumn greaterEq it }
       }
     }
-    excludeKeys?.let {
-      if(it.isNotEmpty()) {
-        query.andWhere { id notInList it }
+    lastId?.let {
+      when(order) {
+        SortOrder.DESC, SortOrder.DESC_NULLS_FIRST, SortOrder.DESC_NULLS_LAST->
+        query.andWhere { id less it }
+        else-> query.andWhere { id greater it }
       }
     }
     `where`?.invoke(query)
     val sorted = query.orderBy(Pair(sortColumn, order), Pair(id, order))
-    val list = sorted.limit(pageSize).toRoleList(*selective.toTypedArray())
-    val token = if(list.size < pageSize) null else encodeToken(list, { getColumnValue(sortColumn) },
-        Role::id)
+    val list = sorted.limit(pageSize + 1).toRoleList(*selective.toTypedArray()).toMutableList()
+    val dataCount = list.size
+    val token = if(dataCount > pageSize) {
+      list.removeLast()
+      val idToEncode = list.last().getColumnValueString(id)
+      val sortKey = list.last().getColumnValueString(sortColumn)
+      val tokenValue = """${idToEncode}:::${sortKey}""".toByteArray(Charsets.UTF_8)
+      Base64.getUrlEncoder().encodeToString(tokenValue)
+    }
+    else null
     return OffsetList(list, token)
   }
 

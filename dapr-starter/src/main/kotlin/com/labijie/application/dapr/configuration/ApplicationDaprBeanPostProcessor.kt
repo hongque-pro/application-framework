@@ -8,7 +8,6 @@ import com.labijie.application.JsonMode
 import com.labijie.application.dapr.IDaprClientBuildCustomizer
 import com.labijie.application.dapr.components.DaprJsonSerializer
 import com.labijie.infra.json.JacksonHelper
-import io.dapr.client.DaprClient
 import io.dapr.client.DaprClientBuilder
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.config.BeanPostProcessor

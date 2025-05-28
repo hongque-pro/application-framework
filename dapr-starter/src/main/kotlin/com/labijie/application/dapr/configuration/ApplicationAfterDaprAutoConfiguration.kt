@@ -1,6 +1,7 @@
 package com.labijie.application.dapr.configuration
 
 import com.labijie.application.JsonMode
+import com.labijie.application.component.IBootPrinter
 import com.labijie.application.component.IMessageService
 import com.labijie.application.dapr.IDaprClientBuildCustomizer
 import com.labijie.application.dapr.PubsubSide
@@ -13,9 +14,11 @@ import com.labijie.application.dapr.localization.LocalLocalizationEventListener
 import com.labijie.caching.ICacheManager
 import com.labijie.infra.json.JacksonHelper
 import com.labijie.infra.security.Rfc6238TokenService
+import io.dapr.Topic
 import io.dapr.client.DaprClient
 import io.dapr.client.DaprClientBuilder
 import io.dapr.springboot.DaprAutoConfiguration
+import org.springdoc.core.models.GroupedOpenApi
 import org.springframework.beans.factory.ObjectProvider
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.autoconfigure.AutoConfigureAfter
@@ -83,5 +86,34 @@ class ApplicationAfterDaprAutoConfiguration {
     @Bean
     fun daprLocalizationListener(clusterEventPublisher: IClusterEventPublisher): LocalLocalizationEventListener {
         return LocalLocalizationEventListener(clusterEventPublisher)
+    }
+
+    @Bean
+    fun daprGroup(): GroupedOpenApi {
+        return GroupedOpenApi.builder()
+            .group("Dapr-SDK")
+            .packagesToScan("io.dapr")
+            .build()
+    }
+
+    @Bean
+    fun daprApplicationGroup(): GroupedOpenApi {
+        return GroupedOpenApi.builder()
+            .group("Dapr-Application")
+            .addOpenApiMethodFilter { method ->
+                method.annotations.any { it.annotationClass == Topic::class.java }
+            }
+            .build()
+    }
+
+    class DaprBootPrinter : IBootPrinter {
+        override fun appendBootMessages(messageBuilder: StringBuilder) {
+            messageBuilder.appendLine("dapr: ${io.dapr.utils.Version.getSdkVersion()}")
+        }
+    }
+
+    @Bean
+     fun daprBootPrinter(): DaprBootPrinter {
+        return DaprBootPrinter()
     }
 }

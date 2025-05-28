@@ -1,5 +1,6 @@
 package com.labijie.application
 
+import com.labijie.application.SpringContext.getApplicationGitProperties
 import com.labijie.application.component.IBootPrinter
 import com.labijie.application.component.IHumanChecker
 import com.labijie.application.component.IMessageService
@@ -40,7 +41,6 @@ import org.springframework.web.context.WebApplicationContext
 import java.lang.management.ManagementFactory
 import java.lang.reflect.Method
 import java.lang.reflect.ParameterizedType
-import kotlin.concurrent.thread
 import kotlin.reflect.KClass
 import kotlin.system.exitProcess
 
@@ -178,7 +178,7 @@ class ApplicationInitializationRunner<T : ConfigurableApplicationContext>(
             val moduleClass = it::class.java
             val method = tryGetMethod(moduleClass)
             if (method == null) {
-                if(logger.isDebugEnabled) {
+                if (logger.isDebugEnabled) {
                     logger.warn("Find bean implements this interface (bean type: ${moduleClass.name})., but no have 'initialize' method")
                 }
             } else {
@@ -246,16 +246,39 @@ class ApplicationInitializationRunner<T : ConfigurableApplicationContext>(
         val len = keyPadding + valuePadding
         val osMap = mapOf(
             "Host OS: " to os,
-            "Host in used:".padEnd(keyPadding) to "$physicalUse MB (${String.format("%.2f", physicalUse / 1024.0)} GB)".padStart(valuePadding),
-            "Host free:".padEnd(keyPadding) to "$physicalFree MB (${String.format("%.2f", physicalFree / 1024.0)} GB)".padStart(valuePadding),
-            "Host totals:".padEnd(keyPadding) to "$physicalUse MB (${String.format("%.2f", physicalTotal / 1024.0)} GB)".padStart(valuePadding)
+            "Host in used:".padEnd(keyPadding) to "$physicalUse MB (${
+                String.format(
+                    "%.2f",
+                    physicalUse / 1024.0
+                )
+            } GB)".padStart(valuePadding),
+            "Host free:".padEnd(keyPadding) to "$physicalFree MB (${
+                String.format(
+                    "%.2f",
+                    physicalFree / 1024.0
+                )
+            } GB)".padStart(valuePadding),
+            "Host totals:".padEnd(keyPadding) to "$physicalUse MB (${
+                String.format(
+                    "%.2f",
+                    physicalTotal / 1024.0
+                )
+            } GB)".padStart(valuePadding)
         )
 
         val jvm = mapOf(
-            "JVM in used:".padEnd(keyPadding) to "$vmUse MB (${String.format("%.2f", vmUse / 1024.0)} GB)".padStart(valuePadding),
-            "JVM free:".padEnd(keyPadding) to "$vmFree MB (${String.format("%.2f", vmFree / 1024.0)} GB)".padStart(valuePadding),
-            "JVM max:".padEnd(keyPadding) to "$vmMax MB (${String.format("%.2f", vmMax / 1024.0)} GB)".padStart(valuePadding),
-            "JVM totals:".padEnd(keyPadding) to "$vmTotal MB (${String.format("%.2f", vmTotal / 1024.0)} GB)".padStart(valuePadding)
+            "JVM in used:".padEnd(keyPadding) to "$vmUse MB (${String.format("%.2f", vmUse / 1024.0)} GB)".padStart(
+                valuePadding
+            ),
+            "JVM free:".padEnd(keyPadding) to "$vmFree MB (${String.format("%.2f", vmFree / 1024.0)} GB)".padStart(
+                valuePadding
+            ),
+            "JVM max:".padEnd(keyPadding) to "$vmMax MB (${String.format("%.2f", vmMax / 1024.0)} GB)".padStart(
+                valuePadding
+            ),
+            "JVM totals:".padEnd(keyPadding) to "$vmTotal MB (${String.format("%.2f", vmTotal / 1024.0)} GB)".padStart(
+                valuePadding
+            )
         )
         val osTitle = " HOST MEMORY INFO "
         val jvmTitle = " JVM MEMORY INFO "
@@ -273,7 +296,8 @@ class ApplicationInitializationRunner<T : ConfigurableApplicationContext>(
             return StringBuilder().apply {
                 appendLine("framework components: ")
                 beanTypes.forEach { benType ->
-                    val bean = applicationContext.getBeanProvider(benType.java).ifAvailable?.let { ClassUtils.getShortName(it::class.java) }
+                    val bean =
+                        applicationContext.getBeanProvider(benType.java).ifAvailable?.let { ClassUtils.getShortName(it::class.java) }
                     appendLine(" ${benType.java.simpleName}: ${bean.ifNullOrBlank { "<null>" }}")
                 }
                 try {
@@ -281,7 +305,7 @@ class ApplicationInitializationRunner<T : ConfigurableApplicationContext>(
                         it.key
                     }
                     appendLine("caching implement: $caching")
-                }catch (_: BeansException) {
+                } catch (_: BeansException) {
 
                 }
 
@@ -297,16 +321,23 @@ class ApplicationInitializationRunner<T : ConfigurableApplicationContext>(
             group == "com.labijie.application"
         }
 
-        val sb = StringBuilder().also {
-            builder->
+        val sb = StringBuilder().also { builder ->
             builder.appendLine(
                 """
 Application '${this.applicationName}' has been started !! 
+${applicationContext.getApplicationGitProperties()?.buildVersion ?: ""}
 
 ${printSystemInfo()}
 framework ver: ${gitProperties?.get("build.version")}   
 framework commit: ${gitProperties?.commitTime?.toLocalDateTime()?.toLocalDate()}  
-${printComponentImplements(IHumanChecker::class, IObjectStorage::class, IMessageService::class, ILocalizationService::class)}
+${
+                    printComponentImplements(
+                        IHumanChecker::class,
+                        IObjectStorage::class,
+                        IMessageService::class,
+                        ILocalizationService::class
+                    )
+                }
 module loaded:  ${moduleList.ifNullOrBlank("<none>")}
 current profiles: $profiles
 --------------------------------------------------------------------

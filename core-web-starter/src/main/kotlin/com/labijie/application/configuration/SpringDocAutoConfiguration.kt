@@ -1,5 +1,6 @@
 package com.labijie.application.configuration
 
+import com.labijie.application.SpringContext.getApplicationGitProperties
 import com.labijie.application.doc.DocPropertyCustomizer
 import com.labijie.application.doc.DocServerBaseUrlCustomizer
 import com.labijie.application.doc.DocUtils
@@ -10,12 +11,10 @@ import org.springdoc.core.configuration.SpringDocSecurityOAuth2Customizer
 import org.springdoc.core.models.GroupedOpenApi
 import org.springdoc.core.utils.SpringDocUtils
 import org.springframework.beans.factory.InitializingBean
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.autoconfigure.AutoConfigureOrder
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication
-import org.springframework.boot.info.GitProperties
 import org.springframework.context.ApplicationContext
 import org.springframework.context.ApplicationContextAware
 import org.springframework.context.annotation.Bean
@@ -39,8 +38,6 @@ class SpringDocAutoConfiguration(private val environment: Environment): Initiali
 
     private lateinit var applicationContext: ApplicationContext
 
-    @Autowired(required = false)
-    private var gitProperties: GitProperties? = null
 
     @Bean
     fun docServerBaseUrlCustomizer(webProperties: ApplicationWebProperties): DocServerBaseUrlCustomizer {
@@ -50,7 +47,7 @@ class SpringDocAutoConfiguration(private val environment: Environment): Initiali
     @Bean
     @ConditionalOnMissingBean(OpenAPI::class)
     fun defaultOpenAPI(): OpenAPI {
-        return DocUtils.createDefaultOpenAPI(environment.getApplicationName(), gitProperties)
+        return DocUtils.createDefaultOpenAPI(environment.getApplicationName(), applicationContext.getApplicationGitProperties())
     }
 
 
@@ -64,18 +61,11 @@ class SpringDocAutoConfiguration(private val environment: Environment): Initiali
                 "io.dapr",
             )
             .pathsToExclude("/oauth2/**")
+            .pathsToExclude("/dapr/**")
             .build()
     }
 
 
-    @Bean
-    @ConditionalOnClass(name = ["com.labijie.application.dapr.configuration.ApplicationDaprAutoConfiguration"])
-    fun daprApi(): GroupedOpenApi {
-        return GroupedOpenApi.builder()
-            .group("Dapr")
-            .packagesToScan("io.dapr")
-            .build()
-    }
 
 //    @Bean
 //    @ConditionalOnClass(name = ["com.labijie.application.dapr.configuration.ApplicationDaprAutoConfiguration"])

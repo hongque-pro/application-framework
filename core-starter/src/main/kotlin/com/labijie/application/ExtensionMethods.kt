@@ -671,7 +671,7 @@ fun Properties.toGitProperties(): GitProperties {
 /**
  * Get git properties from resource.
  *
- * If <strong>infra-gradle-plugin</strong> used,  GitPropertiesFile will be "git-info/git.properties", other tool will be "git.properties"
+ * If <strong>infra-gradle-plugin</strong> used, GitPropertiesFile will be "git-info/git.properties", other tool will be "git.properties"
  *
  * @param packageClass The resource belong package.
  * @param gitPropertiesFile Git properties resource file name. <br/> Default: "git-info/git.properties"

@@ -2,6 +2,8 @@ package com.labijie.application
 
 import com.labijie.application.service.ILocalizationService
 import com.labijie.infra.isDevelopment
+import org.springframework.boot.autoconfigure.SpringBootApplication
+import org.springframework.boot.info.GitProperties
 import org.springframework.context.ApplicationContext
 import org.springframework.context.MessageSource
 import org.springframework.context.i18n.LocaleContextHolder
@@ -36,6 +38,20 @@ object SpringContext {
 
     val messageSourceAccessor by lazy {
         MessageSourceAccessor(current)
+    }
+
+    fun ApplicationContext.findApplicationMainClass(): Any? {
+        if(isInitialized) {
+            val springBootAppBeanName = this.getBeanNamesForAnnotation(SpringBootApplication::class.java)
+            return if (springBootAppBeanName.isNotEmpty() && !springBootAppBeanName[0].isNullOrBlank()) {
+                current.getBean(springBootAppBeanName[0])
+            } else null
+        }
+        return null
+    }
+
+    fun ApplicationContext.getApplicationGitProperties(): GitProperties? {
+        return findApplicationMainClass()?.let { getGitProperties(it::class.java) }
     }
 
 }

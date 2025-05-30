@@ -700,3 +700,8 @@ fun getGitProperties(
     }
 }
 
+fun JacksonHelper.serializeAsPrettyString(value: Object, compatibleWeb: Boolean = false): String {
+    val mapper = if(compatibleWeb) JacksonHelper.webCompatibilityMapper else JacksonHelper.defaultObjectMapper
+   return  mapper.writerWithDefaultPrettyPrinter().writeValueAsString(value)
+}
+

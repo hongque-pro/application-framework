@@ -706,4 +706,20 @@ fun JacksonHelper.serializeAsPrettyString(value: Any, compatibleWeb: Boolean = f
     return  mapper.writerWithDefaultPrettyPrinter().writeValueAsString(value)
 }
 
+fun <R> String.letIfNotBlank(block: (String) -> R): R? {
+    if(this.isNotBlank())
+    {
+        return block(this)
+    }
+    return null
+}
+
+
+fun <R> String?.runIfNotNullOrBlank(block: String.() -> R): Unit {
+    if(!this.isNullOrBlank())
+    {
+        block(this)
+    }
+}
+
 

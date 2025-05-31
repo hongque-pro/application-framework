@@ -178,9 +178,8 @@ open class FileIndexService(
     }
 
     override fun getIndexAndRefreshFileSize(filePath: String, checkFileExisted: Boolean): FileIndex? {
-        val index = getFileIndex(filePath, false)?.also {
-            file->
-            if(file.sizeIntBytes <= 0) {
+        val index = getFileIndex(filePath, false)?.also { file ->
+            if (file.sizeIntBytes <= 0) {
                 val size = objectStorage.getObjectSizeInBytes(key = filePath, file.fileAccess.toObjectBucket())
                 size?.let {
                     this.transactionTemplate.execute {
@@ -192,7 +191,7 @@ open class FileIndexService(
             }
         }
 
-        if(index == null && checkFileExisted) {
+        if (index == null && checkFileExisted) {
             throw FileIndexNotFoundException()
         }
         return index
@@ -204,10 +203,10 @@ open class FileIndexService(
         entityId: Long?,
         fileSizeInBytes: Long?,
         checkFileExisted: Boolean,
-        customizer: ((fileIndex: FileIndex)->CustomizerResult)? = null
+        customizer: ((fileIndex: FileIndex) -> CustomizerResult)? = null
     ): FileIndex? {
 
-        val (existedFile,temp) = this.transactionTemplate.execute {
+        val (existedFile, temp) = this.transactionTemplate.execute {
             val file = getFileIndex(filePath, checkFileExisted)
             val temp = file?.let {
                 TempFileIndexTable.selectByPrimaryKey(file.id)
@@ -215,18 +214,20 @@ open class FileIndexService(
             Pair(file, temp)
         } ?: Pair(null, null)
 
-        if(existedFile == null && checkFileExisted) {
-            throw FileIndexNotFoundException(filePath)
+        if (existedFile == null) {
+            if (checkFileExisted) {
+                throw FileIndexNotFoundException(filePath)
+            } else {
+                return null
+            }
         }
 
-        if(existedFile == null) return existedFile
+        val r = customizer?.invoke(existedFile)
+        if (r == CustomizerResult.Return) return existedFile
 
         if (!existedFile.isTempFile()) {
             throw FileIndexAlreadyExistedException(existedFile.path)
         }
-
-        val r = customizer?.invoke(existedFile)
-        if(r == CustomizerResult.Return) return existedFile
 
         if (fileType == existedFile.fileType) {
             logger.warn("Save file use the origin file type ( current type: ${existedFile.fileType}, save type: $fileType )")
@@ -244,7 +245,10 @@ open class FileIndexService(
 
         val sizeToUpdate = if (existedFile.sizeIntBytes <= 0) {
             val sizeInBytes =
-                fileSizeInBytes ?: objectStorage.getObjectSizeInBytes(existedFile.path, existedFile.fileAccess.toObjectBucket())
+                fileSizeInBytes ?: objectStorage.getObjectSizeInBytes(
+                    existedFile.path,
+                    existedFile.fileAccess.toObjectBucket()
+                )
             if (sizeInBytes == null && checkFileExisted) { //前面跳过了检查，这里补回来
                 throw StoredObjectNotFoundException()
             }
@@ -288,10 +292,14 @@ open class FileIndexService(
         fileType: String,
         entityId: Long?,
         fileSizeInBytes: Long?,
-        checkFileExisted: Boolean
+        checkFileExisted: Boolean,
+        onNotTemplate: ((file: FileIndex) -> Unit)?
     ): FileIndex? {
         return saveFileCore(filePath, fileType, entityId, fileSizeInBytes, checkFileExisted) {
-            if(!it.isTempFile()) CustomizerResult.Return else CustomizerResult.Continue
+            if (!it.isTempFile()) {
+                onNotTemplate?.invoke(it)
+                CustomizerResult.Return
+            } else CustomizerResult.Continue
         }
     }
 
@@ -302,7 +310,6 @@ open class FileIndexService(
         fileSizeInBytes: Long?,
         checkFileExisted: Boolean
     ): FileIndex? {
-
         return saveFileCore(filePath, fileType, entityId, fileSizeInBytes, checkFileExisted)
     }
 

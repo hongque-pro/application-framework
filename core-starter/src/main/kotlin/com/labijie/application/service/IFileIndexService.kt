@@ -32,7 +32,7 @@ interface IFileIndexService {
     fun touchFile(filePath: String, modifier: FileModifier, fileSizeInBytes: Long? = null, expiration: Duration? = null, mime: String? = null): TouchedFile
 
     fun setToTemp(filePath: String, throwIfNotStored: Boolean): FileIndex?
-    fun saveFileIfTemp(filePath: String, fileType:String,  entityId: Long? = null, fileSizeInBytes: Long? = null, checkFileExisted: Boolean = true): FileIndex?
+    fun saveFileIfTemp(filePath: String, fileType:String,  entityId: Long? = null, fileSizeInBytes: Long? = null, checkFileExisted: Boolean = true, onNotTemplate:( (file: FileIndex)->Unit)? = null): FileIndex?
     fun saveFile(filePath: String, fileType:String,  entityId: Long? = null, fileSizeInBytes: Long? = null, checkFileExisted: Boolean = true): FileIndex?
     fun checkFileInStorage(filePath:String, throwIfNotStored: Boolean) : Boolean
     fun deleteFile(filePath: String, deleteObject:Boolean = false):Boolean

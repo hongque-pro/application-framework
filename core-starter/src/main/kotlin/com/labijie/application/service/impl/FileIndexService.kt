@@ -187,6 +187,7 @@ open class FileIndexService(
                             it[sizeIntBytes] = size
                         }
                     }
+                    file.sizeIntBytes = size
                 }
             }
         }

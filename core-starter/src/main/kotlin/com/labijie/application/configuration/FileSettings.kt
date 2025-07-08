@@ -7,6 +7,6 @@ package com.labijie.application.configuration
 import java.time.Duration
 
 
-data class FileSettings(
+class FileSettings {
     var tempFileExpiration: Duration = Duration.ofHours(2)
-)
+}

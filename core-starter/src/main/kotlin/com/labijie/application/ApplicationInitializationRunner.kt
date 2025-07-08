@@ -26,6 +26,7 @@ import com.sun.management.OperatingSystemMXBean
 import org.apache.commons.lang3.LocaleUtils
 import org.springframework.beans.BeansException
 import org.springframework.beans.factory.ObjectProvider
+import org.springframework.boot.WebApplicationType
 import org.springframework.boot.context.event.ApplicationReadyEvent
 import org.springframework.boot.context.logging.LoggingApplicationListener.LOGGING_SYSTEM_BEAN_NAME
 import org.springframework.boot.logging.LogLevel
@@ -50,8 +51,8 @@ import kotlin.system.exitProcess
  * @author Anders Xiao
  * @date 2019-09-11
  */
-class ApplicationInitializationRunner<T : ConfigurableApplicationContext>(
-    private val contextClass: KClass<T>
+class ApplicationInitializationRunner(
+    private val applicationType: WebApplicationType
 ) : ApplicationContextAware, ApplicationListener<WebServerInitializedEvent>, Ordered {
     override fun getOrder(): Int {
         return Int.MAX_VALUE
@@ -61,7 +62,7 @@ class ApplicationInitializationRunner<T : ConfigurableApplicationContext>(
     private lateinit var applicationName: String
     private lateinit var profiles: String
     private lateinit var environment: Environment
-    private lateinit var errorRegistrations: ObjectProvider<IErrorRegistration>
+    private lateinit var errorRegistrations: ObjectProvider<ApplicationErrorRegistration>
     private lateinit var errorRegistry: IErrorRegistry
 
     private val loggingSystem by lazy {
@@ -85,7 +86,7 @@ class ApplicationInitializationRunner<T : ConfigurableApplicationContext>(
         this.applicationContext = applicationContext
         applicationName = environment.getApplicationName(false)
         profiles = applicationContext.environment.activeProfiles.joinToString()
-        errorRegistrations = applicationContext.getBeanProvider(IErrorRegistration::class.java)
+        errorRegistrations = applicationContext.getBeanProvider(ApplicationErrorRegistration::class.java)
         errorRegistry = applicationContext.getBean(IErrorRegistry::class.java)
         httpClientProperties = applicationContext.getBeanProvider(HttpClientProperties::class.java).ifAvailable
     }
@@ -162,9 +163,7 @@ class ApplicationInitializationRunner<T : ConfigurableApplicationContext>(
 
     @EventListener(ApplicationReadyEvent::class)
     fun run(event: ApplicationReadyEvent) {
-        if (!contextClass.isInstance(event.applicationContext)) {
-            return
-        }
+
         this.initJackson()
         this.initHttpClientLogger()
         this.initLocalization()
@@ -328,7 +327,7 @@ Application '${this.applicationName}' has been started !!
 ${applicationContext.getApplicationGitProperties()?.buildVersion ?: ""}
 
 ${printSystemInfo()}
-framework ver: ${gitProperties?.get("build.version")}   
+framework version: ${gitProperties?.get("build.version")}   
 framework commit: ${gitProperties?.commitTime?.toLocalDateTime()?.toLocalDate()}  
 ${
                     printComponentImplements(

@@ -40,8 +40,7 @@ object DocUtils {
 
         val javaType = type is JavaType
         if (javaType) {
-            val t = type as JavaType
-            return t.isEnumType
+            return type.isEnumType
         }
         return false
     }
@@ -53,8 +52,7 @@ object DocUtils {
 
         val javaType = type is JavaType
         if (javaType) {
-            val t = type as JavaType
-            return t.rawClass
+            return type.rawClass
         }
 
         return null
@@ -176,8 +174,8 @@ object DocUtils {
     }
 
     fun fillMvcKotlinParameter(parameterModel: Parameter, methodParameter: MethodParameter) {
-        val kParameter = methodParameter.toKParameter()
-        if (kParameter != null) {
+        val kParameter = methodParameter.toKParameter()?.let {
+            kParameter->
             val parameterDoc = AnnotatedElementUtils.findMergedAnnotation(
                 AnnotatedElementUtils.forAnnotations(*methodParameter.parameterAnnotations),
                 io.swagger.v3.oas.annotations.Parameter::class.java

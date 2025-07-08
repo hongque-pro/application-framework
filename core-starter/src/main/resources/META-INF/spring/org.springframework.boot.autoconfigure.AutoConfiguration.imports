@@ -6,3 +6,4 @@ com.labijie.application.configuration.ApplicationTransactionAutoConfiguration
 com.labijie.application.configuration.CachingOverrideAutoConfiguration
 com.labijie.application.configuration.LocalizationAutoConfiguration
 com.labijie.application.configuration.ApplicationDefaultsAutoConfiguration
+com.labijie.application.configuration.OkHttpAutoConfiguration

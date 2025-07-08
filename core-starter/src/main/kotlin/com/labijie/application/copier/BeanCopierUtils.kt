@@ -38,7 +38,7 @@ object BeanCopierUtils {
         copier.copy(source, target, converter)
     }
 
-    class CompositeConverter(private val innerConverters:Array<ICopierConverter>) : org.springframework.cglib.core.Converter{
+    class CompositeConverter(private val innerConverters:Array<ICopierConverter>) : org.springframework.cglib.core.Converter {
         override fun convert(source: Any?, target: Class<*>, context: Any?): Any? {
             if(source == null){
                 return null

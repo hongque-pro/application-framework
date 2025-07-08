@@ -22,6 +22,7 @@ import jakarta.validation.Validator
 import org.hibernate.validator.HibernateValidator
 import org.hibernate.validator.HibernateValidatorConfiguration
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.config.BeanDefinition
 import org.springframework.boot.autoconfigure.AutoConfigureAfter
 import org.springframework.boot.autoconfigure.AutoConfigureBefore
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
@@ -34,6 +35,7 @@ import org.springframework.context.MessageSource
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Import
+import org.springframework.context.annotation.Role
 import org.springframework.core.env.Environment
 import org.springframework.format.FormatterRegistry
 import org.springframework.http.MediaType
@@ -59,6 +61,7 @@ import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandl
 @AutoConfigureBefore(DefaultsAutoConfiguration::class)
 @EnableConfigurationProperties(ApplicationWebProperties::class)
 @ConditionalOnWebApplication
+@Role(BeanDefinition.ROLE_INFRASTRUCTURE)
 class ApplicationWebAutoConfiguration(private val properties: ApplicationWebProperties) : WebMvcConfigurer,
     IResourceAuthorizationConfigurer, ApplicationContextAware {
 
@@ -137,6 +140,7 @@ class ApplicationWebAutoConfiguration(private val properties: ApplicationWebProp
 
 
     @Configuration(proxyBeanMethods = false)
+    @Role(BeanDefinition.ROLE_INFRASTRUCTURE)
     class HibernateValidationAutoConfiguration {
 
         @Bean
@@ -169,6 +173,7 @@ class ApplicationWebAutoConfiguration(private val properties: ApplicationWebProp
     fun wrappedResponseBodyAdvice() = WrappedResponseBodyAdvice()
 
     @Configuration(proxyBeanMethods = false)
+    @Role(BeanDefinition.ROLE_INFRASTRUCTURE)
     @ConditionalOnMissingBean(IHumanChecker::class)
     class CaptchaAutoConfiguration {
         @Bean

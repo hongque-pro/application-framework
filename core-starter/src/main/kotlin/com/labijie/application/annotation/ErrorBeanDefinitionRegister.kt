@@ -5,6 +5,7 @@
 package com.labijie.application.annotation
 
 import com.fasterxml.jackson.module.kotlin.isKotlinClass
+import com.labijie.application.ApplicationErrorRegistration
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.support.BeanDefinitionBuilder
 import org.springframework.beans.factory.support.BeanDefinitionRegistry
@@ -18,8 +19,8 @@ class ErrorBeanDefinitionRegister : ImportBeanDefinitionRegistrar {
         LoggerFactory.getLogger(ErrorBeanDefinitionRegister::class.java)
     }
     override fun registerBeanDefinitions(metadata: AnnotationMetadata, registry: BeanDefinitionRegistry) {
-        val attributes = metadata.getAllAnnotationAttributes(ErrorDefine::class.java.name, false)
-        val propertyName = ErrorDefine::classes.name
+        val attributes = metadata.getAllAnnotationAttributes(ImportErrorDefinition::class.java.name, false)
+        val propertyName = ImportErrorDefinition::classes.name
 
 
         val array = attributes?.getFirst(propertyName)
@@ -31,7 +32,7 @@ class ErrorBeanDefinitionRegister : ImportBeanDefinitionRegistrar {
                     if (cls.isKotlinClass() && cls.kotlin.objectInstance != null) {
                         objects.add(cls.kotlin.objectInstance!!)
                     } else {
-                        logger.warn("Error definition '${cls.name}' must be a kotlin object (from ${ErrorDefine::class.java.simpleName} annotation), change from 'class ${cls.simpleName}' to 'object ${cls.simpleName}' to fix this warning.")
+                        logger.warn("Error definition '${cls.name}' must be a kotlin object (from ${ImportErrorDefinition::class.java.simpleName} annotation), change from 'class ${cls.simpleName}' to 'object ${cls.simpleName}' to fix this warning.")
                     }
                 }
             }
@@ -39,16 +40,17 @@ class ErrorBeanDefinitionRegister : ImportBeanDefinitionRegistrar {
 
         objects.forEach {
             val builder: BeanDefinitionBuilder =
-                BeanDefinitionBuilder.genericBeanDefinition(ImportedErrorRegistration::class.java)
+                BeanDefinitionBuilder.genericBeanDefinition(ApplicationErrorRegistration::class.java)
 
-            builder.addPropertyValue(ImportedErrorRegistration::errorObject.name, it)
+            builder.addPropertyValue(ApplicationErrorRegistration::errorClassName.name, it::class.java.name)
 
             val beanName = getBeanName(metadata, it)
             registry.registerBeanDefinition(beanName, builder.beanDefinition)
+            logger.debug("Error Bean Definition: $beanName")
         }
     }
 
     private fun getBeanName(metadata: AnnotationMetadata, errorObject: Any): String {
-        return metadata.className + "#" + errorObject::class.qualifiedName
+        return  "${ApplicationErrorRegistration::class.simpleName}#" + errorObject::class.qualifiedName
     }
 }

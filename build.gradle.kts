@@ -14,10 +14,12 @@ allprojects {
             includeSource = true
             includeDocument = true
             infraBomVersion = Versions.infraBom
-            kotlinVersion = Versions.kotlin
             useMavenProxy = false
         }
     }
+
+
+//    forceDependencyVersion(group = "io.netty", "4.1.80.Final")
 }
 
 

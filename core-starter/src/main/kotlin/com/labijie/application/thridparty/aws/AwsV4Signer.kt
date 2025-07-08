@@ -90,7 +90,7 @@ class AwsV4Signer private constructor() {
         }
 
         fun uri(uri: String): Builder {
-            val uriObj = UriComponentsBuilder.fromHttpUrl(uri).build()
+            val uriObj = UriComponentsBuilder.fromUriString(uri).build()
             this.canonicalURI = (uriObj.path?.removePrefix("/")).ifNullOrBlank { "/" }
             val host = uriObj.host ?: throw IllegalArgumentException("no host in uri: '$uri'")
             this.awsHeaders[Ns("Host")] = if (uriObj.port < 0) host else "$host:${uriObj.port}"

@@ -41,6 +41,7 @@ import com.labijie.application.removeAfterTransactionCommit
 import com.labijie.application.syncDbTransactionCommitted
 import com.labijie.caching.ICacheManager
 import com.labijie.caching.getOrSet
+import com.labijie.caching.set
 import com.labijie.infra.IIdGenerator
 import com.labijie.infra.utils.ShortId
 import com.labijie.infra.utils.ifNullOrBlank
@@ -451,7 +452,8 @@ abstract class AbstractUserService(
         }
         if (u != null) {
             this.cacheManager.set(
-                "u:${u.id}", u,
+                "u:${u.id}",
+                u,
                 authServerProperties.cacheUserTimeout.toMillis()
             )
         }

@@ -18,7 +18,6 @@ class DaprResourceAuthorizationConfigurer : IResourceAuthorizationConfigurer, Ap
 
     private lateinit var context: org.springframework.context.ApplicationContext
     private fun getPermitAllUrlsFromDaprController(): Set<String> {
-        val sets = mutableMapOf<HttpMethod, MutableSet<String>>()
         val requestMappingHandlerMapping = context.getBean(RequestMappingHandlerMapping::class.java)
         val handlerMethodMap = requestMappingHandlerMapping.handlerMethods
         val urlList = mutableSetOf<String>()

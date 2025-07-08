@@ -8,7 +8,7 @@ import com.labijie.application.identity.data.pojo.User
  * @author Anders Xiao
  * @date 2019-09-11
  */
-open class UserAndRoles(var user: User, var roles: List<Role>) {
+open class UserAndRoles(var user: User = User(), var roles: List<Role> = emptyList()) {
     fun hasRole(role: String): Boolean {
         if (role.isBlank()) {
             return false

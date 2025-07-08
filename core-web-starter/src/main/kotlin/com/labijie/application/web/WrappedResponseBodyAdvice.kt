@@ -40,7 +40,7 @@ class WrappedResponseBodyAdvice : ResponseBodyAdvice<Any> {
     }
 
     protected fun getOrCreateContainer(body: Any): MappingJacksonValue {
-        return if (body is MappingJacksonValue) body else MappingJacksonValue(body)
+        return body as? MappingJacksonValue ?: MappingJacksonValue(body)
     }
 
 

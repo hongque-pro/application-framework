@@ -9,6 +9,7 @@ import com.labijie.application.exception.SmsTooFrequentlyException
 import com.labijie.application.model.SmsCodeType
 import com.labijie.caching.CacheException
 import com.labijie.caching.ICacheManager
+import com.labijie.caching.set
 import com.labijie.infra.security.Rfc6238TokenService
 import com.labijie.infra.utils.ShortId
 import com.labijie.infra.utils.logger
@@ -44,9 +45,8 @@ abstract class AbstractMessageService(
         this.applicationContext = applicationContext
     }
 
-    private fun sendSmsCodeCore(dialingCode: Short, phoneNumber: String, type: SmsCodeType, securityStamp: String) {
-        val key = securityStamp.ifBlank { null }
-        val code = rfc6238TokenService.generateCodeString(key, "$dialingCode${phoneNumber}", smsBaseSettings.messageExpire)
+    private fun sendSmsCodeCore(phoneNumber: String, rfc6238Modifier: String, type: SmsCodeType) {
+        val code = rfc6238TokenService.generateCodeString(rfc6238Modifier, smsBaseSettings.messageExpire)
         sendCode(phoneNumber, type, code)
     }
 
@@ -99,10 +99,10 @@ abstract class AbstractMessageService(
         val token = SmsToken(token = DesUtils.encrypt("${clientStamp}:${dialingCode}:${phoneNumber}", applicationProperties.desSecret))
         if (frequencyLimited) {
             limitFrequency(type, phoneNumber) {
-                sendSmsCodeCore(dialingCode, phoneNumber, type, clientStamp)
+                sendSmsCodeCore(phoneNumber, clientStamp, type)
             }
         } else {
-            sendSmsCodeCore(dialingCode, phoneNumber, type, clientStamp)
+            sendSmsCodeCore(phoneNumber, clientStamp, type)
         }
         return token
     }
@@ -114,7 +114,7 @@ abstract class AbstractMessageService(
         clientStamp: String,
         throwIfMissMatched: Boolean
     ): Boolean {
-        val result = this.rfc6238TokenService.validateCodeString(code, clientStamp, phoneNumber, smsBaseSettings.messageExpire)
+        val result = this.rfc6238TokenService.validateCodeString(code, clientStamp, smsBaseSettings.messageExpire)
         if (throwIfMissMatched && !result) {
             throw InvalidCaptchaException()
         }

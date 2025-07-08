@@ -43,11 +43,11 @@ internal class BufferedBodyClientHttpResponse(response: ClientHttpResponse) : Cl
         return response.statusCode
     }
 
-    @Deprecated("Deprecated in Spring 6.0")
-    @Throws(IOException::class)
-    override fun getRawStatusCode(): Int {
-        return response.statusCode.value()
-    }
+//    @Deprecated("Deprecated in Spring 6.0")
+//    @Throws(IOException::class)
+//    override fun getRawStatusCode(): Int {
+//        return response.statusCode.value()
+//    }
 
     @Throws(IOException::class)
     override fun getStatusText(): String {

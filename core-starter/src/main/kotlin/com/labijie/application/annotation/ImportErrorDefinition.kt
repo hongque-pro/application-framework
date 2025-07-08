@@ -12,4 +12,4 @@ import kotlin.reflect.KClass
 @Target(AnnotationTarget.CLASS, AnnotationTarget.ANNOTATION_CLASS)
 @Inherited
 @Import(ErrorBeanDefinitionRegister::class)
-annotation class ErrorDefine(val classes: Array<KClass<*>>)
+annotation class ImportErrorDefinition(val classes: Array<KClass<*>>)

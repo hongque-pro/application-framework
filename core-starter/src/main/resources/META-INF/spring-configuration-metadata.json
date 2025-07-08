@@ -23,6 +23,23 @@
     {
       "name": "application.file",
       "type": "com.labijie.application.configuration.FileSettings"
+    },
+    {
+      "name": "application.okhttp",
+      "type": "com.labijie.application.okhttp.OkHttpProperties",
+      "sourceType": "com.labijie.application.okhttp.OkHttpProperties"
+    },
+    {
+      "name": "application.okhttp.cache",
+      "type": "com.labijie.application.okhttp.CacheProperties",
+      "sourceType": "com.labijie.application.okhttp.OkHttpProperties",
+      "sourceMethod": "getCache()"
+    },
+    {
+      "name": "application.okhttp.connection-pool",
+      "type": "com.labijie.application.okhttp.ConnectionPoolProperties",
+      "sourceType": "com.labijie.application.okhttp.OkHttpProperties",
+      "sourceMethod": "getConnectionPool()"
     }
   ],
   "properties": [
@@ -108,6 +125,54 @@
       "type": "java.lang.String",
       "sourceType": "com.labijie.application.configuration.OpenApiClientProperties",
       "defaultValue": "sha256"
+    },
+
+    {
+      "name": "application.okhttp.cache.directory",
+      "type": "java.lang.String",
+      "description": "The path of the directory where the cache should be stored.",
+      "sourceType": "com.labijie.application.okhttp.CacheProperties",
+      "defaultValue": "okhttp-cache"
+    },
+    {
+      "name": "application.okhttp.cache.enabled",
+      "type": "java.lang.Boolean",
+      "sourceType": "com.labijie.application.okhttp.CacheProperties",
+      "defaultValue": false
+    },
+    {
+      "name": "application.okhttp.cache.max-size",
+      "type": "org.springframework.util.unit.DataSize",
+      "description": "The maximum number of bytes this cache should use to store.",
+      "sourceType": "com.labijie.application.okhttp.CacheProperties",
+      "defaultValue": "100MB"
+    },
+    {
+      "name": "application.okhttp.connection-pool.keep-alive-duration",
+      "type": "java.time.Duration",
+      "sourceType": "com.labijie.application.okhttp.ConnectionPoolProperties",
+      "defaultValue": "5m"
+    },
+    {
+      "name": "application.okhttp.connection-pool.max-idle-connections",
+      "type": "java.lang.Integer",
+      "description": "The maximum number of idle connections for each address.",
+      "sourceType": "com.labijie.application.okhttp.ConnectionPoolProperties",
+      "defaultValue": 3
+    },
+    {
+      "name": "application.okhttp.ping-interval",
+      "type": "java.time.Duration",
+      "description": "The interval between web socket pings initiated by this client. Use this to automatically send web socket ping frames until either the web socket fails or it is closed. This keeps the connection alive and may detect connectivity failures early. No timeouts are enforced on the acknowledging pongs. The default value of 0 disables client-initiated pings.",
+      "sourceType": "com.labijie.application.okhttp.OkHttpProperties",
+      "defaultValue": "0s"
+    },
+    {
+      "name": "application.okhttp.retry-on-connection-failure",
+      "type": "java.lang.Boolean",
+      "description": "Whether to retry or not when a connectivity problem is encountered.",
+      "sourceType": "com.labijie.application.okhttp.OkHttpProperties",
+      "defaultValue": true
     }
   ],
   "hints": [

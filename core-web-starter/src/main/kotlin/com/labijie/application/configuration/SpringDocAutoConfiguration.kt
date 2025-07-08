@@ -60,8 +60,7 @@ class SpringDocAutoConfiguration(private val environment: Environment): Initiali
                 "org.springframework",
                 "io.dapr",
             )
-            .pathsToExclude("/oauth2/**")
-            .pathsToExclude("/dapr/**")
+            .pathsToExclude("/oauth2/**", "/dapr/**")
             .build()
     }
 

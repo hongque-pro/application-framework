@@ -6,5 +6,6 @@ package com.labijie.application
  * @date 2019-12-14
  */
 @Target(AnnotationTarget.FIELD)
+@Repeatable
 @Retention(AnnotationRetention.RUNTIME)
-annotation class ErrorDescription(val description:String, val locale: String = "zh-CN")
+annotation class ErrorDescription(val description:String, val locale: String = Constants.ZH_CN)

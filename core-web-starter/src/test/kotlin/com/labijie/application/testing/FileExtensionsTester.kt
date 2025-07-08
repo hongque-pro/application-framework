@@ -1,3 +1,5 @@
+package com.labijie.application.testing
+
 import org.apache.commons.io.FilenameUtils
 import kotlin.test.Test
 import kotlin.test.assertEquals

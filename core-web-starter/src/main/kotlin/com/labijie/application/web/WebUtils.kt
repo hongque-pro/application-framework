@@ -10,16 +10,16 @@ import org.springframework.http.MediaType
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configurers.AuthorizeHttpRequestsConfigurer
 import org.springframework.security.core.authority.SimpleGrantedAuthority
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher
+import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher
 import org.springframework.web.context.request.RequestContextHolder
 import org.springframework.web.context.request.ServletRequestAttributes
 import org.springframework.web.method.HandlerMethod
+import org.springframework.web.util.pattern.PathPatternParser
 import java.io.*
 import java.net.InetAddress
 import java.net.URLEncoder
 import java.net.UnknownHostException
 import java.nio.charset.Charset
-import java.util.*
 import kotlin.reflect.KClass
 
 
@@ -224,7 +224,9 @@ fun AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMat
     method: HttpMethod? = null
 ): AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizedUrl {
     val matchers = antPatterns.toList().map {
-        AntPathRequestMatcher(it, method?.name(), !ignoreCase)
+        PathPatternRequestMatcher.withPathPatternParser(PathPatternParser().apply {
+            isCaseSensitive = ignoreCase
+        }).matcher(method, it)
     }.toTypedArray()
     return this.requestMatchers(*matchers)
 }

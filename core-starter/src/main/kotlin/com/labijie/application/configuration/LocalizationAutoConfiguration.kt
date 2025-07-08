@@ -48,19 +48,14 @@ class LocalizationAutoConfiguration {
 
     @Bean
     @ConfigurationProperties(prefix = "spring.messages")
+    @ConditionalOnMissingBean(MessageSourceProperties::class)
     fun messageSourceProperties(): MessageSourceProperties {
         return MessageSourceProperties()
     }
 
     fun createSpringSource(properties: MessageSourceProperties): ResourceBundleMessagesLoader {
         val messageSource = ResourceBundleMessagesLoader()
-        val baseNames: MutableSet<String> =
-        if (StringUtils.hasText(properties.basename)) {
-            StringUtils.commaDelimitedListToSet(StringUtils.trimAllWhitespace(properties.basename))
-
-        }else {
-            mutableSetOf()
-        }
+        val baseNames: MutableSet<String> = properties.basename.toMutableSet()
         baseNames.add("classpath:org/springframework/security/messages")
         baseNames.add("classpath:org/hibernate/validator/ValidationMessages")
         baseNames.add("classpath:com/labijie/application/messages")

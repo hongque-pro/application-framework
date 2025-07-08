@@ -42,15 +42,15 @@ class ApplicationController : ApplicationContextAware {
     }
 
     @GetMapping("/errors")
-    fun errors(): Map<String, String> {
-        val locale = LocaleContextHolder.getLocale()
+    fun errors(@RequestParam locale: Locale? = null,): Map<String, String> {
+        val l = locale ?: LocaleContextHolder.getLocale() ?: Locale.getDefault()
         if(errorRegistry.isLocalizationEnabled()) {
-            val messages = errorRegistry.errorMessageCodes.toSortedMap().map {
-                it.key to (messageSource.getMessage(it.value, null, locale) ?: "")
+            val messages = errorRegistry.getErrorMessages(l).toSortedMap().map {
+                it.key to (messageSource.getMessage(it.value, null, l) ?: "")
             }
             return messages.toMap()
         }else {
-            return errorRegistry.defaultMessages
+            return errorRegistry.getErrorMessages(l)
         }
     }
 

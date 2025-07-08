@@ -5,8 +5,10 @@ import com.labijie.application.service.impl.NoneLocalizationService
 import com.labijie.infra.utils.ifNullOrBlank
 import com.labijie.infra.utils.logger
 import org.apache.commons.lang3.LocaleUtils
+import org.hibernate.validator.internal.engine.messageinterpolation.DefaultLocaleResolver
 import org.springframework.context.ApplicationContext
 import org.springframework.context.ApplicationContextAware
+import org.springframework.context.i18n.LocaleContextHolder
 import java.util.Locale
 import kotlin.reflect.full.declaredMemberProperties
 import kotlin.reflect.jvm.javaField
@@ -18,19 +20,18 @@ import kotlin.reflect.jvm.javaField
  */
 interface IErrorRegistry {
     fun registerErrors(errorObject: Any, localizationService: ILocalizationService)
-    val errorMessageCodes: Map<String, String>
-    val defaultMessages: Map<String, String>
     fun isLocalizationEnabled(): Boolean
     fun persistMessages()
+
+    fun getErrorMessage(code: String, local: Locale?): String?
+    fun getErrorMessages(local: Locale?): Map<String, String>
 }
 
 internal class ErrorRegistry() : IErrorRegistry, ApplicationContextAware {
-    override val errorMessageCodes:MutableMap<String, String> = mutableMapOf()
-    override val defaultMessages: MutableMap<String, String> = mutableMapOf()
+    private val localeMessages: MutableMap<Locale, MutableMap<String, String>> = mutableMapOf()
+    private val defaultMessages: MutableMap<String, String> = mutableMapOf()
 
     private var localizationEnabled = false
-
-    private val tempMessage = mutableMapOf<Locale, MutableMap<String, String>>()
 
     override fun isLocalizationEnabled(): Boolean {
         return localizationEnabled
@@ -47,19 +48,20 @@ internal class ErrorRegistry() : IErrorRegistry, ApplicationContextAware {
         errorObject::class.declaredMemberProperties.forEach {
             if (it.isConst && it.returnType.classifier == String::class) {
                 val value = it.call() as String
-                val annotation = it.javaField?.getAnnotation(ErrorDescription::class.java)
-                if(annotation != null) {
+                val annotations = it.javaField?.getAnnotationsByType(ErrorDescription::class.java)
+                if(!annotations.isNullOrEmpty()) {
                     val code = "app.err.${value}"
-                    if (errorMessageCodes.containsKey(value)) {
+                    if (defaultMessages.containsKey(value)) {
                         logger.error("Duplex error code '$value' defined. (source code: ${errorObject::class.simpleName}.${it.name})")
                     } else {
-                        errorMessageCodes[value] = code
-                        if(localizationService !is NoneLocalizationService) {
+                        val defaultMessage = value.replace("_", " ")
+                        defaultMessages[value] = defaultMessage
+
+                        annotations.forEach {
+                            annotation->
                             val local = LocaleUtils.toLocale(annotation.locale)
-                            val localRecords = tempMessage.getOrPut(local) { mutableMapOf() }
-                            localRecords.putIfAbsent(code, annotation.description.ifNullOrBlank { value.replace("_", " ") })
-                        } else {
-                            defaultMessages[value] = annotation.description
+                            val records = localeMessages.getOrPut(local) { mutableMapOf() }
+                            records.putIfAbsent(code, annotation.description.ifNullOrBlank { defaultMessage })
                         }
                     }
                 }
@@ -69,9 +71,27 @@ internal class ErrorRegistry() : IErrorRegistry, ApplicationContextAware {
     }
 
     override fun persistMessages() {
-        tempMessage.forEach { local->
-            localizationService.setMessages(local.value, local.key)
+        if(localizationService !is NoneLocalizationService) {
+            localeMessages.forEach { local ->
+                localizationService.setMessages(local.value, local.key)
+            }
         }
+        //对齐所有的 errorCode
+        localeMessages.forEach { locale ->
+            defaultMessages.forEach {
+                msg->
+                locale.value.putIfAbsent(msg.key, msg.value)
+            }
+        }
+    }
+
+    override fun getErrorMessages(local: Locale?): Map<String, String> {
+        val l = local ?: Locale.getDefault()
+        return localeMessages[l] ?: defaultMessages
+    }
+
+    override fun getErrorMessage(code: String, local: Locale?): String? {
+        return getErrorMessages(local)[code]
     }
 
     override fun setApplicationContext(applicationContext: ApplicationContext) {

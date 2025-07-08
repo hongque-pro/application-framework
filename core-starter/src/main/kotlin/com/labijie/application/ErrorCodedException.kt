@@ -21,6 +21,6 @@ open class ErrorCodedException(
     }
 
     open fun getDetails(): Map<String, Any>? {
-        return null
+        return args.ifEmpty { null }
     }
 }

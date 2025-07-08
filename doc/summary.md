@@ -83,7 +83,7 @@ class MyModuleAutoConfiguration : IResourceAuthorizationConfigurer {
 
 ## 异常处理
 
-异常统一定义为字符串常量，
+异常统一定义为字符串常量作为错误代码，
 
 内置异常定义例子：
 
@@ -108,23 +108,10 @@ object ApplicationErrors {
 ```
 
 
-注册你错误代码, 创建一个实现了 IErrorRegistration 接口得 bean （该 bean 每个模块一个）：
-
-```kotlin
-@Component
-class AppErrorsRegistration : IErrorRegistration {
-    override fun register(registry: IErrorRegistry) {
-        registry.registerErrors(ApplicationErrors)
-    }
-}
-```
-
-也可以通过注解定义
-
 ```kotlin
 @Component
 
-@ErrorDefine(classes = [AppErrorsRegistration::class]) //定义错误代码
+@ImportErrorDefinition(classes = [ApplicationErrors::class]) //定义错误代码
 @Configuration(proxyBeanMethods = false)
 class MyAutoConfiguration : IErrorRegistration
 ```

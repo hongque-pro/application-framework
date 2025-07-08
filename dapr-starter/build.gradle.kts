@@ -6,8 +6,14 @@ dependencies {
     api("io.dapr:dapr-sdk-springboot:${Versions.dapr}") {
         exclude(group="org.springframework")
         exclude(group="org.springframework.boot")
+        exclude(group="ch.qos.logback")
+        exclude(group="org.slf4j")
     }
 
+//    implementation("io.grpc:grpc-netty") {
+//        exclude(group="ch.qos.logback")
+//        exclude(group="org.slf4j")
+//    }
 
     api("org.springframework.boot:spring-boot-starter-web")
     api(project(":core-starter"))
@@ -16,6 +22,7 @@ dependencies {
     compileOnly("com.labijie.infra:oauth2-authorization-server-starter:${Versions.infraOAuth2}")
 
 }
+
 
 //tasks.compileKotlin {
 //    inputs.files(tasks.named("processResources"))

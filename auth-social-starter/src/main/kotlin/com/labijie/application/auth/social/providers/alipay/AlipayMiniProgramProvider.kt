@@ -18,6 +18,7 @@ import com.labijie.infra.utils.logger
 import org.springframework.http.*
 import org.springframework.web.client.RestTemplate
 import org.springframework.web.util.UriComponentsBuilder
+import java.net.URI
 import java.net.URLEncoder
 import java.nio.charset.Charset
 import java.time.Duration
@@ -41,7 +42,7 @@ class AlipayMiniProgramProvider(
 
         options.signParameters(params)
 
-        val uri = UriComponentsBuilder.fromHttpUrl(options.exchageUrl).apply {
+        val uri = UriComponentsBuilder.fromUri(URI.create(options.exchageUrl)).apply {
             params.forEach { k, v ->
                 this.queryParam(k, URLEncoder.encode(v, "UTF-8"))
             }}

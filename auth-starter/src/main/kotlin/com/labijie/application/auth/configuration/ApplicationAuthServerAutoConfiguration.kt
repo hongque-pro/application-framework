@@ -1,10 +1,9 @@
 package com.labijie.application.auth.configuration
 
-import com.labijie.application.auth.AuthErrorsRegistration
+import com.labijie.application.annotation.ImportErrorDefinition
+import com.labijie.application.auth.AuthErrors
 import com.labijie.application.auth.component.*
 import com.labijie.application.auth.event.UserSignInEventListener
-import com.labijie.application.auth.service.IOAuth2ClientUserService
-import com.labijie.application.auth.service.IOAuth2UserTokenCodec
 import com.labijie.application.identity.configuration.IdentityAutoConfiguration
 import com.labijie.application.identity.service.IOAuth2ClientService
 import com.labijie.application.identity.service.IUserService
@@ -22,7 +21,6 @@ import org.springframework.context.annotation.Configuration
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configurers.AuthorizeHttpRequestsConfigurer
 import org.springframework.security.oauth2.server.authorization.client.RegisteredClientRepository
-import org.springframework.transaction.support.TransactionTemplate
 
 /**
  * Created with IntelliJ IDEA.
@@ -33,6 +31,7 @@ import org.springframework.transaction.support.TransactionTemplate
 @AutoConfigureAfter(IdentityAutoConfiguration::class)
 @AutoConfigureBefore(OAuth2DependenciesAutoConfiguration::class)
 @EnableConfigurationProperties(DefaultUserCreationProperties::class, AuthProperties::class)
+@ImportErrorDefinition([AuthErrors::class])
 class ApplicationAuthServerAutoConfiguration : IResourceAuthorizationConfigurer {
 
     override fun configure(registry: AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry) {
@@ -44,11 +43,6 @@ class ApplicationAuthServerAutoConfiguration : IResourceAuthorizationConfigurer 
         ).permitAll()
     }
 
-
-    @Bean
-    fun authErrorsRegistration(): AuthErrorsRegistration {
-        return AuthErrorsRegistration()
-    }
 
     @Bean
     @ConditionalOnMissingBean(IIdentityService::class)

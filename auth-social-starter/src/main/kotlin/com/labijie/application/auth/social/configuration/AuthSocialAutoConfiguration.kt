@@ -1,7 +1,8 @@
 package com.labijie.application.auth.social.configuration
 
+import com.labijie.application.annotation.ImportErrorDefinition
 import com.labijie.application.auth.configuration.ApplicationAuthServerAutoConfiguration
-import com.labijie.application.auth.social.AuthSocialErrorsRegistration
+import com.labijie.application.auth.social.AuthSocialErrors
 import com.labijie.application.auth.social.providers.alipay.AlipayMiniOptions
 import com.labijie.application.auth.social.providers.alipay.AlipayMiniProgramProvider
 import com.labijie.application.auth.social.providers.wechat.WechatMiniOptions
@@ -28,6 +29,7 @@ import org.springframework.web.client.RestTemplate
 @EnableConfigurationProperties(AuthSocialProperties::class)
 @AutoConfigureBefore(ApplicationAuthServerAutoConfiguration::class)
 @AutoConfigureAfter(IdentityAutoConfiguration::class)
+@ImportErrorDefinition([AuthSocialErrors::class])
 class AuthSocialAutoConfiguration : IResourceAuthorizationConfigurer {
     companion object{
         const val PROVIDERS_CONFIG_PREFIX = "application.auth.social.providers"
@@ -40,11 +42,6 @@ class AuthSocialAutoConfiguration : IResourceAuthorizationConfigurer {
             "/oauth/social/register",
             "/oauth/social/login"
         ).permitAll()
-    }
-
-    @Bean
-    fun authSocialErrorsRegistration(): AuthSocialErrorsRegistration {
-        return AuthSocialErrorsRegistration()
     }
 
     @Configuration(proxyBeanMethods = false)

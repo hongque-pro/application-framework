@@ -3,6 +3,7 @@ package com.labijie.application
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileNotFoundException
+import java.io.InputStream
 import java.security.KeyStore
 import java.security.cert.CertificateException
 import java.security.cert.X509Certificate
@@ -13,7 +14,7 @@ import javax.net.ssl.X509TrustManager
 
 object SSLUtilities {
 
-    val NoneValidationTrustManager:DisableValidationTrustManager by lazy {
+    val NoneValidationTrustManager: DisableValidationTrustManager by lazy {
         DisableValidationTrustManager()
     }
 

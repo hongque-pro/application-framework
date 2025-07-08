@@ -5,37 +5,39 @@
  * @Description:
  */
 object Versions {
-    const val kotlin = "1.9.21"
-    const val springBoot = "3.2.0"
-    const val antisamy="1.7.4"
-    const val springDoc="2.5.0"
-    const val uberH3 = "3.7.1"
+    const val nativeBuildTools = "0.10.+"
+    const val antisamy="1.7.8"
+    const val springDoc="2.8.9"
+    const val uberH3 = "4.1.1"
 
     const val mysqlVersion="9.0.0"
 
-    const val infraBom = "3.2.0"
-    const val infraOrm = "2.0.10"
-    const val infraPlugin = "2.0.4"
-    const val infraCommons = "3.0.0"
-    const val infraCaching = "1.4.2"
-    const val infraOAuth2 = "2.0.5"
+    const val infraBom = "3.5.3"
+    const val infraOrm = "2.1.+"
+    const val infraPlugin = "2.1.+"
+    const val infraCommons = "3.1.+"
+    const val infraCaching = "1.5.+"
+    const val infraOAuth2 = "2.1.+"
 
-    const val bouncyCastle = "1.77"
+
+    const val springBoot = infraBom
 
     //for pretty html
-    const val jsoup = "1.17.1"
+    const val jsoup = "1.20.1"
 
     //use: https://github.com/pig-mesh/easy-captcha
-    const val easyCaptcha = "2.2.3"
+    const val easyCaptcha = "2.2.5"
 
     const val minio = "8.5.7"
     const val dapr = "1.14.1"
 
-    const val libphonenumber = "8.13.37"
+    const val libphonenumber = "9.0.7"
+
+    const val classGraph = "4.8.179"
 }
 
 object ApacheVersions {
-    const val commonsValidator = "1.8.0"
+    const val commonsValidator = "1.9.0"
 }
 
 object AliyunSDKVersions {

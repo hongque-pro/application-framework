@@ -71,10 +71,10 @@ class ControllerExceptionHandler(private val messageSource: MessageSource) : Ord
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     fun handle(request: HttpServletRequest, e: HandlerMethodValidationException): ErrorResponse {
         val argErrors =
-            e.allValidationResults.filter { !it.methodParameter.parameterName.isNullOrBlank() }.associate { result ->
-                result.methodParameter.parameterName!! to result.resolvableErrors.map {
-                    it.defaultMessage
-                }.joinToString("\n")
+            e.valueResults.filter { !it.methodParameter.parameterName.isNullOrBlank() }.associate { result ->
+                result.methodParameter.parameterName!! to result.resolvableErrors.joinToString("\n") {
+                    it.defaultMessage.orEmpty()
+                }
             }
 
         return InvalidParameterResponse(
@@ -89,7 +89,7 @@ class ControllerExceptionHandler(private val messageSource: MessageSource) : Ord
 
         val violations = e.bindingResult.allErrors
 
-        val argErrors = violations.map {
+        val argErrors = violations.associate {
             val field = it as? FieldError
             if (field != null) {
                 val key =
@@ -99,7 +99,7 @@ class ControllerExceptionHandler(private val messageSource: MessageSource) : Ord
                 it.objectName to it.defaultMessage.orEmpty()
             }
 
-        }.toMap()
+        }
 
         return InvalidParameterResponse(
             ApplicationErrors.BadRequestParameter,

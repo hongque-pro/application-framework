@@ -1,6 +1,7 @@
 package com.labijie.application.identity.configuration
 
-import com.labijie.application.identity.IdentityErrorsRegistration
+import com.labijie.application.annotation.ImportErrorDefinition
+import com.labijie.application.identity.IdentityErrors
 import com.labijie.application.identity.data.UserTable
 import com.labijie.application.identity.social.DefaultSocialUserGenerator
 import com.labijie.application.identity.social.ISocialUserGenerator
@@ -21,17 +22,12 @@ import org.springframework.security.crypto.password.PasswordEncoder
 @TableScan(basePackageClasses = [UserTable::class])
 @EnableConfigurationProperties(IdentityProperties::class)
 @Configuration(proxyBeanMethods = false)
+@ImportErrorDefinition([IdentityErrors::class])
 class IdentityAutoConfiguration {
 
     private val passwordEncoder by lazy {
         BCryptPasswordEncoder()
     }
-
-    @Bean
-    fun identityErrorsRegistration(): IdentityErrorsRegistration {
-        return IdentityErrorsRegistration()
-    }
-
 
 
     @Bean

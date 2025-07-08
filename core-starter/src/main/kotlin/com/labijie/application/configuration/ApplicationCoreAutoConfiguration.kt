@@ -1,16 +1,19 @@
 package com.labijie.application.configuration
 
+import com.labijie.application.ApplicationErrors
 import com.labijie.application.ApplicationInitializationRunner
-import com.labijie.application.CoreErrorRegistration
 import com.labijie.application.ErrorRegistry
 import com.labijie.application.IErrorRegistry
+import com.labijie.application.annotation.ImportErrorDefinition
 import com.labijie.application.data.LocalizationMessageTable
-import com.labijie.application.httpclient.NettyUtils
-import com.labijie.application.web.client.MultiRestTemplates
+import com.labijie.application.okhttp.OkHttpClientRequestFactoryBuilder
+import com.labijie.application.open.OpenApiErrors
 import com.labijie.infra.orm.annotation.TableScan
 import com.labijie.infra.utils.logger
 import org.springframework.boot.CommandLineRunner
+import org.springframework.boot.WebApplicationType
 import org.springframework.boot.autoconfigure.AutoConfigureAfter
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.condition.ConditionalOnNotWebApplication
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication
@@ -24,9 +27,8 @@ import org.springframework.context.ConfigurableApplicationContext
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Lazy
-import org.springframework.http.client.ReactorNettyClientRequestFactory
+import org.springframework.web.WebApplicationInitializer
 import org.springframework.web.client.RestTemplate
-import reactor.netty.http.client.HttpClient
 
 
 /**
@@ -43,31 +45,26 @@ import reactor.netty.http.client.HttpClient
     OpenApiClientProperties::class,
 )
 @AutoConfigureAfter(RestTemplateAutoConfiguration::class, RestClientAutoConfiguration::class)
-class ApplicationCoreAutoConfiguration {
+@ImportErrorDefinition([OpenApiErrors::class, ApplicationErrors::class])
+open class ApplicationCoreAutoConfiguration {
 
-
-    @Bean
-    @ConditionalOnMissingBean(CoreErrorRegistration::class)
-    fun coreErrorRegistration(): CoreErrorRegistration {
-        return CoreErrorRegistration()
-    }
 
     @Bean
     @ConditionalOnNotWebApplication
-    fun applicationInitializationRunner(): ApplicationInitializationRunner<ConfigurableApplicationContext> {
-        return ApplicationInitializationRunner(ConfigurableApplicationContext::class)
+    fun applicationInitializationRunner(): ApplicationInitializationRunner {
+        return ApplicationInitializationRunner(WebApplicationType.NONE)
     }
 
     @Bean
     @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
-    fun webApplicationInitializationRunner(): ApplicationInitializationRunner<AnnotationConfigServletWebServerApplicationContext> {
-        return ApplicationInitializationRunner(AnnotationConfigServletWebServerApplicationContext::class)
+    fun webApplicationInitializationRunner(): ApplicationInitializationRunner {
+        return ApplicationInitializationRunner(WebApplicationType.SERVLET)
     }
 
     @Bean
     @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.REACTIVE)
-    fun reactWebApplicationInitializationRunner(): ApplicationInitializationRunner<AnnotationConfigReactiveWebServerApplicationContext> {
-        return ApplicationInitializationRunner(AnnotationConfigReactiveWebServerApplicationContext::class)
+    fun reactWebApplicationInitializationRunner(): ApplicationInitializationRunner {
+        return ApplicationInitializationRunner(WebApplicationType.REACTIVE)
     }
 
     @Bean
@@ -86,53 +83,32 @@ class ApplicationCoreAutoConfiguration {
         }
     }
 
-    @Bean
-    fun applicationErrorsRegister(): ApplicationErrorsRegistration {
-        return ApplicationErrorsRegistration()
-    }
-
-    @Bean
-    @ConditionalOnMissingBean(HttpClient::class)
-    fun nettyHttpClient(nettyHttpClientProperties: HttpClientProperties): HttpClient {
-        return NettyUtils.createHttpClient(
-            nettyHttpClientProperties.connectTimeout,
-            nettyHttpClientProperties.readTimeout,
-            nettyHttpClientProperties.writeTimeout,
-            loggerEnabled = nettyHttpClientProperties.loggerEnabled
-        )
-    }
+//    @Bean
+//    @ConditionalOnMissingBean(HttpClient::class)
+//    fun nettyHttpClient(nettyHttpClientProperties: HttpClientProperties): HttpClient {
+//        return NettyUtils.createHttpClient(
+//            nettyHttpClientProperties.connectTimeout,
+//            nettyHttpClientProperties.readTimeout,
+//            nettyHttpClientProperties.writeTimeout,
+//            loggerEnabled = nettyHttpClientProperties.loggerEnabled
+//        )
+//    }
 
     @Configuration(proxyBeanMethods = false)
     protected class ApplicationRestTemplateConfiguration {
 
         @ConditionalOnMissingBean(RestTemplate::class)
+        @ConditionalOnBean(OkHttpClientRequestFactoryBuilder::class)
         @Bean
         @Lazy
         fun restTemplate(
-            nettyHttpClient: HttpClient,
-            nettyHttpClientProperties: HttpClientProperties,
+            clientHttpRequestFactory: OkHttpClientRequestFactoryBuilder,
             builder: RestTemplateBuilder
         ): RestTemplate {
-            val factory = ReactorNettyClientRequestFactory(nettyHttpClient)
             return builder.build().apply {
-                requestFactory = factory
+                requestFactory = clientHttpRequestFactory.build()
             }
         }
 
-
-        @Bean
-        @Lazy
-        @ConditionalOnMissingBean(MultiRestTemplates::class)
-        fun multiRestTemplates(
-            okHttpClientProperties: HttpClientProperties,
-            restTemplateBuilder: RestTemplateBuilder,
-            restTemplate: RestTemplate
-        ): MultiRestTemplates {
-            return MultiRestTemplates(
-                restTemplateBuilder,
-                okHttpClientProperties,
-                restTemplate
-            )
-        }
     }
 }

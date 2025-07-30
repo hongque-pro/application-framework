@@ -51,38 +51,6 @@ private fun String.getFirstValue(): String {
     }
 }
 
-fun HttpServletRequest.getRealIp(): String {
-    val ip = this.getHeaderValue("X-Forwarded-For")
-        ?: this.getHeaderValue("X-Real-IP")
-        ?: this.getHeaderValue("WL-Proxy-Client-IP")
-        ?: this.getHeaderValue("Proxy-Client-IP")
-
-    return if (ip.isNullOrBlank()) {
-        val remoteIP = this.remoteAddr
-        val i = if (LOCALHOST_IP.equals(remoteIP, ignoreCase = true) || LOCALHOST_IPV6.equals(
-                remoteIP,
-                ignoreCase = true
-            )
-        ) {
-            try {
-                InetAddress.getLocalHost()?.hostAddress ?: EMPTY_IPV4
-            } catch (e: UnknownHostException) {
-                EMPTY_IPV4
-            }
-        } else EMPTY_IPV4
-
-        i.let {
-            if (it.isNotBlank() && it.length > 15 && it.indexOf(",") > 0) {
-                it.getFirstValue()
-            } else EMPTY_IPV4
-        }
-    } else {
-        EMPTY_IPV4
-    }
-}
-
-
-fun <T : Any?> T.asRestResponse() = RestResponse(this)
 
 private val HttpServletRequest.isFormPost: Boolean
     get() {
@@ -150,7 +118,7 @@ fun HttpServletRequest.toPrettyString(body: ByteArray): String {
     builder.appendLine("Path: ${this.requestURI}")
     builder.appendLine("Query: ${this.queryString}")
     builder.appendLine("Method: ${this.method}")
-    builder.appendLine("Request IPAddress: ${this.getRealIp()}")
+    builder.appendLine("Request IPAddress: ${this.remoteAddr}")
     builder.appendLine("Headers: ")
     this.headerNames.asSequence().forEach {
         builder.appendLine("   $it=${this.getHeader(it)}")
@@ -209,14 +177,6 @@ fun TwoFactorPrincipal.hasAnyRole(vararg roles: String): Boolean {
     }
 }
 
-object WebUtils {
-    val currentRequest: String
-        get() {
-            val requestAttributes = (RequestContextHolder.getRequestAttributes() as? ServletRequestAttributes)
-                ?: throw RuntimeException("Get ServletRequestAttributes fault.")
-            return requestAttributes.request.getRealIp()
-        }
-}
 
 fun AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry.antMatchers(
     vararg antPatterns: String,

@@ -1,0 +1,11 @@
+spring:
+  security:
+    oauth2:
+      client:
+        registration:
+          apple:
+            client-name: apple
+            client-id: 3FDDE96-FDAB-45EF-A589-0E29C026E824
+            client-authentication-method: apple-oauth2
+            client-secret:
+

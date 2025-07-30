@@ -13,16 +13,23 @@
       "type": "com.labijie.application.configuration.HttpClientProperties"
     },
     {
-      "name": "application.sms",
-      "type": "com.labijie.application.configuration.SmsBaseProperties"
-    },
-    {
       "name": "application.open-api.client",
       "type": "com.labijie.application.configuration.OpenApiClientProperties"
     },
+
+    {
+      "name": "application.verification-code",
+      "type": "com.labijie.application.configuration.VerificationCodeProperties"
+    },
+
     {
       "name": "application.file",
       "type": "com.labijie.application.configuration.FileSettings"
+    },
+
+    {
+      "name": "application.object-storage.file",
+      "type": "com.labijie.application.component.storage.FileSystemStorageProperties"
     },
     {
       "name": "application.okhttp",
@@ -50,11 +57,18 @@
       "type": "java.lang.String"
     },
     {
-      "name": "application.temp-file-expiration",
+      "name": "application.file.temp-file-expiration",
       "sourceType": "com.labijie.application.configuration.FileSettings",
       "description": "The temp file expiration.",
       "type": "java.time.Duration",
-      "defaultValue": "1h"
+      "defaultValue": "2h"
+    },
+    {
+      "name": "application.verification-code.expiration",
+      "sourceType": "com.labijie.application.configuration.VerificationCodeProperties",
+      "description": "The verification code ttl.",
+      "type": "java.time.Duration",
+      "defaultValue": "5m"
     },
     {
       "name": "application.preload-locales",
@@ -62,24 +76,6 @@
       "description": "Pre-load cultural messages into the database.",
       "type": "java.lang.String",
       "defaultValue": "zh_CN,en_US"
-    },
-    {
-      "name": "application.sms.send-rate-limit",
-      "sourceType": "com.labijie.application.configuration.SmsBaseProperties",
-      "type": "java.time.Duration",
-      "defaultValue": "30s"
-    },
-    {
-      "name": "application.sms.message-expire",
-      "sourceType": "com.labijie.application.configuration.SmsBaseProperties",
-      "type": "java.time.Duration",
-      "defaultValue": "1m"
-    },
-    {
-      "name": "application.sms.message-expiration",
-      "type": "java.time.Duration",
-      "sourceType": "com.labijie.application.configuration.SmsBaseProperties",
-      "defaultValue": "1m"
     },
     {
       "name": "application.validation.regex",
@@ -172,6 +168,13 @@
       "type": "java.lang.Boolean",
       "description": "Whether to retry or not when a connectivity problem is encountered.",
       "sourceType": "com.labijie.application.okhttp.OkHttpProperties",
+      "defaultValue": true
+    },
+    {
+      "name": "application.object-storage.file.base-folder",
+      "type": "java.lang.String",
+      "description": "The directory where the files are stored.",
+      "sourceType": "com.labijie.application.component.storage.FileSystemStorageProperties",
       "defaultValue": true
     }
   ],

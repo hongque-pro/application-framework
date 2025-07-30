@@ -38,11 +38,8 @@ object IdentityErrors {
     @ErrorDescription("Account has been locked", locale = Constants.EN_US)
     const val ACCOUNT_LOCKED = "account_locked"
 
-    @ErrorDescription("平台账号已经绑定过该用户")
+    @ErrorDescription("平台账号已经呗绑定")
     @ErrorDescription("The platform account has already been bound to this user", locale = Constants.EN_US)
     const val LOGIN_PROVIDER_KEY_ALREADY_EXISTED = "login_provider_key_already_existed"
 
-    @ErrorDescription("不支持该登录方式, 服务器可能关闭了该渠道的登录入口")
-    @ErrorDescription("Unsupported login method, the server may have disabled this login channel", locale = Constants.EN_US)
-    const val UNSUPPORTED_LOGIN_PROVIDER = "social_invalid_login_provider"
 }

@@ -4,10 +4,7 @@ import com.labijie.application.JsonMode
 import com.labijie.application.component.IHumanChecker
 import com.labijie.application.component.WebBootPrinter
 import com.labijie.application.component.impl.NoneHumanChecker
-import com.labijie.application.service.CaptchaHumanChecker
-import com.labijie.application.web.WrappedResponseBodyAdvice
 import com.labijie.application.web.antMatchers
-import com.labijie.application.web.controller.CaptchaController
 import com.labijie.application.web.converter.EnhanceStringToEnumConverterFactory
 import com.labijie.application.web.handler.ControllerExceptionHandler
 import com.labijie.application.web.interceptor.HttpCacheInterceptor
@@ -26,9 +23,9 @@ import org.springframework.beans.factory.config.BeanDefinition
 import org.springframework.boot.autoconfigure.AutoConfigureAfter
 import org.springframework.boot.autoconfigure.AutoConfigureBefore
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication
 import org.springframework.boot.context.properties.EnableConfigurationProperties
+import org.springframework.boot.web.servlet.FilterRegistrationBean
 import org.springframework.context.ApplicationContext
 import org.springframework.context.ApplicationContextAware
 import org.springframework.context.MessageSource
@@ -36,6 +33,7 @@ import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Import
 import org.springframework.context.annotation.Role
+import org.springframework.core.Ordered
 import org.springframework.core.env.Environment
 import org.springframework.format.FormatterRegistry
 import org.springframework.http.MediaType
@@ -169,34 +167,6 @@ class ApplicationWebAutoConfiguration(private val properties: ApplicationWebProp
     }
 
 
-    @Bean
-    fun wrappedResponseBodyAdvice() = WrappedResponseBodyAdvice()
-
-    @Configuration(proxyBeanMethods = false)
-    @Role(BeanDefinition.ROLE_INFRASTRUCTURE)
-    @ConditionalOnMissingBean(IHumanChecker::class)
-    class CaptchaAutoConfiguration {
-        @Bean
-        fun captchaHumanChecker(applicationProperties: ApplicationCoreProperties): CaptchaHumanChecker {
-            return CaptchaHumanChecker(applicationProperties)
-        }
-
-        @Bean
-        @ConditionalOnProperty(
-            prefix = "application.web.service-controllers",
-            name = ["enabled"],
-            havingValue = "true",
-            matchIfMissing = true
-        )
-        fun captchaController(
-            applicationProperties: ApplicationCoreProperties,
-            captchaHumanChecker: CaptchaHumanChecker
-        ): CaptchaController {
-            return CaptchaController(applicationProperties, captchaHumanChecker)
-        }
-
-    }
-
     private fun getPermitAllUrlsFromAnnotations(): MutableSet<String> {
         val requestMappingHandlerMapping = applicationContext.getBean(RequestMappingHandlerMapping::class.java)
         val handlerMethodMap = requestMappingHandlerMapping.handlerMethods
@@ -222,4 +192,5 @@ class ApplicationWebAutoConfiguration(private val properties: ApplicationWebProp
     override fun setApplicationContext(applicationContext: ApplicationContext) {
         this.applicationContext = applicationContext
     }
+
 }

@@ -12,4 +12,8 @@ import com.labijie.application.identity.IdentityErrors
 class LoginProviderKeyAlreadyExistedException(loginProvider: String, message: String? = null): ErrorCodedException(
     IdentityErrors.LOGIN_PROVIDER_KEY_ALREADY_EXISTED,
     message ?: "Current user has an existed login provider key ( provider: $loginProvider)."
-)
+) {
+    init {
+        args.putIfAbsent("provider", loginProvider)
+    }
+}

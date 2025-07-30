@@ -1,3 +1,4 @@
+com.labijie.application.configuration.FileSystemStorageAutoConfiguration
 com.labijie.application.configuration.RestTemplateAutoConfiguration
 com.labijie.application.configuration.RestClientAutoConfiguration
 com.labijie.application.configuration.ApplicationCoreAutoConfiguration
@@ -5,5 +6,5 @@ com.labijie.application.configuration.DefaultsAutoConfiguration
 com.labijie.application.configuration.ApplicationTransactionAutoConfiguration
 com.labijie.application.configuration.CachingOverrideAutoConfiguration
 com.labijie.application.configuration.LocalizationAutoConfiguration
-com.labijie.application.configuration.ApplicationDefaultsAutoConfiguration
+com.labijie.application.configuration.ApplicationValidatorAutoConfiguration
 com.labijie.application.configuration.OkHttpAutoConfiguration

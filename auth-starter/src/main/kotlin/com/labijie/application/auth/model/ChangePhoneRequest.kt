@@ -1,8 +1,6 @@
 package com.labijie.application.auth.model
 
-import com.labijie.application.configuration.ValidationProperties
-import com.labijie.application.model.SmsAssociated
-import com.labijie.application.validation.ConfigurablePattern
+import com.labijie.application.model.VerificationAssociated
 import jakarta.validation.constraints.NotBlank
 
 /**
@@ -10,12 +8,9 @@ import jakarta.validation.constraints.NotBlank
  * @author Anders Xiao
  * @date 2019-10-19
  */
-class ChangePhoneRequest : SmsAssociated() {
+class ChangePhoneRequest : VerificationAssociated() {
     var dialingCode: Short = 86
 
     @get:NotBlank
     var phoneNumber: String = ""
-
-    @get:NotBlank
-    var token: String = ""
 }

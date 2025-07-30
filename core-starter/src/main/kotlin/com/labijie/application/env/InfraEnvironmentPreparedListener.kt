@@ -20,7 +20,7 @@ class InfraEnvironmentPreparedListener : ApplicationListener<ApplicationEnvironm
     }
 
     private fun defaultProperties(): MapPropertySource {
-        LocaleContextHolder.setDefaultLocale(Locale.SIMPLIFIED_CHINESE)
+        LocaleContextHolder.setDefaultLocale(Locale.getDefault())
         val configMap = mutableMapOf<String, Any>()
         return MapPropertySource("application-framework-config", configMap)
     }

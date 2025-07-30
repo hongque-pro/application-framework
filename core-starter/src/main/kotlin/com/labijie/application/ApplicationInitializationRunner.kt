@@ -3,7 +3,6 @@ package com.labijie.application
 import com.labijie.application.SpringContext.getApplicationGitProperties
 import com.labijie.application.component.IBootPrinter
 import com.labijie.application.component.IHumanChecker
-import com.labijie.application.component.IMessageService
 import com.labijie.application.component.IObjectStorage
 import com.labijie.application.configuration.ApplicationCoreProperties
 import com.labijie.application.configuration.HttpClientProperties
@@ -33,7 +32,10 @@ import org.springframework.boot.logging.LogLevel
 import org.springframework.boot.logging.LoggingSystem
 import org.springframework.boot.web.context.WebServerInitializedEvent
 import org.springframework.boot.web.server.WebServer
-import org.springframework.context.*
+import org.springframework.context.ApplicationContext
+import org.springframework.context.ApplicationContextAware
+import org.springframework.context.ApplicationListener
+import org.springframework.context.MessageSource
 import org.springframework.context.event.EventListener
 import org.springframework.core.Ordered
 import org.springframework.core.env.Environment
@@ -333,7 +335,6 @@ ${
                     printComponentImplements(
                         IHumanChecker::class,
                         IObjectStorage::class,
-                        IMessageService::class,
                         ILocalizationService::class
                     )
                 }

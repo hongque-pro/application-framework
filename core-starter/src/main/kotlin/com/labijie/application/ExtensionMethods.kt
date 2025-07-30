@@ -1,9 +1,7 @@
 package com.labijie.application
 
 import com.fasterxml.jackson.core.type.TypeReference
-import com.labijie.application.component.IMessageService
 import com.labijie.application.copier.BeanCopierUtils
-import com.labijie.application.model.SmsAssociated
 import com.labijie.application.service.ILocalizationService
 import com.labijie.caching.ICacheManager
 import com.labijie.infra.SecondIntervalTimeoutTimer
@@ -311,12 +309,6 @@ fun String.mask(maskLength: Int = 6, maskSymbol: String = "*"): String {
 
 }
 
-fun IMessageService.verifySmsCode(
-    smsAssociated: SmsAssociated,
-    throwIfMissMatched: Boolean = false
-): Boolean {
-    return this.verifySmsCode(smsAssociated.smsCode, smsAssociated.smsToken, throwIfMissMatched)
-}
 
 fun ByteArray?.toUTF8StringOrEmpty(): String {
     return if (this != null && this.isNotEmpty()) {

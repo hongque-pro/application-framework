@@ -1,6 +1,6 @@
 package com.labijie.application.identity.model
 
-import com.labijie.application.model.SmsAssociated
+import com.labijie.application.model.VerificationAssociated
 import com.labijie.application.validation.Username
 import jakarta.validation.constraints.NotBlank
 import org.hibernate.validator.constraints.Length
@@ -28,4 +28,4 @@ data class RegisterInfo(
     var email: String = "",
 
     var language: String? = null
-) : SmsAssociated()
+) : VerificationAssociated()

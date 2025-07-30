@@ -5,6 +5,7 @@ import org.springframework.boot.SpringApplication
 import org.springframework.boot.env.EnvironmentPostProcessor
 import org.springframework.core.env.ConfigurableEnvironment
 import org.springframework.core.env.MapPropertySource
+import org.springframework.core.env.get
 
 /**
  * @author Anders Xiao
@@ -12,12 +13,21 @@ import org.springframework.core.env.MapPropertySource
  */
 class WebDefaultConfigurationProcessor : EnvironmentPostProcessor {
     override fun postProcessEnvironment(environment: ConfigurableEnvironment, application: SpringApplication) {
-        val config:Map<String, Any> = mapOf(
+        val config: MutableMap<String, Any> = mutableMapOf(
             SPRINGDOC_SHOW_OAUTH2_ENDPOINTS to false
         )
+
+        val hasForward = environment.containsProperty("server.forward-headers-strategy")
+
+        if(!hasForward) {
+            config.putIfAbsent("server.forward-headers-strategy", "framework")
+        }
+
         val propertySource = MapPropertySource(
             "framework-web-configuration", config
         )
+
+
         environment.propertySources.addLast(propertySource)
     }
 }

@@ -1,0 +1,28 @@
+{
+  "groups": [
+    {
+      "name": "application.email",
+      "type": "com.labijie.application.email.configuration.EmailServiceProperties",
+      "sourceType": "com.labijie.application.email.configuration.EmailServiceProperties"
+    }
+  ],
+  "properties": [
+    {
+      "name": "application.email.main-provider",
+      "type": "java.lang.String",
+      "sourceType": "com.labijie.application.email.configuration.EmailServiceProperties"
+    },
+    {
+      "name": "application.email.send-rate-limit",
+      "type": "java.time.Duration",
+      "sourceType": "com.labijie.application.email.configuration.EmailServiceProperties",
+      "defaultValue": "1m"
+    },
+    {
+      "name": "application.email.endpoint-enabled",
+      "type": "java.lang.Boolean",
+      "sourceType": "com.labijie.application.email.configuration.EmailServiceProperties",
+      "defaultValue": true
+    }
+  ]
+}

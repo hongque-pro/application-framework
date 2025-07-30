@@ -7,7 +7,7 @@ package com.labijie.application.auth.configuration
 import org.springframework.boot.context.properties.ConfigurationProperties
 
 
-@ConfigurationProperties("application.default-user-creation")
+@ConfigurationProperties("application.auth.default-user-creation")
 class DefaultUserCreationProperties {
     var enabled: Boolean = false
     var username: String = "admin"

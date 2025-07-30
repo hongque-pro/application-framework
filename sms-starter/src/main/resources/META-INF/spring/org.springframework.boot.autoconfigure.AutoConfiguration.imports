@@ -1,0 +1,2 @@
+com.labijie.application.sms.configuration.ApplicationSmsAutoConfiguration
+com.labijie.application.sms.configuration.SmsControllerAutoConfiguration

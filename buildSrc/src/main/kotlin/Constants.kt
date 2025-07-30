@@ -17,7 +17,7 @@ object Versions {
     const val infraPlugin = "2.1.+"
     const val infraCommons = "3.1.+"
     const val infraCaching = "1.5.+"
-    const val infraOAuth2 = "2.1.+"
+    const val infraOAuth2 = "2.1.1"
 
 
     const val springBoot = infraBom

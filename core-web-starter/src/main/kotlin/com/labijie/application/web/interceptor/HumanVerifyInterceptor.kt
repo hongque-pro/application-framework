@@ -3,7 +3,6 @@ package com.labijie.application.web.interceptor
 import com.labijie.application.ApplicationErrors
 import com.labijie.application.component.IHumanChecker
 import com.labijie.application.web.annotation.HumanVerify
-import com.labijie.application.web.getRealIp
 import com.labijie.application.web.handler.ErrorResponse
 import com.labijie.infra.json.JacksonHelper
 import jakarta.servlet.http.HttpServletRequest
@@ -29,8 +28,8 @@ class HumanVerifyInterceptor(private val checker: IHumanChecker) : HandlerInterc
             val anno = method.getMethodAnnotation(HumanVerify::class.java)
             if (anno != null) {
                 val token = request.getHeader(TOKEN_HTTP_NAME) ?: request.getParameter(TOKEN_HTTP_NAME).orEmpty()
-                val tokenStamp = request.getHeader(TOKEN_HTTP_STAMP_NAME) ?: request.getParameter(TOKEN_HTTP_STAMP_NAME).orEmpty()
-                val valid = checker.check(token, tokenStamp, request.getRealIp())
+                val tokenStamp = request.getHeader(TOKEN_HTTP_STAMP_NAME) ?: request.getParameter(TOKEN_HTTP_STAMP_NAME)
+                val valid = checker.check(token, tokenStamp, request.remoteAddr)
                 if(!valid) {
                     response.status = HttpStatus.FORBIDDEN.value()
                     val resp = ErrorResponse(

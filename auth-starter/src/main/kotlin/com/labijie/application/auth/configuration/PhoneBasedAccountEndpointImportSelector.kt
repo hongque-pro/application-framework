@@ -4,14 +4,13 @@
  */
 package com.labijie.application.auth.configuration
 
-import com.labijie.application.auth.controller.PhoneBasedAccountController
+import com.labijie.application.auth.controller.AccountSecurityController
 import org.springframework.context.annotation.ImportSelector
 import org.springframework.core.type.AnnotationMetadata
 
 
 class PhoneBasedAccountEndpointImportSelector : ImportSelector {
     override fun selectImports(importingClassMetadata: AnnotationMetadata): Array<String> {
-        //importingClassMetadata.getAnnotationAttributes(EnablePhoneBasedAccountEndpoint::class.java.name)
-        return arrayOf(PhoneBasedAccountController::class.java.name)
+        return arrayOf(AccountSecurityController::class.java.name)
     }
 }

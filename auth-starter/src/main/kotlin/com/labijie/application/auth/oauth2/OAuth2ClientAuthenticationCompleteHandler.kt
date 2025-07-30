@@ -6,6 +6,8 @@ package com.labijie.application.auth.oauth2
 
 import com.labijie.application.SpringContext
 import com.labijie.application.auth.configuration.AuthProperties
+import com.labijie.application.auth.service.IOAuth2UserTokenCodec
+import com.labijie.infra.oauth2.client.IOAuth2UserInfoLoader
 import com.labijie.infra.oauth2.component.IOAuth2ServerRSAKeyPair
 import jakarta.servlet.ServletException
 import jakarta.servlet.http.HttpServletRequest
@@ -26,7 +28,8 @@ import java.io.IOException
 
 
 class OAuth2ClientAuthenticationCompleteHandler(
-    private val oauth2UserParserUtilities: OAuth2UserParserUtilities,
+    private val oauth2UserTokenCodec: IOAuth2UserTokenCodec,
+    private val oauth2UserInfoLoader: IOAuth2UserInfoLoader,
     private val authProperties: AuthProperties) :
     AuthenticationSuccessHandler,
     AuthenticationFailureHandler {
@@ -79,22 +82,11 @@ class OAuth2ClientAuthenticationCompleteHandler(
             }
 
             val uri = URIBuilder(authProperties.oauth2Login.handlerPageUri).apply {
-                val userToken = oauth2UserParserUtilities.parse(clientRegistration, authentication.principal)
+                val userInfo = oauth2UserInfoLoader.load(clientRegistration, authentication.principal)
 
-
-                if (!userToken.avatarUrl.isNullOrBlank()) {
-                    this.addParameter("avatar_url", userToken.avatarUrl)
-                }
-                if (!userToken.email.isNullOrBlank()) {
-                    this.addParameter("email", userToken.email)
-                }
-                if (!userToken.displayName.isNullOrBlank()) {
-                    this.addParameter("display_name", userToken.displayName)
-                }
-                this.addParameter("provider", clientRegistration.clientName)
                 this.addParameter(
                     OAuth2UserTokenArgumentResolver.TOKEN_PARAMETER_NAME,
-                    userToken.serializeToken(rsaKeys.getPublicKey(), authProperties.securitySecretKey)
+                    oauth2UserTokenCodec.encode(userInfo, java.time.Duration.ofMinutes(15))
                 )
 
             }.build()

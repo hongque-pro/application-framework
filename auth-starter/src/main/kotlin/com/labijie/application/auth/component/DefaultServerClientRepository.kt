@@ -32,7 +32,6 @@ class DefaultServerClientRepository(
 
         val r = this.findById(registeredClient.id)
         if (r == null) {
-
             val record = OAuth2Client().apply {
                 this.clientId = client.clientId
                 this.clientSecret = client.clientSecret ?: ""

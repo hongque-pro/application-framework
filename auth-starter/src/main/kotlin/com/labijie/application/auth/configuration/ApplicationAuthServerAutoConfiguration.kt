@@ -4,11 +4,13 @@ import com.labijie.application.annotation.ImportErrorDefinition
 import com.labijie.application.auth.AuthErrors
 import com.labijie.application.auth.component.*
 import com.labijie.application.auth.event.UserSignInEventListener
+import com.labijie.application.auth.service.IOAuth2ClientUserService
 import com.labijie.application.identity.configuration.IdentityAutoConfiguration
 import com.labijie.application.identity.service.IOAuth2ClientService
 import com.labijie.application.identity.service.IUserService
 import com.labijie.infra.IIdGenerator
 import com.labijie.infra.oauth2.IIdentityService
+import com.labijie.infra.oauth2.client.IOidcLoginHandler
 import com.labijie.infra.oauth2.configuration.OAuth2DependenciesAutoConfiguration
 import com.labijie.infra.oauth2.resource.IResourceAuthorizationConfigurer
 import org.springframework.boot.autoconfigure.AutoConfigureAfter
@@ -30,19 +32,12 @@ import org.springframework.security.oauth2.server.authorization.client.Registere
 @Configuration(proxyBeanMethods = false)
 @AutoConfigureAfter(IdentityAutoConfiguration::class)
 @AutoConfigureBefore(OAuth2DependenciesAutoConfiguration::class)
-@EnableConfigurationProperties(DefaultUserCreationProperties::class, AuthProperties::class)
+@EnableConfigurationProperties(
+    DefaultUserCreationProperties::class,
+    AuthProperties::class
+)
 @ImportErrorDefinition([AuthErrors::class])
-class ApplicationAuthServerAutoConfiguration : IResourceAuthorizationConfigurer {
-
-    override fun configure(registry: AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry) {
-        registry.requestMatchers(
-            "/account/register",
-            "/account/verify",
-            "/account/set-password",
-            "/login/oauth2/code/*"
-        ).permitAll()
-    }
-
+class ApplicationAuthServerAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean(IIdentityService::class)
@@ -66,7 +61,6 @@ class ApplicationAuthServerAutoConfiguration : IResourceAuthorizationConfigurer 
     }
 
 
-
 //    @Bean
 //    @ConditionalOnMissingBean(IOAuth2ExceptionHandler::class)
 //    fun oauth2ErrorHandler(): OAuth2ErrorHandler {
@@ -75,16 +69,37 @@ class ApplicationAuthServerAutoConfiguration : IResourceAuthorizationConfigurer 
 
 
     @Bean
-    @ConditionalOnProperty(prefix = "infra.oauth2", name = ["client-repository"], havingValue = "jdbc", matchIfMissing = true)
+    @ConditionalOnProperty(
+        prefix = "infra.oauth2",
+        name = ["client-repository"],
+        havingValue = "jdbc",
+        matchIfMissing = true
+    )
+
     @ConditionalOnMissingBean(RegisteredClientRepository::class)
     fun defaultClientRepository(clientService: IOAuth2ClientService): DefaultServerClientRepository {
         return DefaultServerClientRepository(clientService)
     }
 
     @Bean
-    @ConditionalOnProperty(prefix = "application.default-user-creation", name = ["enabled"], havingValue = "true", matchIfMissing = false)
+    @ConditionalOnProperty(
+        prefix = "application.default-user-creation",
+        name = ["enabled"],
+        havingValue = "true",
+        matchIfMissing = false
+    )
     @ConditionalOnMissingBean(DefaultUserInitializer::class)
-    fun defaultUserInitializer(idGenerator: IIdGenerator, properties: DefaultUserCreationProperties, userService: IUserService): DefaultUserInitializer {
+    fun defaultUserInitializer(
+        idGenerator: IIdGenerator,
+        properties: DefaultUserCreationProperties,
+        userService: IUserService
+    ): DefaultUserInitializer {
         return DefaultUserInitializer(properties)
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(IOidcLoginHandler::class)
+    fun defaultOidcLoginHandler(oauth2ClientUserService: IOAuth2ClientUserService): DefaultOidcLoginHandler {
+        return DefaultOidcLoginHandler(oauth2ClientUserService)
     }
 }

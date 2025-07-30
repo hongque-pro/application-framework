@@ -7,14 +7,12 @@ package com.labijie.application.auth.configuration
 import com.labijie.application.auth.component.NoneClientRegistrationRepository
 import com.labijie.application.auth.component.OAuth2UserRegistrationIntegration
 import com.labijie.application.auth.controller.OAuth2ClientController
-import com.labijie.application.auth.event.OAuth2ClientSignIngEvenListener
 import com.labijie.application.auth.oauth2.ClientRegistrationBuilder
 import com.labijie.application.auth.oauth2.OAuth2UserTokenArgumentResolver
-import com.labijie.application.auth.oauth2.parser.GithubParser
 import com.labijie.application.auth.service.IOAuth2ClientUserService
 import com.labijie.application.auth.service.IOAuth2UserTokenCodec
-import com.labijie.application.auth.service.impl.OAuth2ClientUserService
-import com.labijie.application.auth.service.impl.OAuth2UserTokenCodec
+import com.labijie.application.auth.service.impl.DefaultOAuth2ClientUserService
+import com.labijie.application.auth.service.impl.DefaultOAuth2UserTokenCodec
 import com.labijie.application.identity.service.IUserService
 import com.labijie.infra.oauth2.component.IOAuth2ServerRSAKeyPair
 import com.labijie.infra.oauth2.resource.configuration.ResourceServerAutoConfiguration
@@ -23,7 +21,6 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.security.oauth2.client.OAuth2ClientProperties
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean
-import org.springframework.context.annotation.ComponentScan
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Import
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository
@@ -37,7 +34,6 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer
 @Configuration(proxyBeanMethods = false)
 @AutoConfigureAfter(ResourceServerAutoConfiguration::class)
 @EnableConfigurationProperties(OAuth2ClientProperties::class)
-@ComponentScan(basePackageClasses = [GithubParser::class])
 class OAuth2LoginAutoConfiguration : WebMvcConfigurer {
     override fun addArgumentResolvers(resolvers: MutableList<HandlerMethodArgumentResolver>) {
         resolvers.add(OAuth2UserTokenArgumentResolver())
@@ -62,18 +58,17 @@ class OAuth2LoginAutoConfiguration : WebMvcConfigurer {
     fun oauth2UserTokenCodec(
         authProperties: AuthProperties,
         oauth2ServerRSAKeyPair: IOAuth2ServerRSAKeyPair
-    ): OAuth2UserTokenCodec {
-        return OAuth2UserTokenCodec(authProperties, oauth2ServerRSAKeyPair)
+    ): DefaultOAuth2UserTokenCodec {
+        return DefaultOAuth2UserTokenCodec(authProperties, oauth2ServerRSAKeyPair)
     }
 
     @Bean
     @ConditionalOnMissingBean(IOAuth2ClientUserService::class)
-    fun oauth2ClientUserService(
+    fun defaultOAuth2ClientUserService(
         userService: IUserService,
-        clientRegistrationRepository: ClientRegistrationRepository,
         transactionTemplate: TransactionTemplate
-    ): OAuth2ClientUserService {
-        return OAuth2ClientUserService(userService, clientRegistrationRepository, transactionTemplate)
+    ): DefaultOAuth2ClientUserService {
+        return DefaultOAuth2ClientUserService(userService, transactionTemplate)
     }
 
     @Configuration(proxyBeanMethods = false)
@@ -91,12 +86,4 @@ class OAuth2LoginAutoConfiguration : WebMvcConfigurer {
         )
     }
 
-    @Bean
-    fun oauth2ClientSignIngEvenListener(
-        oauth2ClientUserService: IOAuth2ClientUserService,
-        oauth2UserTokenCodec: IOAuth2UserTokenCodec,
-        oauth2ServerSettings: AuthorizationServerSettings,
-    ): OAuth2ClientSignIngEvenListener {
-        return OAuth2ClientSignIngEvenListener(oauth2UserTokenCodec, oauth2ClientUserService, oauth2ServerSettings)
-    }
 }

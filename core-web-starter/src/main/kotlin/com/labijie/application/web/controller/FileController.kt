@@ -21,10 +21,9 @@ class FileController(private val fileIndexService: IFileIndexService) {
 
     @GetMapping("/pre-sign")
     fun preSignRead(
-        @RequestParam("filePath", required = true) filePath: String,
-        @RequestParam("modifier", required = true) modifier: FileModifier
+        @RequestParam("filePath", required = true) filePath: String
     ): ObjectPreSignUrl {
-        return fileIndexService.getFileUrl(filePath, modifier)
+        return fileIndexService.getFileUrl(filePath)
     }
 
     @PostMapping("/touch")

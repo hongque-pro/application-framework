@@ -61,6 +61,12 @@
       "sourceType": "com.labijie.application.dapr.configuration.MessageServiceConfig"
     },
     {
+      "name": "application.dapr.message-service.enabled",
+      "type": "java.lang.Boolean",
+      "defaultValue": true,
+      "sourceType": "com.labijie.application.dapr.configuration.MessageServiceConfig"
+    },
+    {
       "name": "application.dapr.pub-service-enabled",
       "type": "java.lang.Boolean",
       "sourceType": "com.labijie.application.dapr.configuration.DaprProperties"

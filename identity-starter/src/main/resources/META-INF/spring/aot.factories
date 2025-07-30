@@ -1,0 +1,4 @@
+org.springframework.aot.hint.RuntimeHintsRegistrar=\
+com.labijie.application.identity.data.aot.OrmPojoRuntimeHintsRegistrar,\
+com.labijie.application.identity.aot.IdentityRuntimeHintsRegistrar
+

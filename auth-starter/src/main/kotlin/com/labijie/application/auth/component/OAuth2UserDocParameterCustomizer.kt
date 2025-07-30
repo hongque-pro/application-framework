@@ -4,9 +4,9 @@
  */
 package com.labijie.application.auth.component
 
-import com.labijie.application.auth.oauth2.OAuth2UserToken
 import com.labijie.application.auth.oauth2.OAuth2UserTokenArgumentResolver
 import com.labijie.application.doc.DocUtils
+import com.labijie.infra.oauth2.client.StandardOidcUser
 import io.swagger.v3.oas.models.media.StringSchema
 import io.swagger.v3.oas.models.parameters.Parameter
 import org.springdoc.core.customizers.ParameterCustomizer
@@ -25,7 +25,7 @@ class OAuth2UserDocParameterCustomizer : ParameterCustomizer {
 //    }
 
     override fun customize(parameterModel: Parameter?, methodParameter: MethodParameter?): Parameter? {
-        if(methodParameter != null && parameterModel != null && methodParameter.parameter.type.equals(OAuth2UserToken::class.java)) {
+        if(methodParameter != null && parameterModel != null && methodParameter.parameter.type.equals(StandardOidcUser::class.java)) {
             parameterModel.schema = StringSchema()
             parameterModel.name(OAuth2UserTokenArgumentResolver.TOKEN_PARAMETER_NAME)
             parameterModel.required(DocUtils.isMethodParameterRequired(methodParameter))

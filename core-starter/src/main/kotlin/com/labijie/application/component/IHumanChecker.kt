@@ -8,5 +8,8 @@ package com.labijie.application.component
  * 人机验证实现
  */
 interface IHumanChecker {
-    fun check(token: String, clientStamp: String, clientIp: String): Boolean
+
+    fun clientStampRequired(): Boolean
+
+    fun check(token: String, clientStamp: String?, clientIp: String?): Boolean
 }

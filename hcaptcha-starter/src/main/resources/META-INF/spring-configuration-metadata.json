@@ -1,0 +1,32 @@
+{
+  "groups": [
+    {
+      "name": "application.hcaptcha",
+      "type": "com.labijie.application.hcaptcha.configuration.HCaptchaProperties",
+      "sourceType": "com.labijie.application.hcaptcha.configuration.HCaptchaProperties"
+    }
+  ],
+  "properties": [
+    {
+      "name": "application.hcaptcha.enabled",
+      "type": "java.lang.Boolean",
+      "sourceType": "com.labijie.application.hcaptcha.configuration.HCaptchaProperties",
+      "defaultValue": true
+    },
+    {
+      "name": "application.hcaptcha.endpoint",
+      "type": "java.lang.String",
+      "sourceType": "com.labijie.application.hcaptcha.configuration.HCaptchaProperties",
+      "defaultValue": "https://api.hcaptcha.com/siteverify"
+    },
+    {
+      "name": "application.hcaptcha.secret",
+      "type": "java.lang.String",
+      "sourceType": "com.labijie.application.hcaptcha.configuration.HCaptchaProperties"
+    }
+  ],
+  "hints": [],
+  "ignored": {
+    "properties": []
+  }
+}

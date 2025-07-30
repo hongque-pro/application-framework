@@ -56,11 +56,21 @@ open class FileIndexService(
         private val logger = LoggerFactory.getLogger(FileIndexService::class.java)
     }
 
-    override fun getFileUrl(filePath: String, modifier: FileModifier): ObjectPreSignUrl {
+    override fun getFileUrl(filePath: String): ObjectPreSignUrl {
+
         if (filePath.isBlank()) {
             throw ApplicationRuntimeException("File path can not be null or empty string.")
         }
-        val bucket = if (modifier == FileModifier.Public) BucketPolicy.PUBLIC else BucketPolicy.PRIVATE
+
+        val access = this.transactionTemplate.executeReadOnly {
+            val file = FileIndexTable.selectOne(FileIndexTable.fileAccess) {
+                andWhere { FileIndexTable.path eq filePath }
+            } ?: throw FileIndexNotFoundException(filePath)
+            file.fileAccess
+        }!!
+
+
+        val bucket = if (access == FileModifier.Public) BucketPolicy.PUBLIC else BucketPolicy.PRIVATE
         return objectStorage.generateObjectUrl(filePath, bucket)
     }
 

@@ -1,0 +1,2 @@
+com.labijie.application.email.configuration.ApplicationEmailAutoConfiguration
+com.labijie.application.email.configuration.EmailControllerAutoConfiguration

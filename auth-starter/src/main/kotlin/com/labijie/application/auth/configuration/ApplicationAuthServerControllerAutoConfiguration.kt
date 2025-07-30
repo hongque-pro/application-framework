@@ -16,7 +16,7 @@ import org.springframework.context.annotation.Import
 @AutoConfigureAfter(OAuth2ServerAutoConfiguration::class)
 class ApplicationAuthServerControllerAutoConfiguration {
 
-    @ConditionalOnProperty(name = ["application.auto.register-controller-enabled"], havingValue = "true", matchIfMissing = true)
+    @ConditionalOnProperty(name = ["application.auth.register-controller-enabled"], havingValue = "true", matchIfMissing = true)
     @Import(RegisterController::class)
     protected class RegisterControllerImport
 

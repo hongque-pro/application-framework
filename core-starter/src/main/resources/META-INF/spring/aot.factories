@@ -1,0 +1,8 @@
+org.springframework.aot.hint.RuntimeHintsRegistrar=\
+com.labijie.application.data.aot.OrmPojoRuntimeHintsRegistrar,\
+com.labijie.application.aot.ApplicationCoreRuntimeHintsRegistrar
+
+org.springframework.beans.factory.aot.BeanFactoryInitializationAotProcessor=\
+com.labijie.application.aot.ImportErrorDefinitionAotProcessor,\
+com.labijie.application.aot.ModuleBeanAotProcessor
+

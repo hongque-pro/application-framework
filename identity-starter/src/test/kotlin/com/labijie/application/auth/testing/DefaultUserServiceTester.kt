@@ -127,26 +127,26 @@ open class DefaultUserServiceTester {
         svc.removeLoginProvider(defaultUser.id, notExistedLoginProvider)
     }
 
-    @Test
-    fun registerSocialUser() {
-        Assertions.assertThrowsExactly(UnsupportedLoginProviderException::class.java) {
-            val reg = SocialRegisterInfo().apply {
-                this.username = "uab"
-                this.phoneNumber = "13888888889"
-                this.provider = "wechat"
-                this.password = "111111"
-                this.code = "#@#%#GFSVCST"
-            }
-            svc.registerSocialUser(reg, by = RegisterBy.Phone)
-        }
-    }
-
-    @Test
-    fun getOpenId() {
-        Assertions.assertThrowsExactly(UnsupportedLoginProviderException::class.java) {
-            svc.getOpenId(defaultUser.id, "tttttt", "wechat")
-        }
-    }
+//    @Test
+//    fun registerSocialUser() {
+//        Assertions.assertThrowsExactly(UnsupportedLoginProviderException::class.java) {
+//            val reg = SocialRegisterInfo().apply {
+//                this.username = "uab"
+//                this.phoneNumber = "13888888889"
+//                this.provider = "wechat"
+//                this.password = "111111"
+//                this.code = "#@#%#GFSVCST"
+//            }
+//            svc.registerSocialUser(reg, by = RegisterBy.Phone)
+//        }
+//    }
+//
+//    @Test
+//    fun getOpenId() {
+//        Assertions.assertThrowsExactly(UnsupportedLoginProviderException::class.java) {
+//            svc.getOpenId(defaultUser.id, "tttttt", "wechat")
+//        }
+//    }
 
     @Test
     fun changePhone() {

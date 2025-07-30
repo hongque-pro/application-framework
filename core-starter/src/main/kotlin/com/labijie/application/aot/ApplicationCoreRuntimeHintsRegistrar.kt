@@ -3,10 +3,12 @@ package com.labijie.application.aot
 import com.labijie.application.ApplicationErrorRegistration
 import com.labijie.application.ErrorDescription
 import com.labijie.application.IDescribeEnum
+import com.labijie.application.WellKnownClassNames
 import com.labijie.application.annotation.ImportErrorDefinition
 import com.labijie.application.jackson.DescribeEnumDeserializer
 import com.labijie.application.jackson.DescribeEnumSerializer
 import com.labijie.application.model.LocalizationMessages
+import com.labijie.application.model.SimpleValue
 import com.labijie.application.thridparty.alipay.AlipayResponseBase
 import com.labijie.application.thridparty.wechat.WechatResponse
 import com.labijie.application.validation.*
@@ -21,6 +23,7 @@ class ApplicationCoreRuntimeHintsRegistrar : RuntimeHintsRegistrar {
 
         hints.registerGitInfo()
 
+
         hints.reflection().registerAnnotations(
             ImportErrorDefinition::class,
             ErrorDescription::class,
@@ -30,6 +33,8 @@ class ApplicationCoreRuntimeHintsRegistrar : RuntimeHintsRegistrar {
             Username::class,
             XxsReject::class,
         )
+
+        hints.reflection().registerPackageForJackson(SimpleValue::class.java)
 
         hints.reflection().registerTypes(
             listOf(
@@ -49,7 +54,8 @@ class ApplicationCoreRuntimeHintsRegistrar : RuntimeHintsRegistrar {
             LocalizationMessages::class
         )
 
-        hints.reflection().registerType(TypeReference.of("org.springframework.web.context.WebApplicationContext"))
+        hints.reflection().registerType("org.springframework.web.context.WebApplicationContext")
+        hints.reflection().registerType(WellKnownClassNames.TwoFactorPrincipal)
 
         hints.reflection().registerTypes(
             listOf(

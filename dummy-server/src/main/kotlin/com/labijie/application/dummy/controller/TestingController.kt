@@ -2,9 +2,7 @@ package com.labijie.application.dummy.controller
 
 import com.labijie.application.component.IMessageService
 import com.labijie.application.model.SimpleValue
-import com.labijie.application.model.SmsCodeType
 import com.labijie.application.model.toSimpleValue
-import com.labijie.infra.utils.ShortId
 import com.labijie.infra.utils.logger
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.web.bind.annotation.GetMapping

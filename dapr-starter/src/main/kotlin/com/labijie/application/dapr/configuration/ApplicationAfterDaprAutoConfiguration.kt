@@ -3,30 +3,33 @@ package com.labijie.application.dapr.configuration
 import com.labijie.application.JsonMode
 import com.labijie.application.component.IBootPrinter
 import com.labijie.application.component.IMessageService
+import com.labijie.application.component.IVerificationCodeService
+import com.labijie.application.configuration.DefaultsAutoConfiguration
 import com.labijie.application.dapr.IDaprClientBuildCustomizer
-import com.labijie.application.dapr.PubsubSide
 import com.labijie.application.dapr.components.DaprClusterEventPublisher
 import com.labijie.application.dapr.components.DaprJsonSerializer
 import com.labijie.application.dapr.components.DaprMessagePubService
 import com.labijie.application.dapr.components.IClusterEventPublisher
-import com.labijie.application.dapr.condition.ConditionalOnDaprPubsub
 import com.labijie.application.dapr.localization.LocalLocalizationEventListener
 import com.labijie.caching.ICacheManager
 import com.labijie.infra.json.JacksonHelper
-import com.labijie.infra.security.Rfc6238TokenService
 import io.dapr.Topic
 import io.dapr.client.DaprClient
 import io.dapr.client.DaprClientBuilder
 import io.dapr.springboot.DaprAutoConfiguration
+import org.slf4j.LoggerFactory
 import org.springdoc.core.models.GroupedOpenApi
 import org.springframework.beans.factory.ObjectProvider
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.autoconfigure.AutoConfigureAfter
+import org.springframework.boot.autoconfigure.AutoConfigureBefore
+import org.springframework.boot.autoconfigure.AutoConfigureOrder
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Lazy
+import org.springframework.core.Ordered
 
 /**
  * @author Anders Xiao
@@ -34,7 +37,15 @@ import org.springframework.context.annotation.Lazy
  */
 @Configuration(proxyBeanMethods = false)
 @AutoConfigureAfter(DaprAutoConfiguration::class)
+@AutoConfigureBefore(DefaultsAutoConfiguration::class)
+@AutoConfigureOrder(Ordered.LOWEST_PRECEDENCE - 10)
 class ApplicationAfterDaprAutoConfiguration {
+
+    companion object {
+        private val logger by lazy {
+            LoggerFactory.getLogger(ApplicationAfterDaprAutoConfiguration::class.java)
+        }
+    }
 
     @Bean
     @ConditionalOnMissingBean(DaprClient::class)
@@ -51,24 +62,26 @@ class ApplicationAfterDaprAutoConfiguration {
     }
 
     @ConditionalOnClass(name = ["com.labijie.application.component.IMessageService"])
+    @ConditionalOnProperty(prefix = "application.dapr.message-service", value = ["enabled"], havingValue = "true", matchIfMissing = false)
     @Configuration(proxyBeanMethods = false)
-    protected class DaprMessageAutoConfiguration {
+    protected class DaprSmsAutoConfiguration {
         @Bean
         @Lazy
         @ConditionalOnMissingBean(IMessageService::class)
-        @ConditionalOnDaprPubsub(side = PubsubSide.Pub)
         fun daprMessagePublisher(
             daprClient: DaprClient,
             properties: DaprProperties,
             cacheManager: ICacheManager,
-            @Autowired(required = false)
-            rfc6238TokenService: Rfc6238TokenService? = null
+            verificationCodeService: IVerificationCodeService,
         ): DaprMessagePubService {
+
+            logger.info("Dapr sms service activated, topic: ${properties.messageService.smsTopic}, pubsub: ${properties.messageService.smsPubsubName}")
+
             return DaprMessagePubService(
                 daprClient,
                 properties,
                 cacheManager,
-                rfc6238TokenService ?: Rfc6238TokenService()
+                verificationCodeService
             )
         }
     }

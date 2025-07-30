@@ -9,7 +9,11 @@ import com.labijie.application.component.IHumanChecker
  */
 class NoneHumanChecker : IHumanChecker {
 
-    override fun check(token: String, clientStamp: String, clientIp: String): Boolean {
-        return true
+    override fun check(token: String, clientStamp: String?, clientIp: String?): Boolean {
+        return false
+    }
+
+    override fun clientStampRequired(): Boolean {
+        return false
     }
 }

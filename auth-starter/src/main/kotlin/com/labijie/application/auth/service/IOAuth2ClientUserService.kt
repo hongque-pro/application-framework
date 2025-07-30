@@ -4,17 +4,18 @@
  */
 package com.labijie.application.auth.service
 
-import com.labijie.application.auth.oauth2.OAuth2UserToken
 import com.labijie.application.identity.model.UserAndRoles
+import com.labijie.infra.oauth2.client.StandardOidcUser
 
 
 interface IOAuth2ClientUserService {
-    fun getUserByOAuth2User(clientRegistrationId: String, oauth2UserId: String, includeRoles: Boolean = false): UserAndRoles?
+    fun getUserByOAuth2User(provider: String, oauth2UserId: String, includeRoles: Boolean = false): UserAndRoles?
 
-    fun addOAuth2UserLoginToUser(userId: Long, oauth2UserToken: OAuth2UserToken)
+    fun addOAuth2UserLoginToUser(userId: Long, oauth2UserToken: StandardOidcUser)
+
 }
 
 
-fun IOAuth2ClientUserService.getUserByOAuth2User(oauth2UserToken: OAuth2UserToken): UserAndRoles? {
-    return getUserByOAuth2User(oauth2UserToken.clientRegistrationId, oauth2UserToken.id)
+fun IOAuth2ClientUserService.getUserByOAuth2User(oauth2UserToken: StandardOidcUser): UserAndRoles? {
+    return getUserByOAuth2User(oauth2UserToken.provider, oauth2UserToken.userId)
 }

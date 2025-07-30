@@ -20,17 +20,17 @@ get() = this.attachedFields.getOrDefault(OAuth2SocialConstants.LoginProviderFiel
 val TwoFactorPrincipal.loginProviderKey:String
     get() = this.attachedFields.getOrDefault(OAuth2SocialConstants.LoginProviderKeyFieldName, "")
 
-fun TwoFactorPrincipal.getOpenId(appId:String, throwIfNoOpenId: Boolean = true):String {
-    val svc = SpringContext.current.getBean(ISocialUserService::class.java)
-    if(this.loginProvider.isBlank()){
-        throw NoneSocialUserException()
-    }
-    val openId = svc.getOpenId(this.userId.toLong(), this.loginProvider, this.loginProvider)
-    if(openId.isNullOrBlank() && throwIfNoOpenId){
-        throw NoneOpenIdException(appId, this.loginProvider)
-    }
-    return openId.orEmpty()
-}
+//fun TwoFactorPrincipal.getOpenId(appId:String, throwIfNoOpenId: Boolean = true):String {
+//    val svc = SpringContext.current.getBean(ISocialUserService::class.java)
+//    if(this.loginProvider.isBlank()){
+//        throw NoneSocialUserException()
+//    }
+//    val openId = svc.getOpenId(this.userId.toLong(), this.loginProvider, this.loginProvider)
+//    if(openId.isNullOrBlank() && throwIfNoOpenId){
+//        throw NoneOpenIdException(appId, this.loginProvider)
+//    }
+//    return openId.orEmpty()
+//}
 
 val TwoFactorPrincipal.isWechatMiniUser: Boolean
 get()= (this.loginProvider == WechatMiniOptions.ProviderName)

@@ -30,3 +30,7 @@ pluginManagement {
     }
 }
 include("dapr-starter")
+
+include("hcaptcha-starter")
+include("email-starter")
+include("sms-starter")

@@ -5,10 +5,14 @@ import com.labijie.application.ApplicationInitializationRunner
 import com.labijie.application.ErrorRegistry
 import com.labijie.application.IErrorRegistry
 import com.labijie.application.annotation.ImportErrorDefinition
+import com.labijie.application.component.IVerificationCodeService
+import com.labijie.application.component.impl.DefaultVerificationCodeService
 import com.labijie.application.data.LocalizationMessageTable
 import com.labijie.application.okhttp.OkHttpClientRequestFactoryBuilder
 import com.labijie.application.open.OpenApiErrors
 import com.labijie.infra.orm.annotation.TableScan
+import com.labijie.infra.security.IRfc6238TokenService
+import com.labijie.infra.security.Rfc6238TokenService
 import com.labijie.infra.utils.logger
 import org.springframework.boot.CommandLineRunner
 import org.springframework.boot.WebApplicationType
@@ -19,6 +23,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnNotWebAppli
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication
 import org.springframework.boot.autoconfigure.web.client.RestClientAutoConfiguration
 import org.springframework.boot.autoconfigure.web.client.RestTemplateAutoConfiguration
+import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.boot.web.client.RestTemplateBuilder
 import org.springframework.boot.web.reactive.context.AnnotationConfigReactiveWebServerApplicationContext
@@ -43,6 +48,7 @@ import org.springframework.web.client.RestTemplate
     ValidationProperties::class,
     SmsBaseProperties::class,
     OpenApiClientProperties::class,
+    VerificationCodeProperties::class
 )
 @AutoConfigureAfter(RestTemplateAutoConfiguration::class, RestClientAutoConfiguration::class)
 @ImportErrorDefinition([OpenApiErrors::class, ApplicationErrors::class])
@@ -73,15 +79,6 @@ open class ApplicationCoreAutoConfiguration {
         return ErrorRegistry()
     }
 
-    @Bean
-    fun smsSettingsCheckRunner(settings: ApplicationCoreProperties): CommandLineRunner {
-        return CommandLineRunner {
-            if (settings.isDefaultDesSecret) {
-                logger.warn("Sms use default security key, add bellow line to application.yml to fix this:\napplication.des-secret: <your key>")
-            }
-
-        }
-    }
 
 //    @Bean
 //    @ConditionalOnMissingBean(HttpClient::class)
@@ -109,6 +106,13 @@ open class ApplicationCoreAutoConfiguration {
                 requestFactory = clientHttpRequestFactory.build()
             }
         }
+    }
 
+    @Bean
+    @ConditionalOnMissingBean(IVerificationCodeService::class)
+    fun defaultVerificationCodeService(
+        rfc6238TokenService: IRfc6238TokenService,
+        properties: VerificationCodeProperties): DefaultVerificationCodeService {
+        return DefaultVerificationCodeService(properties, rfc6238TokenService)
     }
 }

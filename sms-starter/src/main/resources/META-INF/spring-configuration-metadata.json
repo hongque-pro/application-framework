@@ -1,0 +1,31 @@
+{
+  "groups": [
+    {
+      "name": "application.sms",
+      "type": "com.labijie.application.sms.configuration.SmsServiceProperties",
+      "sourceType": "com.labijie.application.sms.configuration.SmsServiceProperties"
+    }
+  ],
+  "properties": [
+    {
+      "name": "application.sms.endpoint-enabled",
+      "type": "java.lang.Boolean",
+      "sourceType": "com.labijie.application.sms.configuration.SmsServiceProperties",
+      "defaultValue": true
+    },
+    {
+      "name": "application.sms.main-provider",
+      "type": "java.lang.String",
+      "sourceType": "com.labijie.application.sms.configuration.SmsServiceProperties"
+    },
+    {
+      "name": "application.sms.send-rate-limit",
+      "type": "java.time.Duration",
+      "sourceType": "com.labijie.application.sms.configuration.SmsServiceProperties"
+    }
+  ],
+  "hints": [],
+  "ignored": {
+    "properties": []
+  }
+}

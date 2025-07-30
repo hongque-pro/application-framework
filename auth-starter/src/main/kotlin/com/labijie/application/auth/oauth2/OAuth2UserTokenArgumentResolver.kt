@@ -5,7 +5,9 @@
 package com.labijie.application.auth.oauth2
 
 import com.labijie.application.SpringContext
+import com.labijie.application.auth.exception.InvalidOAuth2UserTokenException
 import com.labijie.application.auth.service.IOAuth2UserTokenCodec
+import com.labijie.infra.oauth2.client.StandardOidcUser
 import org.springframework.core.MethodParameter
 import org.springframework.web.bind.support.WebDataBinderFactory
 import org.springframework.web.context.request.NativeWebRequest
@@ -25,7 +27,7 @@ class OAuth2UserTokenArgumentResolver : HandlerMethodArgumentResolver {
 
     override fun supportsParameter(parameter: MethodParameter): Boolean {
         val type = parameter.parameterType
-        return OAuth2UserToken::class.java == type || OAuth2UserTokenAndValue::class.java == type
+        return StandardOidcUser::class.java == type || OAuth2UserTokenAndValue::class.java == type
     }
 
     override fun resolveArgument(
@@ -40,6 +42,11 @@ class OAuth2UserTokenArgumentResolver : HandlerMethodArgumentResolver {
         if (parameter.isOptional && tokenValue.isNullOrBlank()) {
             return null
         }
+
+        if(tokenValue.isBlank()) {
+            throw InvalidOAuth2UserTokenException()
+        }
+
         val token = oauth2UserTokenCodec.decode(tokenValue ?: "", check = true)
 
         return if(containValue) OAuth2UserTokenAndValue(token, tokenValue ?: "") else token

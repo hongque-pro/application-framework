@@ -1,7 +1,5 @@
 package com.labijie.application
 
-import java.util.Locale
-
 
 /**
  * Created with IntelliJ IDEA.
@@ -36,7 +34,7 @@ object ApplicationErrors {
 
     @ErrorDescription("验证码不正确")
     @ErrorDescription("Incorrect verification code", locale = Constants.EN_US)
-    const val InvalidCaptcha = "invalid_captcha"
+    const val InvalidVerificationCode = "invalid_verification_code"
 
     @ErrorDescription("手机号格式不正确")
     @ErrorDescription("Invalid phone number format", locale = Constants.EN_US)
@@ -54,13 +52,22 @@ object ApplicationErrors {
     @ErrorDescription("Invalid email address format", locale = Constants.EN_US)
     const val InvalidEmailAddress = "invalid_email_address"
 
+    @ErrorDescription("电子邮件地址尚未验证")
+    @ErrorDescription("Email address has not been verified", locale = Constants.EN_US)
+    const val EmailAddressNotVerified = "email_address_not_verified"
+
+    @ErrorDescription("手机号码尚未验证")
+    @ErrorDescription("Phone number has not been verified", locale = Constants.EN_US)
+    const val PhoneNumberNotVerified = "phone_number_not_verified"
+
     @ErrorDescription("安全令牌已过期或不正确，可能由于你操作花费的时间太长")
     @ErrorDescription("Security token expired or invalid, possibly due to timeout", locale = Constants.EN_US)
     const val InvalidSecurityStamp = "invalid_security_stamp"
 
-    @ErrorDescription("发送短信太过频繁，请稍后再试")
-    @ErrorDescription("SMS sent too frequently, please try again later", locale = Constants.EN_US)
-    const val SmsTooFrequentlyException = "sms_out_of_limit"
+
+    @ErrorDescription("操作太过频繁，请稍后再试")
+    @ErrorDescription("Operation too frequently, please try again later", locale = Constants.EN_US)
+    const val OperationOutOfRateLimit = "operation_too_frequently"
 
     @ErrorDescription("存储的文件不存在或已经被删除")
     @ErrorDescription("Stored file does not exist or has been deleted", locale = Constants.EN_US)

@@ -25,7 +25,7 @@ dependencies {
 
     api("com.squareup.okhttp3:okhttp")
     //api("io.projectreactor.netty:reactor-netty-http")
-    api("org.springframework:spring-web")
+//    api("org.springframework:spring-web")
     api("org.bouncycastle:bcprov-jdk18on")
 
 

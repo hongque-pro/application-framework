@@ -28,7 +28,7 @@ interface IFileIndexService {
 
     fun getIndexById(fileIndexId: Long): FileIndex?
 
-    fun getFileUrl(filePath: String, modifier: FileModifier): ObjectPreSignUrl
+    fun getFileUrl(filePath: String): ObjectPreSignUrl
     fun touchFile(filePath: String, modifier: FileModifier, fileSizeInBytes: Long? = null, expiration: Duration? = null, mime: String? = null): TouchedFile
 
     fun setToTemp(filePath: String, throwIfNotStored: Boolean): FileIndex?

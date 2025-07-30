@@ -1,6 +1,7 @@
 package com.labijie.application.identity.service.impl
 
 import com.labijie.application.ApplicationRuntimeException
+import com.labijie.application.ErrorCodedException
 import com.labijie.application.configure
 import com.labijie.application.exception.OperationConcurrencyException
 import com.labijie.application.exception.UserNotFoundException
@@ -18,7 +19,6 @@ import com.labijie.application.identity.data.pojo.dsl.UserLoginDSL.selectOne
 import com.labijie.application.identity.data.pojo.dsl.UserOpenIdDSL.insert
 import com.labijie.application.identity.data.pojo.dsl.UserOpenIdDSL.selectOne
 import com.labijie.application.identity.exception.LoginProviderKeyAlreadyExistedException
-import com.labijie.application.identity.exception.UnsupportedLoginProviderException
 import com.labijie.application.identity.exception.UserAlreadyExistedException
 import com.labijie.application.identity.model.PlatformAccessToken
 import com.labijie.application.identity.model.RegisterBy
@@ -161,7 +161,7 @@ abstract class AbstractSocialUserService(
             throw IllegalArgumentException("loginProvider or authorizationCode can not be null")
         }
         val mp = getLoginProvider(loginProvider)
-            ?: throw UnsupportedLoginProviderException(loginProvider)
+            ?: throw ErrorCodedException("invalid_login_provider")
         val token = mp.exchangeToken(authorizationCode)
         val userId = this.getUserId(loginProvider, token.userKey)
         return ExchangeResult(token, userId, mp)
@@ -285,25 +285,25 @@ abstract class AbstractSocialUserService(
     }
 
     protected class DuplicateRegisteringException : ApplicationRuntimeException()
-
-    override fun getOpenId(userId: Long, appId: String, loginProvider: String): String? {
-        val provider = getLoginProvider(loginProvider) ?: throw UnsupportedLoginProviderException(loginProvider)
-        return transactionTemplate.executeReadOnly {
-            if(provider.isMultiOpenId) {
-                val d = UserOpenIdTable.selectOne {
-                    andWhere { UserLoginTable.userId eq userId }
-                    andWhere{ UserOpenIdTable.appId eq  appId}
-                    andWhere { UserOpenIdTable.loginProvider eq loginProvider }
-                }
-                d?.openId
-            } else {
-                UserLoginTable.selectOne {
-                    andWhere { UserLoginTable.userId eq userId }
-                    andWhere { UserLoginTable.loginProvider eq loginProvider }
-                }?.providerKey
-            }
-        }
-    }
+//
+//    override fun getOpenId(userId: Long, appId: String, loginProvider: String): String? {
+//        val provider = getLoginProvider(loginProvider) ?: throw UnsupportedLoginProviderException(loginProvider)
+//        return transactionTemplate.executeReadOnly {
+//            if(provider.isMultiOpenId) {
+//                val d = UserOpenIdTable.selectOne {
+//                    andWhere { UserLoginTable.userId eq userId }
+//                    andWhere{ UserOpenIdTable.appId eq  appId}
+//                    andWhere { UserOpenIdTable.loginProvider eq loginProvider }
+//                }
+//                d?.openId
+//            } else {
+//                UserLoginTable.selectOne {
+//                    andWhere { UserLoginTable.userId eq userId }
+//                    andWhere { UserLoginTable.loginProvider eq loginProvider }
+//                }?.providerKey
+//            }
+//        }
+//    }
 
     private fun createNewSocialUserOrLogin(
         socialRegisterInfo: SocialRegisterInfo,

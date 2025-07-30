@@ -3,7 +3,7 @@ package com.labijie.application.core.testing
 import com.labijie.application.component.impl.NoneMessageService
 import com.labijie.application.configuration.ApplicationCoreProperties
 import com.labijie.application.configuration.SmsBaseProperties
-import com.labijie.application.model.SmsCodeType
+import com.labijie.application.model.VerificationCodeType
 import org.junit.jupiter.api.Assertions
 import kotlin.test.Test
 
@@ -25,10 +25,10 @@ class MessageServiceTester {
 
     @Test
     fun correctCodeAndVerify() {
-        val token = messageService.sendSmsCode(86, "13000000000", SmsCodeType.Register)
+        val token = messageService.sendSmsCode(86, "13000000000", VerificationCodeType.Register)
         val code = messageService.latestCode
 
-        val ok = messageService.verifySmsCode(code, token.token)
+        val ok = messageService.verifyCode(code, token.token)
         Assertions.assertTrue(ok)
 
 
@@ -36,9 +36,9 @@ class MessageServiceTester {
 
     @Test
     fun incorrectCodeAndVerify() {
-        val token = messageService.sendSmsCode(86, "13000000000", SmsCodeType.Register)
+        val token = messageService.sendSmsCode(86, "13000000000", VerificationCodeType.Register)
 
-        val failed = messageService.verifySmsCode("32323", token.token)
+        val failed = messageService.verifyCode("32323", token.token)
         Assertions.assertFalse(failed)
     }
 }

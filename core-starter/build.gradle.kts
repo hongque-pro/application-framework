@@ -36,6 +36,7 @@ dependencies {
     }
 
     api("com.labijie.orm:exposed-springboot-starter:${Versions.infraOrm}")
+    compileOnly("org.graalvm.nativeimage:svm:${Versions.graalvmSvm}")
 
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.springframework.boot:spring-boot-starter-logging")

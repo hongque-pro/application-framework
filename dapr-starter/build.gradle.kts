@@ -20,6 +20,7 @@ dependencies {
 
     compileOnly(project(":core-web-starter"))
     compileOnly("com.labijie.infra:oauth2-authorization-server-starter:${Versions.infraOAuth2}")
+    compileOnly("org.graalvm.nativeimage:svm:${Versions.graalvmSvm}")
 
 }
 

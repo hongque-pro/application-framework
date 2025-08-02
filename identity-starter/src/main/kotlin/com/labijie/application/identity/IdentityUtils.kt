@@ -45,7 +45,9 @@ object IdentityUtils {
             this.timeZone = ZoneOffset.ofHours(8).id
             this.twoFactorEnabled = true
             this.userType = userType
-            this.phoneNumber = "N_${username.lowercase()}"
+            this.phoneNumber = "NoPhone"
+            this.phoneCountryCode = 0
+            this.fullPhoneNumber = "NoPhone"
             this.phoneNumberConfirmed = false
             this.securityStamp = UUID.randomUUID().toString().replace("-", "")
             this.approved = true
@@ -55,13 +57,13 @@ object IdentityUtils {
 }
 
 val User.isNullUserName
-    get() = this.userName.isBlank() || userName.substring(0, 1).toIntOrNull() != null
+    get() = this.userName.isBlank() || this.userName == this.id.toString() || userName.substring(0, 1).toIntOrNull() != null
 
 val User.isNullEmail
     get() = this.email.endsWith("@null.null")
 
 val User.isNullPhoneNumber
-    get() = this.phoneNumber.startsWith("N_")
+    get() = this.phoneNumber.startsWith("N_") || this.phoneCountryCode == 0.toShort()
 
 fun User.isEnabled(): Boolean = !this.lockoutEnabled || this.lockoutEnd < System.currentTimeMillis()
 
@@ -72,6 +74,22 @@ val User.locale: Locale?
         null
     }
 
+/**
+ * set phone/email empty if that is a placeholder
+ */
+fun User.normalizedIdentifier() {
+    if(isNullUserName) {
+        this.userName = ""
+    }
+    if(isNullPhoneNumber) {
+        this.phoneNumber = ""
+        this.fullPhoneNumber = ""
+        this.phoneCountryCode = 0
+    }
+    if(isNullEmail) {
+        this.email = ""
+    }
+}
 
 fun User.getIdentityType(identifier: String): UserIdentifierType {
     val type = when (identifier) {

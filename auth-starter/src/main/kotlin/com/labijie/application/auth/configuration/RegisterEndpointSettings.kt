@@ -6,5 +6,5 @@ package com.labijie.application.auth.configuration
  */
 class RegisterEndpointSettings {
     var enabled: Boolean = true
-    var verifyEmailOrPhone: Boolean = true
+    var verifyEmailOrPhone: Boolean = false
 }

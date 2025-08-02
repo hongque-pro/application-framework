@@ -39,7 +39,7 @@
       "name": "application.auth.register-endpoint.verify-email-or-phone",
       "type": "java.lang.Boolean",
       "sourceType": "com.labijie.application.auth.configuration.RegisterEndpointSettings",
-      "defaultValue": true
+      "defaultValue": false
     },
     {
       "name": "application.auth.default-user-creation.enabled",

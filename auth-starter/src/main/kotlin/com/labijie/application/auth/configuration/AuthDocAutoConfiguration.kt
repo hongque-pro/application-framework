@@ -76,7 +76,7 @@ class AuthDocAutoConfiguration : InitializingBean {
     }
 
     @Bean
-    fun authServerOperationCustomizer(): AuthServerOperationCustomizer {
-        return AuthServerOperationCustomizer()
+    fun authServerOperationCustomizer(authProperties: AuthProperties): AuthServerOperationCustomizer {
+        return AuthServerOperationCustomizer(authProperties)
     }
 }

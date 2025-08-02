@@ -59,7 +59,7 @@ class SpringDocAutoConfiguration(private val environment: Environment): Initiali
             `in` = SecurityScheme.In.QUERY
         }
         val humanStamp = SecurityScheme().apply {
-            name = HumanVerifyInterceptor.TOKEN_HTTP_STAMP_NAME
+            name = HumanVerifyInterceptor.STAMP_KEY
             type(SecurityScheme.Type.APIKEY)
             `in` = SecurityScheme.In.QUERY
         }

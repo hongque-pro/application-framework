@@ -9,6 +9,6 @@ import com.labijie.application.model.OneTimeGenerationResult
  * @date 2025/7/29
  */
 interface IEmailService {
-    fun send(mail: TemplatedMail)
+    fun sendTemplated(mail: TemplatedMail)
     fun sendVerificationCode(to: String, type: VerificationCodeType) : OneTimeGenerationResult
 }

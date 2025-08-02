@@ -61,7 +61,7 @@ class DefaultEmailService(
         }
     }
 
-    override fun send(mail: TemplatedMail) {
+    override fun sendTemplated(mail: TemplatedMail) {
         val id = "mail:${mail.to}:t_${mail.templateId}"
         rateLimit(id, "Send email") {
             this.mainProvider.sendTemplateMailAsync(mail)

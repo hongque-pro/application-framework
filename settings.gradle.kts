@@ -4,7 +4,7 @@ include("core-web-starter")
 include("identity-starter")
 //include("aliyun-starter")
 include("auth-starter")
-include("auth-social-starter")
+//include("auth-social-starter")
 
 //include("payment-testing")
 //include("payment-starter")

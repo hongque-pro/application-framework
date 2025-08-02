@@ -6,6 +6,5 @@ package com.labijie.application.auth.configuration
 
 
 data class OAuth2LoginSettings(
-    var redirectionBaseUrl: String = "",
-    var handlerPageUri: String = "/"
+    var loginResultPageUri: String = "/"
 )

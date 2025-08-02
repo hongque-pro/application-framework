@@ -9,6 +9,7 @@ enum class VerificationCodeType {
     General,
     Register,
     ChangePhone,
+    ChangeEmail,
     ForgotPassword,
     Login
 }

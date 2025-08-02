@@ -2,13 +2,17 @@ package com.labijie.application.configuration
 
 import com.labijie.application.JsonMode
 import com.labijie.application.component.IHumanChecker
+import com.labijie.application.service.IOneTimeCodeService
 import com.labijie.application.component.WebBootPrinter
-import com.labijie.application.component.impl.NoneHumanChecker
+import com.labijie.application.doc.DocUtils.isSwaggerEnabled
+import com.labijie.application.doc.SpringDocAutoConfiguration
 import com.labijie.application.web.antMatchers
 import com.labijie.application.web.converter.EnhanceStringToEnumConverterFactory
 import com.labijie.application.web.handler.ControllerExceptionHandler
 import com.labijie.application.web.interceptor.HttpCacheInterceptor
 import com.labijie.application.web.interceptor.HumanVerifyInterceptor
+import com.labijie.application.web.interceptor.OneTimeCodeInterceptor
+import com.labijie.application.web.interceptor.OneTimeCodeVerifyArgumentResolver
 import com.labijie.application.web.interceptor.PrincipalArgumentResolver
 import com.labijie.infra.isProduction
 import com.labijie.infra.json.JacksonHelper
@@ -25,7 +29,6 @@ import org.springframework.boot.autoconfigure.AutoConfigureBefore
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication
 import org.springframework.boot.context.properties.EnableConfigurationProperties
-import org.springframework.boot.web.servlet.FilterRegistrationBean
 import org.springframework.context.ApplicationContext
 import org.springframework.context.ApplicationContextAware
 import org.springframework.context.MessageSource
@@ -33,7 +36,6 @@ import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Import
 import org.springframework.context.annotation.Role
-import org.springframework.core.Ordered
 import org.springframework.core.env.Environment
 import org.springframework.format.FormatterRegistry
 import org.springframework.http.MediaType
@@ -54,7 +56,7 @@ import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandl
  */
 //@EnableWebMvc
 @Configuration(proxyBeanMethods = false)
-@Import(DefaultResourceSecurityConfiguration::class, SpringDocAutoConfiguration::class)
+@Import(DefaultResourceSecurityConfiguration::class)
 @AutoConfigureAfter(Environment::class)
 @AutoConfigureBefore(DefaultsAutoConfiguration::class)
 @EnableConfigurationProperties(ApplicationWebProperties::class)
@@ -68,6 +70,10 @@ class ApplicationWebAutoConfiguration(private val properties: ApplicationWebProp
 
     @Autowired
     private lateinit var environment: Environment
+
+    @Autowired
+    private lateinit var oneTimeCodeService: IOneTimeCodeService
+
 
     private lateinit var applicationContext: ApplicationContext
 
@@ -86,6 +92,7 @@ class ApplicationWebAutoConfiguration(private val properties: ApplicationWebProp
 
     override fun addArgumentResolvers(resolvers: MutableList<HandlerMethodArgumentResolver>) {
         resolvers.add(PrincipalArgumentResolver())
+        resolvers.add(OneTimeCodeVerifyArgumentResolver())
     }
 
     override fun extendMessageConverters(converters: MutableList<HttpMessageConverter<*>>) {
@@ -113,21 +120,25 @@ class ApplicationWebAutoConfiguration(private val properties: ApplicationWebProp
     }
 
     override fun addInterceptors(registry: InterceptorRegistry) {
-//        if(properties.localeResolver.enabled) {
-//            registry.addInterceptor(ApplicationLocaleInterceptor(applicationContext)).order(Ordered.HIGHEST_PRECEDENCE)
-//        }
-        registry.addInterceptor(
-            HumanVerifyInterceptor(
-                humanChecker ?: NoneHumanChecker()
+
+        humanChecker?.let {
+            registry.addInterceptor(
+                HumanVerifyInterceptor(
+                    it
+                )
             )
+        }
+
+        registry.addInterceptor(
+            OneTimeCodeInterceptor(oneTimeCodeService)
         )
         registry.addInterceptor(HttpCacheInterceptor)
     }
 
     override fun addViewControllers(registry: ViewControllerRegistry) {
         super.addViewControllers(registry)
-        if (!environment.isProduction) {
-            registry.addRedirectViewController("/swagger", "/swagger-ui.html")
+        if (environment.isSwaggerEnabled) {
+            registry.addRedirectViewController("/swagger", "/swagger-ui/index.html")
         }
     }
 
@@ -172,7 +183,8 @@ class ApplicationWebAutoConfiguration(private val properties: ApplicationWebProp
         val handlerMethodMap = requestMappingHandlerMapping.handlerMethods
         val urlList = mutableSetOf<String>()
         handlerMethodMap.forEach { (key, value) ->
-            val anno = value.getMethodAnnotation(PermitAll::class.java) ?: value.beanType.getAnnotation(PermitAll::class.java)
+            val anno =
+                value.getMethodAnnotation(PermitAll::class.java) ?: value.beanType.getAnnotation(PermitAll::class.java)
             if (anno != null) {
                 key.pathPatternsCondition?.patterns?.let { urls ->
                     urls.forEach {

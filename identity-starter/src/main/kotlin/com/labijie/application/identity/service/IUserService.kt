@@ -26,13 +26,15 @@ interface IUserService {
         newPlainPassword: String
     ): Boolean
 
+    fun validatePassword(user: User,  plainPassword: String, throwIfInvalid: Boolean = false): Boolean
+    fun changeEmail(userId: Long, email: String, confirmed: Boolean = true): Boolean
     fun changePhone(userId: Long, dialingCode: Short, phoneNumber: String, confirmed: Boolean = true): Boolean
     fun setUserEnabled(userId: Long, enabled: Boolean): Boolean
     fun getUsers(pageSize: Int, lastUserId: Long? = null, order: OrderBy = OrderBy.Descending): List<User>
 
     fun getOrCreateRole(roleName: String): Role
-    fun createUser(user: User, plainPassword: String, vararg roles: String): UserAndRoles
-    fun registerUser(register: RegisterInfo, by: RegisterBy = RegisterBy.Phone, customizer: ((user: User)->Unit)? = null): UserAndRoles
+    fun createUser(user: User, plainPassword: String?, roles: Set<String>? = null, registerInfo: Map<String, String>? = null): UserAndRoles
+    fun registerUser(register: RegisterInfo, forceBy: RegisterBy? = null, customizer: ((user: User)->Unit)? = null): UserAndRoles
 
 
     fun updateUser(userId: Long, user: User): Boolean
@@ -49,7 +51,7 @@ interface IUserService {
         return 0
     }
 
-    fun getDefaultUserRoles(): Array<String>
+    fun getDefaultUserRoles(): Set<String>
 
     fun refreshUserCache(userId: Long)
 }

@@ -55,15 +55,6 @@ object AuthErrors {
     @ErrorDescription("You do not have permission to access this resource", locale = Constants.EN_US)
     const val ACCESS_DENIED = OAuth2ErrorCodes.ACCESS_DENIED
 
-    // custom
-    @ErrorDescription("第三方登录用户未授权或授权信息被篡改")
-    @ErrorDescription("Third-party login user is unauthorized or authorization info has been tampered", locale = Constants.EN_US)
-    const val INVALID_OAUTH2_USER_TOKEN = "invalid_oauth2_user_token"
-
-    @ErrorDescription("第三方登录授权信息已过期")
-    @ErrorDescription("Third-party login user info expired.", locale = Constants.EN_US)
-    const val EXPIRED_OAUTH2_USER_TOKEN = "expired_oauth2_user_token"
-
     @ErrorDescription("OAuth2 授权方不可用")
     @ErrorDescription("OAuth2 client registration is unavailable", locale = Constants.EN_US)
     const val INVALID_OAUTH2_CLIENT_REGISTRATION = "invalid_oauth2_client_registration"
@@ -90,5 +81,5 @@ object AuthErrors {
 
     @ErrorDescription("第三方账号已经被绑定到系统中的其他用户")
     @ErrorDescription("The third-party account has already been linked to another user", locale = Constants.EN_US)
-    const val OAUTH2_ACCOUNT_LINKED_BY_ANOTHER: String = OAuth2ClientErrorCodes.OAUTH2_ACCOUNT_LINKED_BY_ANOTHER
+    const val OAUTH2_PROVIDER_ALREADY_LINKED: String = OAuth2ClientErrorCodes.OAUTH2_PROVIDER_ALREADY_LINKED
 }

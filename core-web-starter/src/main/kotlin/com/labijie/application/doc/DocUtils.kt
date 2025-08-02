@@ -3,22 +3,23 @@ package com.labijie.application.doc
 import com.fasterxml.jackson.databind.JavaType
 import com.labijie.application.IDescribeEnum
 import com.labijie.application.JAVA_LONG
-import com.labijie.infra.getApplicationName
 import com.labijie.infra.utils.ifNullOrBlank
 import com.labijie.infra.utils.toLocalDateTime
-import io.swagger.v3.core.converter.AnnotatedType
-import io.swagger.v3.oas.models.ExternalDocumentation
 import io.swagger.v3.oas.models.OpenAPI
+import io.swagger.v3.oas.models.Operation
 import io.swagger.v3.oas.models.SpecVersion
 import io.swagger.v3.oas.models.info.Info
 import io.swagger.v3.oas.models.media.IntegerSchema
 import io.swagger.v3.oas.models.media.Schema
 import io.swagger.v3.oas.models.media.StringSchema
 import io.swagger.v3.oas.models.parameters.Parameter
+import io.swagger.v3.oas.models.responses.ApiResponse
 import org.apache.commons.text.CaseUtils
 import org.springframework.boot.info.GitProperties
 import org.springframework.core.MethodParameter
 import org.springframework.core.annotation.AnnotatedElementUtils
+import org.springframework.core.env.Environment
+import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.ValueConstants
 import java.lang.reflect.Type
@@ -32,6 +33,9 @@ import kotlin.reflect.jvm.kotlinFunction
  * @date 2023-12-04
  */
 object DocUtils {
+
+    val Environment.isSwaggerEnabled
+        get() = this.getProperty("springdoc.swagger-ui.enabled") !== "false"
 
     fun isEnumType(type: Type): Boolean {
         if (type is Class<*>) {
@@ -65,6 +69,38 @@ object DocUtils {
                 description = it.value
                 specVersion = SpecVersion.V31
             }
+        }
+    }
+
+    fun Operation.appendDescription(description: String) {
+        if(description.isNotBlank()) {
+            if (this.description.isNullOrBlank()) {
+                this.description = description
+            } else {
+                StringBuilder().appendLine(this.description)
+                    .append(description)
+            }
+        }
+    }
+
+    fun Operation.addErrorResponse(reason: String, httpStatus: HttpStatus, vararg errorCode: String) {
+
+        val errorList = errorCode.toSet().mapNotNull { if(it.isBlank()) null else "`${it.trim()}`" }
+
+        val key = if (reason.isNotEmpty()) "${httpStatus.value()} (${reason})" else httpStatus.value().toString()
+        if (!this.responses.contains(key)) {
+            this.responses.addApiResponse(key, ApiResponse().apply {
+                if (errorList.isNotEmpty()) {
+                    val sb = StringBuilder().append("error codes: ")
+                    if (errorCode.size == 1) {
+                        sb.append(errorList.first())
+                    } else {
+                        sb.appendLine()
+                        sb.append(errorList.joinToString("\n"))
+                    }
+                    description = sb.toString()
+                }
+            })
         }
     }
 
@@ -127,7 +163,11 @@ object DocUtils {
         }
     }
 
-    fun createDefaultOpenAPI(applicationName: String, gitProperties: GitProperties? = null, version: String? = null): OpenAPI {
+    fun createDefaultOpenAPI(
+        applicationName: String,
+        gitProperties: GitProperties? = null,
+        version: String? = null
+    ): OpenAPI {
         return OpenAPI()
             .info(
                 Info().title("${CaseUtils.toCamelCase(applicationName, true, '-', '@', '_')} API")
@@ -143,7 +183,7 @@ object DocUtils {
                             )
                         }
 
-                        if(!version.isNullOrBlank()) {
+                        if (!version.isNullOrBlank()) {
                             version(version)
                         }
                     }
@@ -168,14 +208,13 @@ object DocUtils {
             return false
         else if (kParameter != null) {
             return kParameter.type.isMarkedNullable == false
-        }else {
+        } else {
             return true
         }
     }
 
     fun fillMvcKotlinParameter(parameterModel: Parameter, methodParameter: MethodParameter) {
-        val kParameter = methodParameter.toKParameter()?.let {
-            kParameter->
+        val kParameter = methodParameter.toKParameter()?.let { kParameter ->
             val parameterDoc = AnnotatedElementUtils.findMergedAnnotation(
                 AnnotatedElementUtils.forAnnotations(*methodParameter.parameterAnnotations),
                 io.swagger.v3.oas.annotations.Parameter::class.java

@@ -1,6 +1,6 @@
 package com.labijie.application.auth.social.configuration
 
-import com.labijie.application.auth.configuration.ApplicationAuthServerAutoConfiguration
+import com.labijie.application.auth.configuration.PreAuthServerAutoConfiguration
 import com.labijie.application.auth.social.controller.AccountSocialController
 import org.springframework.boot.autoconfigure.AutoConfigureAfter
 import org.springframework.context.annotation.Configuration
@@ -13,7 +13,7 @@ import org.springframework.core.annotation.Order
  * @date 2019-12-11
  */
 @Configuration(proxyBeanMethods = false)
-@AutoConfigureAfter(ApplicationAuthServerAutoConfiguration::class)
+@AutoConfigureAfter(PreAuthServerAutoConfiguration::class)
 @Import(AccountSocialController::class)
 @Order(Int.MAX_VALUE)
 class AuthSocialControllerAutoConfiguration

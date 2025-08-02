@@ -1,7 +1,6 @@
 package com.labijie.application.email.configuration
 
-import com.labijie.application.component.IVerificationCodeService
-import com.labijie.application.email.model.EmailVerificationSendRequest
+import com.labijie.application.service.IOneTimeCodeService
 import com.labijie.application.email.provider.IEmailServiceProvider
 import com.labijie.application.email.service.IEmailService
 import com.labijie.application.email.service.impl.DefaultEmailService
@@ -28,11 +27,11 @@ class ApplicationEmailAutoConfiguration {
     fun defaultEmailService(
         properties: EmailServiceProperties,
         cacheManager: ICacheManager,
-        verificationCodeService: IVerificationCodeService,
+        oneTimeCodeService: IOneTimeCodeService,
         emailServiceProviders: ObjectProvider<IEmailServiceProvider>
     ): DefaultEmailService {
 
         val providers = emailServiceProviders.orderedStream().toList()
-        return DefaultEmailService(properties, cacheManager, verificationCodeService, providers)
+        return DefaultEmailService(properties, cacheManager, oneTimeCodeService, providers)
     }
 }

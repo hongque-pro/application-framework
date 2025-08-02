@@ -1,11 +1,11 @@
 package com.labijie.application.configuration
 
-import com.labijie.application.service.ILocalizationService
 import com.labijie.application.localization.LocalizationMessageSource
 import com.labijie.application.localization.ResourceBundleMessagesLoader
+import com.labijie.application.service.ILocalizationService
 import com.labijie.application.service.impl.JdbcLocalizationService
+import com.labijie.application.service.impl.MemoryLocalizationService
 import com.labijie.application.service.impl.NoneLocalizationService
-import com.labijie.caching.ICacheManager
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.autoconfigure.AutoConfigureBefore
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean
@@ -13,14 +13,12 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.context.MessageSourceAutoConfiguration
 import org.springframework.boot.autoconfigure.context.MessageSourceProperties
 import org.springframework.boot.context.properties.ConfigurationProperties
+import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.MessageSource
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
-import org.springframework.context.annotation.Lazy
 import org.springframework.context.support.AbstractApplicationContext
-import org.springframework.core.env.Environment
 import org.springframework.transaction.support.TransactionTemplate
-import org.springframework.util.StringUtils
 import java.nio.charset.StandardCharsets
 import javax.sql.DataSource
 
@@ -30,19 +28,25 @@ import javax.sql.DataSource
  */
 @AutoConfigureBefore(MessageSourceAutoConfiguration::class)
 @Configuration(proxyBeanMethods = false)
+@EnableConfigurationProperties(ApplicationCoreProperties::class)
 class LocalizationAutoConfiguration {
 
     @Bean
-    @Lazy
     @ConditionalOnMissingBean(ILocalizationService::class)
-    fun localizationService(
+    fun applicationBuiltInService(
+        properties: ApplicationCoreProperties,
         @Autowired(required = false) dataSource: DataSource?,
         @Autowired(required = false) transactionTemplate: TransactionTemplate?) : ILocalizationService {
-        return if(transactionTemplate != null && dataSource != null) {
-            JdbcLocalizationService(transactionTemplate)
-        }else {
-            NoneLocalizationService()
+
+        val name = properties.localizationService
+
+        if(name.equals("jdbc", true) && transactionTemplate != null && dataSource != null) {
+            return JdbcLocalizationService(transactionTemplate)
         }
+        if(name.equals("none", true)) {
+            return NoneLocalizationService()
+        }
+        return MemoryLocalizationService()
     }
 
 

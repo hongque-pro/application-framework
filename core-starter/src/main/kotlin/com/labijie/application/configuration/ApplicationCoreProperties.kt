@@ -16,9 +16,12 @@ class ApplicationCoreProperties {
     var desSecret: String = DEFAULT_DES_SECRET
     var preloadLocales: String = "zh_CN,en_US"
 
+    var localizationService: String = "memory"
+
     @NestedConfigurationProperty
     val file: FileSettings = FileSettings()
 
     val isDefaultDesSecret: Boolean
         get() = desSecret == DEFAULT_DES_SECRET
+
 }

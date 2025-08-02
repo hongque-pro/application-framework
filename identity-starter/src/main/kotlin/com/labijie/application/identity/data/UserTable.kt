@@ -19,7 +19,8 @@ object UserTable : IdentityLongIdTable("users") {
     val lockoutEnd = long("lockout_end").default(0)
     val passwordHash = varchar("password_hash", 128)
     val phoneCountryCode = short("phone_country_code").default(86)
-    val phoneNumber = varchar("phone_number", 32).uniqueIndex()
+    val phoneNumber = varchar("phone_number", 32).index()
+    var fullPhoneNumber = varchar("full_phone_number", 32).uniqueIndex()
     val phoneNumberConfirmed = bool("phone_number_confirmed").default(false)
     val securityStamp = varchar("security_stamp", 32)
     val timeZone = varchar("time_zone", 32)
@@ -34,5 +35,5 @@ object UserTable : IdentityLongIdTable("users") {
     val lastSignInPlatform = varchar("last_sign_in_platform", 16).default("")
     val lastSignInArea = varchar("last_sign_in_area", 32).default("")
     val lastClientVersion = varchar("last_client_version", 32).default("")
-
+    val must_reset_password = bool("must_reset_password").default(false)
 }

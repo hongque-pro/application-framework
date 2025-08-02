@@ -1,14 +1,14 @@
 package com.labijie.application.email.service.impl
 
 import com.labijie.application.component.AbstractRateLimitService
-import com.labijie.application.component.IVerificationCodeService
+import com.labijie.application.service.IOneTimeCodeService
 import com.labijie.application.email.configuration.EmailServiceProperties
 import com.labijie.application.email.provider.DummyEmailProvider
 import com.labijie.application.email.provider.IEmailServiceProvider
 import com.labijie.application.email.service.IEmailService
 import com.labijie.application.email.model.TemplatedMail
 import com.labijie.application.model.VerificationCodeType
-import com.labijie.application.model.VerificationToken
+import com.labijie.application.model.OneTimeGenerationResult
 import com.labijie.caching.ICacheManager
 import com.labijie.infra.utils.ShortId
 import org.slf4j.LoggerFactory
@@ -21,7 +21,7 @@ import java.time.Duration
 class DefaultEmailService(
     private val properties: EmailServiceProperties,
     cacheManager: ICacheManager,
-    private val verificationCodeService: IVerificationCodeService,
+    private val oneTimeCodeService: IOneTimeCodeService,
     providers: Collection<IEmailServiceProvider>
 ) : AbstractRateLimitService(cacheManager), IEmailService {
 
@@ -73,16 +73,15 @@ class DefaultEmailService(
     }
 
 
-    override fun sendVerificationCode(to: String, type: VerificationCodeType): VerificationToken {
+    override fun sendVerificationCode(to: String, type: VerificationCodeType): OneTimeGenerationResult {
 
-        val token = ShortId.newId()
-        val code =  verificationCodeService.generateCode(token)
+        val code =  oneTimeCodeService.generateMailCode(to)
 
         val id = "mail:${to}:${type.toString().lowercase()}_code"
         rateLimit(id, "Send email verification code") {
-            this.mainProvider.sendVerificationCodeAsync(to, code, type)
+            this.mainProvider.sendVerificationCodeAsync(to, code.code, type)
         }
-        return VerificationToken(token)
+        return OneTimeGenerationResult(code.stamp)
     }
 
 }

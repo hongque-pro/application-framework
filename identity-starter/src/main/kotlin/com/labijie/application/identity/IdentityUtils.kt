@@ -2,6 +2,7 @@ package com.labijie.application.identity
 
 import com.labijie.application.getId
 import com.labijie.application.identity.data.pojo.User
+import com.labijie.application.identity.model.UserIdentifierType
 import com.labijie.infra.utils.ShortId
 import org.apache.commons.lang3.LocaleUtils
 import java.time.ZoneOffset
@@ -17,18 +18,21 @@ object IdentityUtils {
 
     @JvmStatic
     fun createUser(id: Long,
-                   userName: String,
+                   userName: String? = null,
                    userType: Byte = 0,
                    locale: Locale? = null): User {
+
+        val username:  String = if(userName.isNullOrBlank()) id.toString() else userName
+
         return User().apply {
             this.id = id
-            this.userName = userName
+            this.userName = username
             this.lockoutEnd = System.currentTimeMillis()
             this.lockoutEnabled = false
             this.language = (locale ?: Locale.US).getId()
             this.accessFailedCount = 0
             this.concurrencyStamp = ShortId.newId()
-            this.email = "${userName.lowercase()}@null.null"
+            this.email = "${username.lowercase()}@null.null"
             this.emailConfirmed = false
             this.lastClientVersion = "1.0"
             this.lastSignInArea = ""
@@ -41,7 +45,7 @@ object IdentityUtils {
             this.timeZone = ZoneOffset.ofHours(8).id
             this.twoFactorEnabled = true
             this.userType = userType
-            this.phoneNumber = "N_${userName.lowercase()}"
+            this.phoneNumber = "N_${username.lowercase()}"
             this.phoneNumberConfirmed = false
             this.securityStamp = UUID.randomUUID().toString().replace("-", "")
             this.approved = true
@@ -50,6 +54,8 @@ object IdentityUtils {
     }
 }
 
+val User.isNullUserName
+    get() = this.userName.isBlank() || userName.substring(0, 1).toIntOrNull() != null
 
 val User.isNullEmail
     get() = this.email.endsWith("@null.null")
@@ -65,3 +71,14 @@ val User.locale: Locale?
     }catch (e: IllegalArgumentException) {
         null
     }
+
+
+fun User.getIdentityType(identifier: String): UserIdentifierType {
+    val type = when (identifier) {
+        fullPhoneNumber -> UserIdentifierType.Phone
+        email -> UserIdentifierType.Email
+        userName -> UserIdentifierType.UserName
+        else -> UserIdentifierType.Unknown
+    }
+    return type
+}

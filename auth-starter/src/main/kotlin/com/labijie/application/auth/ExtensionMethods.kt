@@ -2,9 +2,12 @@ package com.labijie.application.auth
 
 import com.labijie.application.ErrorCodedException
 import com.labijie.application.auth.oauth2.OAuth2UserTokenArgumentResolver
+import com.labijie.application.exception.InvalidOneTimeCodeException
 import com.labijie.application.identity.IdentityErrors
+import com.labijie.application.identity.data.pojo.User
 import com.labijie.application.identity.model.RegisterInfo
 import com.labijie.application.identity.model.UserAndRoles
+import com.labijie.application.model.OneTimeCodeTarget
 import com.labijie.application.web.roleAuthority
 import com.labijie.infra.oauth2.ITwoFactorUserDetails
 import com.labijie.infra.oauth2.OAuth2Utils
@@ -102,10 +105,48 @@ fun UserAndRoles.toUserDetails() : ITwoFactorUserDetails {
     )
 }
 
-fun RegisterInfo.attachOAuth2User(auth2UserToken: String) {
-    this.addition[OAuth2UserTokenArgumentResolver.TOKEN_PARAMETER_NAME] = auth2UserToken
+fun RegisterInfo.attachIdToken(idToken: String) {
+
+    if(this.addition == null) {
+        this.addition = mutableMapOf(OAuth2UserTokenArgumentResolver.ID_TOKEN_KEY to idToken)
+    }else {
+        this.addition?.let {
+            it[OAuth2UserTokenArgumentResolver.ID_TOKEN_KEY] = idToken
+        }
+    }
 }
 
-fun RegisterInfo.getOAuth2User(): String? {
-    return this.addition[OAuth2UserTokenArgumentResolver.TOKEN_PARAMETER_NAME]
+fun RegisterInfo.getIdToken(): String? {
+    return this.addition?.get(OAuth2UserTokenArgumentResolver.ID_TOKEN_KEY)
+}
+
+fun OneTimeCodeTarget.validateUser(user: User, throwInfInvalid: Boolean = true): Boolean {
+    val  valid = when(channel) {
+        OneTimeCodeTarget.Channel.Phone-> {
+            contact == user.fullPhoneNumber
+        }
+        OneTimeCodeTarget.Channel.Email -> {
+            contact == user.email
+        }
+    }
+    if(!valid && throwInfInvalid) {
+        throw InvalidOneTimeCodeException()
+    }
+    return valid
+}
+
+fun OneTimeCodeTarget.validateEmail(email: String, throwInfInvalid: Boolean = true): Boolean {
+    val valid = channel == OneTimeCodeTarget.Channel.Email && contact == email
+    if(!valid && throwInfInvalid) {
+        throw InvalidOneTimeCodeException()
+    }
+    return valid
+}
+
+fun OneTimeCodeTarget.validatePhone(phoneNumber: String, throwInfInvalid: Boolean = true): Boolean {
+    val valid = channel == OneTimeCodeTarget.Channel.Phone && contact == phoneNumber
+    if(!valid && throwInfInvalid) {
+        throw InvalidOneTimeCodeException()
+    }
+    return valid
 }

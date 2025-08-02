@@ -10,9 +10,20 @@
     },
     {
       "name": "application.web.service-controllers"
+    },
+    {
+      "name": "application.captcha.image",
+      "type": "com.labijie.application.configuration.ImageCaptchaProperties",
+      "sourceType": "com.labijie.application.configuration.ImageCaptchaProperties"
     }
   ],
   "properties": [
+    {
+      "name": "application.captcha.image.enabled",
+      "type": "java.lang.Boolean",
+      "sourceType": "com.labijie.application.configuration.ImageCaptchaProperties",
+      "defaultValue": false
+    },
     {
       "name": "application.web.service-controllers.enabled",
       "description": "Enable built-in controllers: ApplicationController, SmsController, FileController, etc",
@@ -31,13 +42,6 @@
       "type": "com.labijie.application.JsonMode",
       "sourceType": "com.labijie.application.configuration.ApplicationWebProperties",
       "defaultValue": "javascript"
-    },
-    {
-      "name": "application.web.doc-server-url-protocol",
-      "description": "Swagger doc url protocol",
-      "type": "com.labijie.application.UrlProtocol",
-      "sourceType": "com.labijie.application.configuration.ApplicationWebProperties",
-      "defaultValue": "auto"
     }
   ]
 }

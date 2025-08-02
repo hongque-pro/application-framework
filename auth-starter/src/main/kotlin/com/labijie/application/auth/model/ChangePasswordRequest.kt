@@ -8,8 +8,7 @@ import jakarta.validation.constraints.NotBlank
  * @date 2019-10-18
  */
 data class ChangePasswordRequest(
+    var oldPassword:String? = null,
     @get:NotBlank
-    var oldPassword:String,
-    @get:NotBlank
-    var newPassword:String
+    var newPassword:String = ""
 )

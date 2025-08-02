@@ -5,4 +5,4 @@ package com.labijie.application.auth.model
  * @author Anders Xiao
  * @date 2019-10-23
  */
-data class UserVerifyResult(var userId:Long, var security: SecurityView)
+data class UserVerifyResult(var identifier: String, var security: SecurityView)

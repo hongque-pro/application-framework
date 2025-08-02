@@ -1,10 +1,12 @@
 package com.labijie.application.identity.aot
 
+import com.labijie.application.aot.registerEnum
 import com.labijie.application.aot.registerForJackson
 import com.labijie.application.identity.data.IdentityLongIdTable
 import com.labijie.application.identity.data.IdentityTable
 import com.labijie.application.identity.model.PasswordStrength
 import com.labijie.application.identity.model.PlatformAccessToken
+import com.labijie.application.identity.model.UserIdentifierType
 import org.springframework.aot.hint.MemberCategory
 import org.springframework.aot.hint.RuntimeHints
 import org.springframework.aot.hint.RuntimeHintsRegistrar
@@ -27,6 +29,7 @@ class IdentityRuntimeHintsRegistrar : RuntimeHintsRegistrar {
             )
         }
 
+        hints.reflection().registerEnum(UserIdentifierType::class)
         hints.reflection().registerForJackson(
             PlatformAccessToken::class
         )

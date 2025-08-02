@@ -18,7 +18,7 @@
     },
 
     {
-      "name": "application.verification-code",
+      "name": "application.one-time-code",
       "type": "com.labijie.application.configuration.VerificationCodeProperties"
     },
 
@@ -51,6 +51,13 @@
   ],
   "properties": [
     {
+      "name": "application.localization-service",
+      "type": "java.lang.String",
+      "sourceType": "com.labijie.application.configuration.ApplicationCoreProperties",
+      "description": "Use a built-in localization service.",
+      "defaultValue": "memory"
+    },
+    {
       "name": "application.des-secret",
       "sourceType": "com.labijie.application.configuration.ApplicationCoreProperties",
       "description": "The key used by application DES digest.",
@@ -64,9 +71,9 @@
       "defaultValue": "2h"
     },
     {
-      "name": "application.verification-code.expiration",
-      "sourceType": "com.labijie.application.configuration.VerificationCodeProperties",
-      "description": "The verification code ttl.",
+      "name": "application.one-time-code.expiration",
+      "sourceType": "com.labijie.application.configuration.OneTimeCodeProperties",
+      "description": "The one-time code ttl.",
       "type": "java.time.Duration",
       "defaultValue": "5m"
     },
@@ -179,6 +186,20 @@
     }
   ],
   "hints": [
+    {
+      "name": "application.localization-service",
+      "values": [
+        {
+          "value": "none"
+        },
+        {
+          "value": "memory"
+        },
+        {
+          "value": "jdbc"
+        }
+      ]
+    },
     {
       "name": "application.validation.regex.keys",
       "values": [

@@ -14,7 +14,7 @@
       "name": "application.auth.oauth2-login",
       "type": "com.labijie.application.auth.configuration.OAuth2LoginSettings",
       "sourceType": "com.labijie.application.auth.configuration.AuthProperties"
-    },
+    }
   ],
   "properties": [
     {
@@ -24,16 +24,11 @@
       "defaultValue": "Phone"
     },
     {
-      "name": "application.auth.oauth2-login.handler-page-uri",
+      "name": "application.auth.oauth2-login.login-result-page-uri",
       "type": "java.lang.String",
       "sourceType": "com.labijie.application.auth.configuration.OAuth2LoginSettings",
+      "description": "A front page for process oauth2 client login.",
       "defaultValue": "/"
-    },
-    {
-      "name": "application.auth.oauth2-login.redirection-base-url",
-      "type": "java.lang.String",
-      "sourceType": "com.labijie.application.auth.configuration.OAuth2LoginSettings",
-      "defaultValue": ""
     },
     {
       "name": "application.auth.register-controller-enabled",

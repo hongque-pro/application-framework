@@ -22,7 +22,7 @@ class HCaptchaAutoConfiguration {
 
     @Bean
     @ConditionalOnProperty(
-        prefix = "application.hcaptcha",
+        prefix = "application.captcha.hcaptcha",
         name = ["enabled"],
         havingValue = "true",
         matchIfMissing = true

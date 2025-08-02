@@ -6,7 +6,7 @@ import com.labijie.application.exception.EmailAddressNotVerifiedException
 import com.labijie.application.exception.UserNotFoundException
 import com.labijie.application.identity.service.IUserService
 import com.labijie.application.model.VerificationCodeType
-import com.labijie.application.model.VerificationToken
+import com.labijie.application.model.OneTimeGenerationResult
 import com.labijie.application.web.annotation.HumanVerify
 import com.labijie.infra.oauth2.TwoFactorPrincipal
 import jakarta.annotation.security.PermitAll
@@ -30,17 +30,17 @@ class EmailController(
     private val userService: IUserService,
 ) {
     @PermitAll
-    @PutMapping("/verification-code")
+    @PutMapping("/totp")
     @HumanVerify
-    fun send(@RequestBody @Valid request: EmailVerificationSendRequest): VerificationToken {
+    fun send(@RequestBody @Valid request: EmailVerificationSendRequest): OneTimeGenerationResult {
         return emailService.sendVerificationCode(request.to, request.type)
     }
 
-    @PutMapping("/verification-code/to-me")
+    @PutMapping("/totp/me")
     fun sendToUser(
         @RequestParam(required = true) type: VerificationCodeType,
         principal: TwoFactorPrincipal
-    ): VerificationToken {
+    ): OneTimeGenerationResult {
         val userId = principal.userId.toLong()
         val user = userService.getUserById(userId) ?: throw UserNotFoundException()
 

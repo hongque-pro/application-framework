@@ -5,11 +5,10 @@ import com.labijie.application.service.impl.NoneLocalizationService
 import com.labijie.infra.utils.ifNullOrBlank
 import com.labijie.infra.utils.logger
 import org.apache.commons.lang3.LocaleUtils
-import org.hibernate.validator.internal.engine.messageinterpolation.DefaultLocaleResolver
 import org.springframework.context.ApplicationContext
 import org.springframework.context.ApplicationContextAware
-import org.springframework.context.i18n.LocaleContextHolder
 import java.util.Locale
+import java.util.SortedMap
 import kotlin.reflect.full.declaredMemberProperties
 import kotlin.reflect.jvm.javaField
 
@@ -25,11 +24,16 @@ interface IErrorRegistry {
 
     fun getErrorMessage(code: String, local: Locale?): String?
     fun getErrorMessages(local: Locale?): Map<String, String>
+
+    fun getErrorCodeMapping(local: Locale?): Map<String, String>
 }
 
 internal class ErrorRegistry() : IErrorRegistry, ApplicationContextAware {
-    private val localeMessages: MutableMap<Locale, MutableMap<String, String>> = mutableMapOf()
-    private val defaultMessages: MutableMap<String, String> = mutableMapOf()
+    private var localeMessages: MutableMap<Locale, SortedMap<String, String>> = mutableMapOf()
+    private var defaultMessages: SortedMap<String, String> = sortedMapOf()
+
+    private var allErrorCode: SortedMap<String, String> = sortedMapOf()
+    private val errorCodeMap: MutableMap<Locale,  SortedMap<String, String>> = mutableMapOf()
 
     private var localizationEnabled = false
 
@@ -47,21 +51,32 @@ internal class ErrorRegistry() : IErrorRegistry, ApplicationContextAware {
 
         errorObject::class.declaredMemberProperties.forEach {
             if (it.isConst && it.returnType.classifier == String::class) {
-                val value = it.call() as String
+                val errorCode = it.call() as String
                 val annotations = it.javaField?.getAnnotationsByType(ErrorDescription::class.java)
                 if(!annotations.isNullOrEmpty()) {
-                    val code = "app.err.${value}"
-                    if (defaultMessages.containsKey(value)) {
-                        logger.error("Duplex error code '$value' defined. (source code: ${errorObject::class.simpleName}.${it.name})")
+                    //Process messages
+                    val messageKey = "app.err.${errorCode}"
+                    val defaultMessage = errorCode.replace("_", " ")
+
+                    if (defaultMessages.containsKey(messageKey)) {
+                        logger.error("Duplex error code '$errorCode' defined. (source code: ${errorObject::class.simpleName}.${it.name})")
                     } else {
-                        val defaultMessage = value.replace("_", " ")
-                        defaultMessages[value] = defaultMessage
+                        //添加错误代码映射
+                        allErrorCode[errorCode] = defaultMessage
+
+                        //添加国际化消息映射
+                        defaultMessages[messageKey] = defaultMessage
 
                         annotations.forEach {
                             annotation->
                             val local = LocaleUtils.toLocale(annotation.locale)
-                            val records = localeMessages.getOrPut(local) { mutableMapOf() }
-                            records.putIfAbsent(code, annotation.description.ifNullOrBlank { defaultMessage })
+
+                            val errorMapping = errorCodeMap.getOrPut(local) { sortedMapOf() }
+                            errorMapping.putIfAbsent(errorCode, annotation.description.ifNullOrBlank { defaultMessage })
+
+                            //添加国际化消息映射
+                            val messages = localeMessages.getOrPut(local) { sortedMapOf() }
+                            messages.putIfAbsent(messageKey, annotation.description.ifNullOrBlank { defaultMessage })
                         }
                     }
                 }
@@ -71,14 +86,26 @@ internal class ErrorRegistry() : IErrorRegistry, ApplicationContextAware {
     }
 
     override fun persistMessages() {
+        defaultMessages = defaultMessages.toSortedMap()
+        allErrorCode = allErrorCode.toSortedMap()
+
         if(localizationService !is NoneLocalizationService) {
             localeMessages.forEach { local ->
                 localizationService.setMessages(local.value, local.key)
             }
         }
+
+
         //对齐所有的 errorCode
         localeMessages.forEach { locale ->
             defaultMessages.forEach {
+                msg->
+                locale.value.putIfAbsent(msg.key, msg.value)
+            }
+        }
+
+        errorCodeMap.forEach { locale ->
+            allErrorCode.forEach {
                 msg->
                 locale.value.putIfAbsent(msg.key, msg.value)
             }
@@ -90,8 +117,14 @@ internal class ErrorRegistry() : IErrorRegistry, ApplicationContextAware {
         return localeMessages[l] ?: defaultMessages
     }
 
+    override fun getErrorCodeMapping(local: Locale?): Map<String, String> {
+        val l = local ?: Locale.getDefault()
+        return errorCodeMap[l] ?: allErrorCode
+    }
+
     override fun getErrorMessage(code: String, local: Locale?): String? {
-        return getErrorMessages(local)[code]
+        val messageKey = "app.err.${code}"
+        return getErrorMessages(local)[messageKey]
     }
 
     override fun setApplicationContext(applicationContext: ApplicationContext) {

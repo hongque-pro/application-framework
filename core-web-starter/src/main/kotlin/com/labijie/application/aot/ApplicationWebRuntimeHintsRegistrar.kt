@@ -4,8 +4,10 @@ import com.labijie.application.UrlProtocol
 import com.labijie.application.configuration.ApplicationLocaleAutoConfiguration
 import com.labijie.application.configuration.ApplicationWebAutoConfiguration
 import com.labijie.application.model.CaptchaResponseData
+import com.labijie.application.model.OneTimeCodeVerifyRequest
 import com.labijie.application.web.annotation.HttpCache
 import com.labijie.application.web.annotation.HumanVerify
+import com.labijie.application.web.annotation.OneTimeCodeVerify
 import com.labijie.application.web.handler.ErrorResponse
 import com.labijie.application.web.handler.InvalidParameterResponse
 import com.labijie.application.web.handler.RequestParameterResponse
@@ -22,9 +24,11 @@ class ApplicationWebRuntimeHintsRegistrar : RuntimeHintsRegistrar {
         hints.reflection().registerAnnotations(
             HttpCache::class,
             HumanVerify::class,
+            OneTimeCodeVerify::class
         )
 
         hints.resources().registerPattern("captcha/*.ttf")
+        hints.reflection().registerForJackson(OneTimeCodeVerifyRequest::class)
 
 
         //spring doc
@@ -47,6 +51,7 @@ class ApplicationWebRuntimeHintsRegistrar : RuntimeHintsRegistrar {
             RequestParameterResponse::class,
             UrlProtocol::class,
             CaptchaResponseData::class,
+            ErrorResponse::class,
         )
 
     }

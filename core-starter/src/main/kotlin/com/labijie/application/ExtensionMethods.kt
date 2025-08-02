@@ -1,6 +1,8 @@
 package com.labijie.application
 
 import com.fasterxml.jackson.core.type.TypeReference
+import com.labijie.application.component.IHumanChecker
+import com.labijie.application.component.impl.NoneHumanChecker
 import com.labijie.application.copier.BeanCopierUtils
 import com.labijie.application.service.ILocalizationService
 import com.labijie.caching.ICacheManager
@@ -186,8 +188,8 @@ fun <T : Enum<*>> Number.toEnum(type: Class<T>): T {
     return v as T
 }
 
-inline fun <reified T : Enum<*>> String.toEnum(): T {
-    return getEnumFromString(T::class.java, this) as T
+inline fun <reified T : Enum<*>> String.toEnum(ignoreCase: Boolean = false): T {
+    return getEnumFromString(T::class.java, this, ignoreCase) as T
 }
 
 fun getEnumFromNumber(enumClass: Class<*>, value: Number, ignoreType: Boolean = true): Enum<*>? {
@@ -715,5 +717,9 @@ fun <R> String?.runIfNotNullOrBlank(block: String.() -> R): Unit {
         block(this)
     }
 }
+
+val IHumanChecker.isEnabled
+    get() = this !is NoneHumanChecker
+
 
 

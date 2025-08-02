@@ -32,6 +32,8 @@ dependencies {
     implementation(project(":dapr-starter"))
     //implementation(project(":minio-starter"))
     implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-xml")
+
+    implementation(project(":email-starter"))
 }
 
 

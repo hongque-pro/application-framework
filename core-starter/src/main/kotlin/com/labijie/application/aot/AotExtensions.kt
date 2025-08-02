@@ -23,6 +23,20 @@ fun ReflectionHints.registerType(className: String, vararg memberCategories: Mem
     this.registerType(TypeReference.of(className), *memberCategories)
 }
 
+fun ReflectionHints.registerEnum(enumType: TypeReference) {
+     this.registerType(enumType) { builder ->
+         builder.withMembers(MemberCategory.INVOKE_PUBLIC_METHODS, MemberCategory.DECLARED_FIELDS) // 可选
+     }
+}
+
+fun ReflectionHints.registerEnum(enumType: Class<*>) {
+    registerEnum(TypeReference.of(enumType))
+}
+
+fun ReflectionHints.registerEnum(enumType: KClass<*>) {
+    registerEnum(enumType.java)
+}
+
 fun ReflectionHints.registerAnnotations(vararg annotationClasses: KClass<*>): ReflectionHints {
     return registerAnnotations(*annotationClasses.map { it.java }.toTypedArray())
 }
@@ -75,9 +89,9 @@ fun ReflectionHints.registerForJackson(vararg jacksonObjects: KClass<*>): Reflec
     return this
 }
 
-fun ReflectionHints.registerPackageForJackson(classInPackage: Class<*>): ReflectionHints {
+fun ReflectionHints.registerPackageForJackson(classInPackage: Class<*>, classFilter: ((ScanResult) -> ClassInfoList)? = null): ReflectionHints {
     val packageName = classInPackage.packageName
-    return registerPackageForJackson(packageName)
+    return registerPackageForJackson(listOf(packageName), classFilter)
 }
 
 fun ReflectionHints.registerPackageForJackson(vararg packageNames: String): ReflectionHints {

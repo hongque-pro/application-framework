@@ -1,5 +1,6 @@
 package com.labijie.application.identity.service.impl
 
+import com.labijie.application.identity.component.ICustomUserDataPersistence
 import com.labijie.application.identity.configuration.IdentityProperties
 import com.labijie.caching.ICacheManager
 import com.labijie.infra.IIdGenerator
@@ -16,15 +17,17 @@ open class DefaultUserService(
     idGenerator: IIdGenerator,
     passwordEncoder: PasswordEncoder,
     cacheManager: ICacheManager,
-    transactionTemplate: TransactionTemplate
+    transactionTemplate: TransactionTemplate,
+    customUserPersistence: ICustomUserDataPersistence?
 ) : AbstractSocialUserService(
     identityProperties,
     passwordEncoder,
     idGenerator,
     cacheManager,
-    transactionTemplate
+    transactionTemplate,
+    customUserPersistence
 ) {
-    override fun getDefaultUserRoles(): Array<String> {
-        return arrayOf("user")
+    override fun getDefaultUserRoles(): Set<String> {
+        return setOf("user")
     }
 }

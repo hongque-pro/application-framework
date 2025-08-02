@@ -12,11 +12,15 @@ object ApplicationErrors {
     @ErrorDescription("An internal server error has occurred", locale = Constants.EN_US)
     const val UnhandledError = "system_error"
 
+    @ErrorDescription("该操作不被支持")
+    @ErrorDescription("The operation is not supported", locale = Constants.EN_US)
+    const val UnsupportedOperation = "unsupported_operation"
+
     @ErrorDescription("HTTP 请求中未包含正文 ( body )")
     @ErrorDescription("HTTP request is missing body", locale = Constants.EN_US)
     const val HttpBodyIsMissing  = "http_body_is_missing"
 
-    @ErrorDescription("知道不到符合此请求的终结点")
+    @ErrorDescription("找不到符合此请求的终结点")
     @ErrorDescription("No endpoint matches this request", locale = Constants.EN_US)
     const val BadRequestMethod  = "bad_request_method"
 
@@ -32,9 +36,9 @@ object ApplicationErrors {
     @ErrorDescription("Missing required request parameters", locale = Constants.EN_US)
     const val RequestParameterMissed  = "miss_request_param"
 
-    @ErrorDescription("验证码不正确")
-    @ErrorDescription("Incorrect verification code", locale = Constants.EN_US)
-    const val InvalidVerificationCode = "invalid_verification_code"
+    @ErrorDescription("验证码不正确或已过期")
+    @ErrorDescription("Invalid or expired TOTP code", locale = Constants.EN_US)
+    const val InvalidOneTimeCode = "invalid_one_time_code"
 
     @ErrorDescription("手机号格式不正确")
     @ErrorDescription("Invalid phone number format", locale = Constants.EN_US)
@@ -101,8 +105,8 @@ object ApplicationErrors {
     @ErrorDescription("You do not have permission to perform this operation", locale = Constants.EN_US)
     const val PermissionDenied  = "permission_denied"
 
-    @ErrorDescription("密码至少 8 位，必须包含字母、数字和至少一位非数字字母字符。")
-    @ErrorDescription("Password must be at least 8 characters long and contain letters, numbers, and at least one special character", locale = Constants.EN_US)
+    @ErrorDescription("密码至少 8 位，必须包含字母、数字和至少一位非数字字母字符")
+    @ErrorDescription("Password must be at least 8 characters in length and include a combination of letters, numbers, and at least one special character.", locale = Constants.EN_US)
     const val StrongPasswordConstraintViolation = "strong_password_constraint_violation"
 
     @ErrorDescription("人机验证失败，请重试")

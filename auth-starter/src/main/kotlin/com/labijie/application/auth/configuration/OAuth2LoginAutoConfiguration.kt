@@ -4,63 +4,39 @@
  */
 package com.labijie.application.auth.configuration
 
-import com.labijie.application.auth.component.NoneClientRegistrationRepository
 import com.labijie.application.auth.component.OAuth2UserRegistrationIntegration
-import com.labijie.application.auth.controller.OAuth2ClientController
-import com.labijie.application.auth.oauth2.ClientRegistrationBuilder
 import com.labijie.application.auth.oauth2.OAuth2UserTokenArgumentResolver
 import com.labijie.application.auth.service.IOAuth2ClientUserService
-import com.labijie.application.auth.service.IOAuth2UserTokenCodec
 import com.labijie.application.auth.service.impl.DefaultOAuth2ClientUserService
-import com.labijie.application.auth.service.impl.DefaultOAuth2UserTokenCodec
 import com.labijie.application.identity.service.IUserService
-import com.labijie.infra.oauth2.component.IOAuth2ServerRSAKeyPair
+import com.labijie.infra.oauth2.configuration.OAuth2ServerAutoConfiguration
 import com.labijie.infra.oauth2.resource.configuration.ResourceServerAutoConfiguration
+import com.labijie.infra.oauth2.service.IOAuth2ServerOidcTokenService
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.autoconfigure.AutoConfigureAfter
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.security.oauth2.client.OAuth2ClientProperties
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
-import org.springframework.context.annotation.Import
-import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository
-import org.springframework.security.oauth2.client.registration.InMemoryClientRegistrationRepository
-import org.springframework.security.oauth2.server.authorization.settings.AuthorizationServerSettings
 import org.springframework.transaction.support.TransactionTemplate
 import org.springframework.web.method.support.HandlerMethodArgumentResolver
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer
 
 
 @Configuration(proxyBeanMethods = false)
-@AutoConfigureAfter(ResourceServerAutoConfiguration::class)
+@AutoConfigureAfter(OAuth2ServerAutoConfiguration::class, ResourceServerAutoConfiguration::class)
 @EnableConfigurationProperties(OAuth2ClientProperties::class)
 class OAuth2LoginAutoConfiguration : WebMvcConfigurer {
-    override fun addArgumentResolvers(resolvers: MutableList<HandlerMethodArgumentResolver>) {
-        resolvers.add(OAuth2UserTokenArgumentResolver())
+
+    @Autowired
+    private lateinit var oauth2ServerOidcTokenService: IOAuth2ServerOidcTokenService
+
+    override fun addArgumentResolvers(
+        resolvers: MutableList<HandlerMethodArgumentResolver>) {
+        resolvers.add(OAuth2UserTokenArgumentResolver(oauth2ServerOidcTokenService))
     }
 
-    @Bean
-    @ConditionalOnMissingBean(ClientRegistrationRepository::class)
-    fun clientRegistrationRepository(
-        authProperties: AuthProperties,
-        properties: OAuth2ClientProperties
-    ): ClientRegistrationRepository {
-        val clients = properties.let {
-            ClientRegistrationBuilder.build(authProperties, it)
-        }
-        return if (clients.isEmpty()) NoneClientRegistrationRepository() else InMemoryClientRegistrationRepository(
-            clients
-        )
-    }
-
-    @Bean
-    @ConditionalOnMissingBean(IOAuth2UserTokenCodec::class)
-    fun oauth2UserTokenCodec(
-        authProperties: AuthProperties,
-        oauth2ServerRSAKeyPair: IOAuth2ServerRSAKeyPair
-    ): DefaultOAuth2UserTokenCodec {
-        return DefaultOAuth2UserTokenCodec(authProperties, oauth2ServerRSAKeyPair)
-    }
 
     @Bean
     @ConditionalOnMissingBean(IOAuth2ClientUserService::class)
@@ -71,17 +47,13 @@ class OAuth2LoginAutoConfiguration : WebMvcConfigurer {
         return DefaultOAuth2ClientUserService(userService, transactionTemplate)
     }
 
-    @Configuration(proxyBeanMethods = false)
-    @Import(OAuth2ClientController::class)
-    protected class OAuth2ClientControllerImporter
-
     @Bean
     fun oauth2UserRegistrationIntegration(
         oauth2ClientUserService: IOAuth2ClientUserService,
-        oauth2UserTokenCodec: IOAuth2UserTokenCodec
+        oAuth2ServerOidcTokenService: IOAuth2ServerOidcTokenService,
     ): OAuth2UserRegistrationIntegration {
         return OAuth2UserRegistrationIntegration(
-            oauth2UserTokenCodec,
+            oAuth2ServerOidcTokenService,
             oauth2ClientUserService
         )
     }

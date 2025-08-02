@@ -6,7 +6,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties
  * @author Anders Xiao
  * @date 2025/7/29
  */
-@ConfigurationProperties(prefix = "application.hcaptcha")
+@ConfigurationProperties(prefix = "application.captcha.hcaptcha")
 class HCaptchaProperties {
 
     companion object {

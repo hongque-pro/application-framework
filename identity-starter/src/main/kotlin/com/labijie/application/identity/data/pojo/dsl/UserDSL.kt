@@ -9,6 +9,7 @@ import com.labijie.application.identity.`data`.UserTable.approverId
 import com.labijie.application.identity.`data`.UserTable.concurrencyStamp
 import com.labijie.application.identity.`data`.UserTable.email
 import com.labijie.application.identity.`data`.UserTable.emailConfirmed
+import com.labijie.application.identity.`data`.UserTable.fullPhoneNumber
 import com.labijie.application.identity.`data`.UserTable.id
 import com.labijie.application.identity.`data`.UserTable.language
 import com.labijie.application.identity.`data`.UserTable.lastClientVersion
@@ -17,6 +18,7 @@ import com.labijie.application.identity.`data`.UserTable.lastSignInIp
 import com.labijie.application.identity.`data`.UserTable.lastSignInPlatform
 import com.labijie.application.identity.`data`.UserTable.lockoutEnabled
 import com.labijie.application.identity.`data`.UserTable.lockoutEnd
+import com.labijie.application.identity.`data`.UserTable.must_reset_password
 import com.labijie.application.identity.`data`.UserTable.passwordHash
 import com.labijie.application.identity.`data`.UserTable.phoneCountryCode
 import com.labijie.application.identity.`data`.UserTable.phoneNumber
@@ -109,6 +111,7 @@ public object UserDSL {
     passwordHash,
     phoneCountryCode,
     phoneNumber,
+    fullPhoneNumber,
     phoneNumberConfirmed,
     securityStamp,
     timeZone,
@@ -123,6 +126,7 @@ public object UserDSL {
     lastSignInPlatform,
     lastSignInArea,
     lastClientVersion,
+    must_reset_password,
     id,
     )
   }
@@ -141,6 +145,7 @@ public object UserDSL {
     plain.passwordHash = raw[passwordHash]
     plain.phoneCountryCode = raw[phoneCountryCode]
     plain.phoneNumber = raw[phoneNumber]
+    plain.fullPhoneNumber = raw[fullPhoneNumber]
     plain.phoneNumberConfirmed = raw[phoneNumberConfirmed]
     plain.securityStamp = raw[securityStamp]
     plain.timeZone = raw[timeZone]
@@ -155,6 +160,7 @@ public object UserDSL {
     plain.lastSignInPlatform = raw[lastSignInPlatform]
     plain.lastSignInArea = raw[lastSignInArea]
     plain.lastClientVersion = raw[lastClientVersion]
+    plain.must_reset_password = raw[must_reset_password]
     plain.id = raw[id]
     return plain
   }
@@ -196,6 +202,9 @@ public object UserDSL {
     }
     if(row.hasValue(phoneNumber)) {
       plain.phoneNumber = row[phoneNumber]
+    }
+    if(row.hasValue(fullPhoneNumber)) {
+      plain.fullPhoneNumber = row[fullPhoneNumber]
     }
     if(row.hasValue(phoneNumberConfirmed)) {
       plain.phoneNumberConfirmed = row[phoneNumberConfirmed]
@@ -239,6 +248,9 @@ public object UserDSL {
     if(row.hasValue(lastClientVersion)) {
       plain.lastClientVersion = row[lastClientVersion]
     }
+    if(row.hasValue(must_reset_password)) {
+      plain.must_reset_password = row[must_reset_password]
+    }
     if(row.hasValue(id)) {
       plain.id = row[id]
     }
@@ -258,6 +270,7 @@ public object UserDSL {
     passwordHash->String::class
     phoneCountryCode->Short::class
     phoneNumber->String::class
+    fullPhoneNumber->String::class
     phoneNumberConfirmed->Boolean::class
     securityStamp->String::class
     timeZone->String::class
@@ -272,6 +285,7 @@ public object UserDSL {
     lastSignInPlatform->String::class
     lastSignInArea->String::class
     lastClientVersion->String::class
+    must_reset_password->Boolean::class
     id->Long::class
     else->throw IllegalArgumentException("""Unknown column <${column.name}> for 'User'""")
   }
@@ -295,6 +309,7 @@ public object UserDSL {
     UserTable.phoneCountryCode -> this.phoneCountryCode.toString()
 
     UserTable.phoneNumber->this.phoneNumber
+    UserTable.fullPhoneNumber->this.fullPhoneNumber
     UserTable.phoneNumberConfirmed -> this.phoneNumberConfirmed.toString()
 
     UserTable.securityStamp->this.securityStamp
@@ -317,6 +332,8 @@ public object UserDSL {
     UserTable.lastSignInPlatform->this.lastSignInPlatform
     UserTable.lastSignInArea->this.lastSignInArea
     UserTable.lastClientVersion->this.lastClientVersion
+    UserTable.must_reset_password -> this.must_reset_password.toString()
+
     UserTable.id -> this.id.toString()
 
     else->throw IllegalArgumentException("""Can't converter value of User::${column.name} to string.""")
@@ -337,6 +354,7 @@ public object UserDSL {
       UserTable.passwordHash -> valueString
       UserTable.phoneCountryCode ->valueString.toShort()
       UserTable.phoneNumber -> valueString
+      UserTable.fullPhoneNumber -> valueString
       UserTable.phoneNumberConfirmed ->valueString.toBoolean()
       UserTable.securityStamp -> valueString
       UserTable.timeZone -> valueString
@@ -351,6 +369,7 @@ public object UserDSL {
       UserTable.lastSignInPlatform -> valueString
       UserTable.lastSignInArea -> valueString
       UserTable.lastClientVersion -> valueString
+      UserTable.must_reset_password ->valueString.toBoolean()
       UserTable.id ->valueString.toLong()
       else->throw IllegalArgumentException("""Can't converter value of User::${column.name} to string.""")
     }
@@ -371,6 +390,7 @@ public object UserDSL {
     UserTable.passwordHash->this.passwordHash as T
     UserTable.phoneCountryCode->this.phoneCountryCode as T
     UserTable.phoneNumber->this.phoneNumber as T
+    UserTable.fullPhoneNumber->this.fullPhoneNumber as T
     UserTable.phoneNumberConfirmed->this.phoneNumberConfirmed as T
     UserTable.securityStamp->this.securityStamp as T
     UserTable.timeZone->this.timeZone as T
@@ -385,6 +405,7 @@ public object UserDSL {
     UserTable.lastSignInPlatform->this.lastSignInPlatform as T
     UserTable.lastSignInArea->this.lastSignInArea as T
     UserTable.lastClientVersion->this.lastClientVersion as T
+    UserTable.must_reset_password->this.must_reset_password as T
     UserTable.id->this.id as T
     else->throw IllegalArgumentException("""Unknown column <${column.name}> for 'User'""")
   }
@@ -420,6 +441,8 @@ public object UserDSL {
       builder[phoneCountryCode] = raw.phoneCountryCode
     if((list == null || list.contains(phoneNumber)) && !ignore.contains(phoneNumber))
       builder[phoneNumber] = raw.phoneNumber
+    if((list == null || list.contains(fullPhoneNumber)) && !ignore.contains(fullPhoneNumber))
+      builder[fullPhoneNumber] = raw.fullPhoneNumber
     if((list == null || list.contains(phoneNumberConfirmed)) && !ignore.contains(phoneNumberConfirmed))
       builder[phoneNumberConfirmed] = raw.phoneNumberConfirmed
     if((list == null || list.contains(securityStamp)) && !ignore.contains(securityStamp))
@@ -448,6 +471,8 @@ public object UserDSL {
       builder[lastSignInArea] = raw.lastSignInArea
     if((list == null || list.contains(lastClientVersion)) && !ignore.contains(lastClientVersion))
       builder[lastClientVersion] = raw.lastClientVersion
+    if((list == null || list.contains(must_reset_password)) && !ignore.contains(must_reset_password))
+      builder[must_reset_password] = raw.must_reset_password
     if((list == null || list.contains(id)) && !ignore.contains(id))
       builder[id] = raw.id
   }

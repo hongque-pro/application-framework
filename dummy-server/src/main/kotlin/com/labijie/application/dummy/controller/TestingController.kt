@@ -1,8 +1,11 @@
 package com.labijie.application.dummy.controller
 
-import com.labijie.application.component.IMessageService
 import com.labijie.application.model.SimpleValue
 import com.labijie.application.model.toSimpleValue
+import com.labijie.application.web.annotation.HttpCache
+import com.labijie.application.web.annotation.HumanVerify
+import com.labijie.caching.annotation.Cache
+import com.labijie.infra.oauth2.filter.ClientRequired
 import com.labijie.infra.utils.logger
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.web.bind.annotation.GetMapping
@@ -23,8 +26,6 @@ open class TestingController {
     init {
         logger.warn("${TestingController::class.simpleName} loaded")
     }
-    @Autowired(required = false)
-    private lateinit var messageSvc: IMessageService
 
     @Autowired(required = false)
     private lateinit var restTemplate: RestTemplate
@@ -42,6 +43,27 @@ open class TestingController {
 
     @GetMapping("/bing")
     fun bing() : SimpleValue<String> {
+        val entity = restTemplate.getForEntity("https://bing.com", String::class.java)
+        return entity.toString().toSimpleValue()
+    }
+
+    @HumanVerify
+    @GetMapping("/human-verify")
+    fun human() : SimpleValue<String> {
+        val entity = restTemplate.getForEntity("https://bing.com", String::class.java)
+        return entity.toString().toSimpleValue()
+    }
+
+    @ClientRequired
+    @GetMapping("/client-verify")
+    fun clientRequired() : SimpleValue<String> {
+        val entity = restTemplate.getForEntity("https://bing.com", String::class.java)
+        return entity.toString().toSimpleValue()
+    }
+
+    @HttpCache(maxAge = 3600)
+    @GetMapping("/cache-control")
+    fun cacheControl() : SimpleValue<String> {
         val entity = restTemplate.getForEntity("https://bing.com", String::class.java)
         return entity.toString().toSimpleValue()
     }

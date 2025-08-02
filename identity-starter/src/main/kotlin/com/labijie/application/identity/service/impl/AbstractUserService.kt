@@ -2,16 +2,21 @@ package com.labijie.application.identity.service.impl
 
 import com.labijie.application.component.IEmailAddressValidator
 import com.labijie.application.component.IPhoneValidator
+import com.labijie.application.component.IUserNameValidator
 import com.labijie.application.component.impl.EmailAddressValidator
 import com.labijie.application.component.impl.NationalPhoneValidator
+import com.labijie.application.component.impl.UsernameValidator
 import com.labijie.application.configuration.ValidationProperties
 import com.labijie.application.configure
+import com.labijie.application.exception.InvalidEmailException
+import com.labijie.application.exception.InvalidPhoneNumberException
 import com.labijie.application.exception.OperationConcurrencyException
 import com.labijie.application.exception.UserNotFoundException
 import com.labijie.application.executeReadOnly
 import com.labijie.application.identity.IdentityCacheKeys
 import com.labijie.application.identity.IdentityCacheKeys.getUserCacheKey
 import com.labijie.application.identity.IdentityUtils
+import com.labijie.application.identity.component.ICustomUserDataPersistence
 import com.labijie.application.identity.component.IUserRegistrationIntegration
 import com.labijie.application.identity.configuration.IdentityProperties
 import com.labijie.application.identity.data.RoleTable
@@ -29,6 +34,7 @@ import com.labijie.application.identity.data.pojo.dsl.UserDSL.selectMany
 import com.labijie.application.identity.data.pojo.dsl.UserDSL.selectOne
 import com.labijie.application.identity.data.pojo.dsl.UserDSL.toUserList
 import com.labijie.application.identity.data.pojo.dsl.UserDSL.updateByPrimaryKey
+import com.labijie.application.identity.data.pojo.dsl.UserRoleDSL.batchInsert
 import com.labijie.application.identity.data.pojo.dsl.UserRoleDSL.insert
 import com.labijie.application.identity.data.pojo.dsl.UserRoleDSL.selectMany
 import com.labijie.application.identity.exception.*
@@ -69,6 +75,7 @@ abstract class AbstractUserService(
     protected val idGenerator: IIdGenerator,
     protected val passwordEncoder: PasswordEncoder,
     protected val cacheManager: ICacheManager,
+    private val customUserPersistence: ICustomUserDataPersistence?
 ) : IUserService, ApplicationContextAware {
 
     protected var context: ApplicationContext? = null
@@ -101,22 +108,26 @@ abstract class AbstractUserService(
         this.context?.getBeansOfType(IPhoneValidator::class.java)?.values?.firstOrNull() ?: NationalPhoneValidator()
     }
 
+    protected open val userNameValidator: IUserNameValidator by lazy {
+        this.context?.getBeansOfType(IUserNameValidator::class.java)?.values?.firstOrNull() ?: UsernameValidator()
+    }
+
     protected open val integrations by lazy {
         this.context?.getBeanProvider(IUserRegistrationIntegration::class.java)?.orderedStream()?.toList() ?: listOf()
     }
 
-    protected fun getUserAndRoles(
-        phoneNumber: String,
-        loginProvider: String? = null
-    ): UserAndRoles {
-        val user = UserTable.selectOne {
-            andWhere { UserTable.phoneNumber eq phoneNumber }
-        } ?: throw UserNotFoundException(
-            if(loginProvider.isNullOrBlank()) "User was not existed." else "User was not existed (provider: $loginProvider)."
-        )
-        val roles = this.getUserRoles(user.id)
-        return UserAndRoles(user, roles)
-    }
+//    protected fun getUserAndRoles(
+//        phoneNumber: String,
+//        loginProvider: String? = null
+//    ): UserAndRoles {
+//        val user = UserTable.selectOne {
+//            andWhere { UserTable.phoneNumber eq phoneNumber }
+//        } ?: throw UserNotFoundException(
+//            if(loginProvider.isNullOrBlank()) "User was not existed." else "User was not existed (provider: $loginProvider)."
+//        )
+//        val roles = this.getUserRoles(user.id)
+//        return UserAndRoles(user, roles)
+//    }
 
     protected fun getUserAndRoles(
         userId: Long,
@@ -129,18 +140,36 @@ abstract class AbstractUserService(
         return UserAndRoles(user, roles)
     }
 
-    override fun changePhone(userId: Long, dialingCode: Short, phoneNumber: String, confirmed: Boolean): Boolean {
-        val u = User()
-        u.id = userId
-        u.phoneCountryCode = dialingCode
-        u.phoneNumber = phoneNumber
-        u.phoneNumberConfirmed = confirmed
-        u.concurrencyStamp = ShortId.newId()
-
+    override fun changeEmail(userId: Long, email: String, confirmed: Boolean): Boolean {
         return transactionTemplate.execute {
-            cacheManager.removeAfterTransactionCommit("u:$userId", authServerProperties.cacheRegion)
+            val count = UserTable.update({UserTable.id eq userId}) {
+                it[UserTable.email] = email
+                it[UserTable.emailConfirmed] = confirmed
+            }
+            if(count > 0) {
+                cacheManager.removeAfterTransactionCommit("u:$userId", authServerProperties.cacheRegion)
+            }
+            count == 1
+        } ?: false
+    }
+
+    override fun validatePassword(user: User, plainPassword: String, throwIfInvalid: Boolean): Boolean {
+        val valid = passwordEncoder.encode(plainPassword) == plainPassword
+        if(!valid && throwIfInvalid) {
+            throw InvalidPasswordException()
+        }
+        return valid
+    }
+
+    override fun changePhone(userId: Long, dialingCode: Short, phoneNumber: String, confirmed: Boolean): Boolean {
+        return transactionTemplate.execute {
+
             val count = UserTable.update({UserTable.id eq userId}) {
                 it[UserTable.phoneNumber] = phoneNumber
+                it[UserTable.phoneNumberConfirmed] = confirmed
+            }
+            if(count > 0) {
+                cacheManager.removeAfterTransactionCommit("u:$userId", authServerProperties.cacheRegion)
             }
             count == 1
         } ?: false
@@ -152,26 +181,41 @@ abstract class AbstractUserService(
 
     override fun registerUser(
         register: RegisterInfo,
-        by: RegisterBy,
+        forceBy: RegisterBy?,
         customizer: ((user: User) -> Unit)?
     ): UserAndRoles {
 
-        val phoneCountry = register.dialingCode ?: 86
-        register.email = register.email
-        register.phoneNumber = register.phoneNumber.trim()
+        register.email = register.email?.trim()
+        register.phoneNumber = register.phoneNumber?.trim()
+        val forceEmail = (forceBy == RegisterBy.Email || forceBy == RegisterBy.Phone)
+        val forcePhone = (forceBy == RegisterBy.Phone || forceBy == RegisterBy.Email)
 
-        val isByEmail = by == RegisterBy.Email || by == RegisterBy.Both
-        val isByPhone = by == RegisterBy.Phone || by == RegisterBy.Both
+        if(!register.username.isNullOrBlank()) {
+            register.username = register.username?.trim()
+            userNameValidator.validate(register.username, throwIfInvalid = true)
+        }
+
+        if(forcePhone && !register.hasPhone()) {
+            throw InvalidPhoneNumberException(inputPhone = register.fullPhoneNumber())
+        }
+
+        if(forceEmail && !register.hasEmail()) {
+            throw InvalidEmailException(inputEmail = register.email)
+        }
+
+        val isByEmail = register.hasEmail() || forceEmail
+        val isByPhone = register.hasPhone()  || forcePhone
 
         if(isByEmail){
             emailValidator.validate(register.email, true)
         }
 
         if(isByPhone) {
-            phoneNumberValidator.validate(phoneCountry, register.phoneNumber, true)
+            phoneNumberValidator.validate(register.dialingCode!!, register.phoneNumber!!, true)
         }
 
         val id = idGenerator.newId()
+
 
         val user = IdentityUtils.createUser(
             idGenerator.newId(),
@@ -185,13 +229,13 @@ abstract class AbstractUserService(
 
 
         if(isByPhone){
-            user.phoneCountryCode = phoneCountry
-            user.phoneNumber = register.phoneNumber
+            user.phoneCountryCode = register.dialingCode!!
+            user.phoneNumber = register.phoneNumber!!
             user.phoneNumberConfirmed = true
         }
 
         if(isByEmail){
-            user.email = register.email
+            user.email = register.email!!
             user.emailConfirmed = true
         }
 
@@ -199,7 +243,7 @@ abstract class AbstractUserService(
         val u = this.transactionTemplate.execute {
             if(isByPhone) {
                 val p1 = UserTable.selectOne {
-                    andWhere { UserTable.phoneNumber.eq(user.phoneNumber) }
+                    andWhere { UserTable.fullPhoneNumber.eq(user.fullPhoneNumber) }
                 }
                 if (p1 != null) {
                     throw PhoneAlreadyExistedException()
@@ -216,17 +260,17 @@ abstract class AbstractUserService(
             }
 
             customizer?.invoke(user)
-            val userAndRoles = this.createUser(user, register.password, *this.getDefaultUserRoles())
+            val userAndRoles = this.createUser(user, register.password, this.getDefaultUserRoles(), register.addition)
             integrations.forEach {
-                it.onUserRegisteredInTransaction(userAndRoles, register.addition)
+                it.onUserRegisteredInTransaction(userAndRoles, register.addition ?: mapOf())
             }
-            this.onUserRegisteredInTransaction(userAndRoles, register.addition)
+            this.onUserRegisteredInTransaction(userAndRoles, register.addition ?: mapOf())
 
             syncDbTransactionCommitted {
                 integrations.forEach {
-                    it.onUserRegisteredAfterTransactionCommitted(userAndRoles, register.addition)
+                    it.onUserRegisteredAfterTransactionCommitted(userAndRoles, register.addition ?: mapOf())
                 }
-                this.onUserRegisteredAfterTransactionCommitted(userAndRoles, register.addition)
+                this.onUserRegisteredAfterTransactionCommitted(userAndRoles, register.addition ?: mapOf())
             }
 
             userAndRoles
@@ -235,29 +279,38 @@ abstract class AbstractUserService(
         return u
     }
 
-    override fun createUser(user: User, plainPassword:String, vararg roles: String): UserAndRoles {
-        user.passwordHash = passwordEncoder.encode(plainPassword)
+    override fun createUser(user: User, plainPassword:String?, roles: Set<String>?, registerInfo: Map<String, String>?): UserAndRoles {
 
+        val password = plainPassword.ifNullOrBlank { ShortId.newId() }
+        user.passwordHash = passwordEncoder.encode(password)
+
+        val roleList = roles ?: emptySet()
         return transactionTemplate.execute {
-            val rolesExisted = if (roles.isNotEmpty()) {
-                val roleEntities = roles.map {
+            val newUser = try {
+                if(customUserPersistence != null) {
+                    customUserPersistence.persistUser(user, registerInfo = registerInfo)
+                }else {
+                    UserTable.insert(user)
+                    user
+                }
+            } catch (_: DuplicateKeyException) {
+                throw UserAlreadyExistedException()
+            }
+
+            val rolesExisted = if (roleList.isNotEmpty()) {
+                val roleEntities = roleList.map {
                     getOrCreateRole(it)
                 }
-                roleEntities.forEach {
-                    val key = UserRole().apply {
-                        this.userId = user.id
+                val roleMapping = roleEntities.map {
+                    UserRole().apply {
+                        this.userId = newUser.id
                         this.roleId = it.id
                     }
-                    UserRoleTable.insert(key)
                 }
+                UserRoleTable.batchInsert(roleMapping, ignoreErrors = true)
                 roleEntities
             } else {
                 listOf()
-            }
-            try {
-                UserTable.insert(user)
-            } catch (e: DuplicateKeyException) {
-                throw UserAlreadyExistedException()
             }
             UserAndRoles(user, rolesExisted)
         }!!
@@ -274,6 +327,7 @@ abstract class AbstractUserService(
         }
         return u != null
     }
+
 
     override fun getOrCreateRole(roleName: String): Role {
 
@@ -294,7 +348,7 @@ abstract class AbstractUserService(
                     RoleTable.insert(role)
                 }
                 role
-            } catch (e: DuplicateKeyException) {
+            } catch (_: DuplicateKeyException) {
                 throw OperationConcurrencyException()
             }
         }else {
@@ -467,7 +521,7 @@ abstract class AbstractUserService(
             return UserTable.selectMany {
                 andWhere {
                     UserTable.id.eq(id) or
-                    UserTable.phoneNumber.eq(usr) or
+                    UserTable.fullPhoneNumber.eq(usr) or
                     UserTable.userName.eq(usr) or
                     UserTable.email.eq(usr)
                 }

@@ -6,6 +6,7 @@ dependencies {
     api("org.springdoc:springdoc-openapi-starter-webmvc-ui:${Versions.springDoc}") {
         exclude("org.springframework.boot")
     }
+
 //    implementation("com.pig4cloud.plugin:captcha-core:${Versions.easyCaptcha}") {
 //        exclude("jakarta.servlet")
 //        exclude("org.slf4j")

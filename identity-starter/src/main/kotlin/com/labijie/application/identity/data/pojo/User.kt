@@ -47,6 +47,8 @@ public open class User {
 
   public var phoneNumber: String = ""
 
+  public var fullPhoneNumber: String = ""
+
   public var phoneNumberConfirmed: Boolean = false
 
   public var securityStamp: String = ""
@@ -74,6 +76,8 @@ public open class User {
   public var lastSignInArea: String = ""
 
   public var lastClientVersion: String = ""
+
+  public var must_reset_password: Boolean = false
 
   public var id: Long = 0L
 }

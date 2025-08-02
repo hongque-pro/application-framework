@@ -10,4 +10,4 @@ import java.util.concurrent.TimeUnit
  */
 @Target(AnnotationTarget.FUNCTION)
 @Retention(AnnotationRetention.RUNTIME)
-annotation class HttpCache(val maxAge: Long, val unit: TimeUnit)
+annotation class HttpCache(val maxAge: Long, val unit: TimeUnit = TimeUnit.SECONDS)

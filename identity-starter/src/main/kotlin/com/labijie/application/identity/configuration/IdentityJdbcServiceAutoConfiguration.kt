@@ -4,16 +4,19 @@
  */
 package com.labijie.application.identity.configuration
 
+import com.labijie.application.identity.component.ICustomUserDataPersistence
 import com.labijie.application.identity.service.IOAuth2ClientService
 import com.labijie.application.identity.service.IUserService
 import com.labijie.application.identity.service.impl.DefaultOAuth2ClientService
 import com.labijie.application.identity.service.impl.DefaultUserService
 import com.labijie.caching.ICacheManager
 import com.labijie.infra.IIdGenerator
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.autoconfigure.AutoConfigureAfter
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration
+import org.springframework.cglib.core.Customizer
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.security.crypto.password.PasswordEncoder
@@ -44,14 +47,17 @@ class IdentityJdbcServiceAutoConfiguration {
         identityProperties: IdentityProperties,
         idGenerator: IIdGenerator,
         cacheManager: ICacheManager,
-        transactionTemplate: TransactionTemplate
+        transactionTemplate: TransactionTemplate,
+        @Autowired(required = false)
+        customUserDataPersistence: ICustomUserDataPersistence? = null
     ): DefaultUserService {
         return DefaultUserService(
             identityProperties,
             idGenerator,
             passwordEncoder,
             cacheManager,
-            transactionTemplate
+            transactionTemplate,
+            customUserDataPersistence
         )
     }
 }

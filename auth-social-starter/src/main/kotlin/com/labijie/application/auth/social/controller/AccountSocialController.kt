@@ -6,12 +6,15 @@ import com.labijie.application.auth.social.exception.BadSocialCredentialsExcepti
 import com.labijie.application.auth.social.exception.SocialUserLockedException
 import com.labijie.application.auth.social.model.SocialLoginInfo
 import com.labijie.application.auth.toPrincipal
-import com.labijie.application.component.IVerificationCodeService
-import com.labijie.application.component.verify
+import com.labijie.application.service.IOneTimeCodeService
 import com.labijie.application.identity.isEnabled
 import com.labijie.application.identity.model.SocialRegisterInfo
 import com.labijie.application.identity.model.SocialUserAndRoles
 import com.labijie.application.identity.service.ISocialUserService
+import com.labijie.application.model.OneTimeCode
+import com.labijie.application.model.OneTimeCodeVerificationRequest
+import com.labijie.application.verify
+import com.labijie.application.web.annotation.OneTimeCodeVerify
 import com.labijie.infra.oauth2.AccessToken
 import com.labijie.infra.oauth2.OAuth2ServerUtils.toAccessToken
 import com.labijie.infra.oauth2.TwoFactorSignInHelper
@@ -33,20 +36,22 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 @RequestMapping("/oauth/social")
 class AccountSocialController(
-    private val verificationCodeService: IVerificationCodeService,
+    private val oneTimeCodeService: IOneTimeCodeService,
     private val userService: ISocialUserService,
     private val signInHelper: TwoFactorSignInHelper,
     private val authProperties: AuthProperties,
 ) {
 
+    @OneTimeCodeVerify
     @PostMapping("/register")
     @ClientRequired
     fun register(
         @RequestBody @Valid info: SocialRegisterInfo,
-        clientDetails: RegisteredClient
+        clientDetails: RegisteredClient,
+        request: OneTimeCodeVerificationRequest
     ): AccessToken {
 
-        verificationCodeService.verify(info, true)
+        oneTimeCodeService.verifyCode(request.code, request.stamp, true)
         val userRoles = userService.registerSocialUser(info, authProperties.registerBy)
         return signInUser(userRoles, clientDetails)
     }

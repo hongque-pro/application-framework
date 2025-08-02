@@ -16,8 +16,8 @@ class CaptchaHumanChecker(private val applicationProperties: ApplicationCoreProp
     }
 
     override fun check(token: String, clientStamp: String?, clientIp: String?): Boolean {
-        if(clientStamp.isNullOrBlank()) {
-            throw InvalidRequestArgumentsException("client")
+        if(clientStamp.isNullOrBlank() || token.isBlank()) {
+            return false
         }
 
         if(token.isNotBlank() && clientStamp.isNotBlank()) {

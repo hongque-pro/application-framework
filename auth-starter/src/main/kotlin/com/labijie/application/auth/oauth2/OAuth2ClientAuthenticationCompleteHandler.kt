@@ -6,19 +6,17 @@ package com.labijie.application.auth.oauth2
 
 import com.labijie.application.SpringContext
 import com.labijie.application.auth.configuration.AuthProperties
-import com.labijie.application.auth.service.IOAuth2UserTokenCodec
 import com.labijie.infra.oauth2.client.IOAuth2UserInfoLoader
-import com.labijie.infra.oauth2.component.IOAuth2ServerRSAKeyPair
+import com.labijie.infra.oauth2.client.exception.InvalidOAuth2ClientTokenException
+import com.labijie.infra.oauth2.service.IOAuth2ServerOidcTokenService
 import jakarta.servlet.ServletException
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
 import org.apache.hc.core5.net.URIBuilder
 import org.slf4j.LoggerFactory
-import org.springframework.security.authentication.BadCredentialsException
 import org.springframework.security.core.Authentication
 import org.springframework.security.core.AuthenticationException
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken
-import org.springframework.security.oauth2.client.registration.ClientRegistration
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository
 import org.springframework.security.oauth2.core.oidc.user.OidcUser
 import org.springframework.security.oauth2.core.user.OAuth2User
@@ -28,7 +26,7 @@ import java.io.IOException
 
 
 class OAuth2ClientAuthenticationCompleteHandler(
-    private val oauth2UserTokenCodec: IOAuth2UserTokenCodec,
+    private val serverOidcTokenService: IOAuth2ServerOidcTokenService,
     private val oauth2UserInfoLoader: IOAuth2UserInfoLoader,
     private val authProperties: AuthProperties) :
     AuthenticationSuccessHandler,
@@ -40,20 +38,8 @@ class OAuth2ClientAuthenticationCompleteHandler(
             }
     }
 
-    private val oauth2UserConsumers by lazy {
-        SpringContext.current.getBeanProvider(IOAuth2UserConsumer::class.java)
-    }
-
-    private val oidcUserConsumers by lazy {
-        SpringContext.current.getBeanProvider(IOidcUserConsumer::class.java)
-    }
-
     private val clientRegistrationRepository by lazy {
         SpringContext.current.getBean(ClientRegistrationRepository::class.java)
-    }
-
-    private val rsaKeys by lazy {
-        SpringContext.current.getBean(IOAuth2ServerRSAKeyPair::class.java)
     }
 
     @Throws(IOException::class, ServletException::class)
@@ -68,25 +54,25 @@ class OAuth2ClientAuthenticationCompleteHandler(
 
             when (authentication.principal) {
                 is OidcUser -> {
-                    authentication.authorizedClientRegistrationId
-                    consumeOidc2User(clientRegistration, authentication.principal as OidcUser)
+//                    authentication.authorizedClientRegistrationId
+//                    consumeOidc2User(clientRegistration, authentication.principal as OidcUser)
                 }
 
                 is OAuth2User -> {
-                    consumeOAuth2User(clientRegistration, authentication.principal as OAuth2User)
+//                    consumeOAuth2User(clientRegistration, authentication.principal as OAuth2User)
                 }
 
                 else -> {
-                    throw BadCredentialsException("Principal is not an oauth2 user")
+                    throw InvalidOAuth2ClientTokenException("Principal is not an oauth2 user")
                 }
             }
 
-            val uri = URIBuilder(authProperties.oauth2Login.handlerPageUri).apply {
+            val uri = URIBuilder(authProperties.oauth2Login.loginResultPageUri).apply {
                 val userInfo = oauth2UserInfoLoader.load(clientRegistration, authentication.principal)
 
                 this.addParameter(
-                    OAuth2UserTokenArgumentResolver.TOKEN_PARAMETER_NAME,
-                    oauth2UserTokenCodec.encode(userInfo, java.time.Duration.ofMinutes(15))
+                    OAuth2UserTokenArgumentResolver.ID_TOKEN_KEY,
+                    serverOidcTokenService.encode(userInfo, java.time.Duration.ofMinutes(15))
                 )
 
             }.build()
@@ -95,21 +81,6 @@ class OAuth2ClientAuthenticationCompleteHandler(
         }
     }
 
-    private fun consumeOAuth2User(client: ClientRegistration, user: OAuth2User) {
-        for (c in oauth2UserConsumers.orderedStream()) {
-            if (c.accept(client, user)) {
-                break
-            }
-        }
-    }
-
-    private fun consumeOidc2User(client: ClientRegistration, user: OidcUser) {
-        for (c in oidcUserConsumers.orderedStream()) {
-            if (c.accept(client, user)) {
-                break
-            }
-        }
-    }
 
     override fun onAuthenticationFailure(
         request: HttpServletRequest?,
@@ -118,7 +89,7 @@ class OAuth2ClientAuthenticationCompleteHandler(
     ) {
         logger.error("An error occurred while exchanging data with OAuth2 website.", exception)
 
-        val uri = URIBuilder(authProperties.oauth2Login.handlerPageUri).apply {
+        val uri = URIBuilder(authProperties.oauth2Login.loginResultPageUri).apply {
             this.addParameter("error", "oath2")
         }.build()
         response?.sendRedirect(uri.toString())

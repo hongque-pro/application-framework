@@ -1,6 +1,5 @@
 package com.labijie.application.identity.model
 
-import com.labijie.application.model.VerificationAssociated
 import com.labijie.application.validation.Username
 import jakarta.validation.constraints.NotBlank
 import org.hibernate.validator.constraints.Length
@@ -10,7 +9,7 @@ import org.hibernate.validator.constraints.Length
  * @author Anders Xiao
  * @date 2019-12-11
  */
-class SocialRegisterInfo : VerificationAssociated() {
+class SocialRegisterInfo {
     @get: Length(min=3, max = 16)
     @get: Username
     var username: String? = null

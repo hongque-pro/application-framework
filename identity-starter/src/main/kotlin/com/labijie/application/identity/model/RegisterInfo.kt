@@ -1,8 +1,6 @@
 package com.labijie.application.identity.model
 
-import com.labijie.application.model.VerificationAssociated
 import com.labijie.application.validation.Username
-import jakarta.validation.constraints.NotBlank
 import org.hibernate.validator.constraints.Length
 
 /**
@@ -11,21 +9,32 @@ import org.hibernate.validator.constraints.Length
  * @date 2019-09-11
  */
 data class RegisterInfo(
-    @get:Length(min=3, max = 16)
+    @get: Length(min=3, max = 16)
     @get: Username
     var username: String? = null,
 
-    var phoneNumber: String = "",
+    var dialingCode: Short? = null,
+    var phoneNumber: String? = null,
 
     @get:Length(min=6)
-    @get: NotBlank
-    var password: String = "",
+    var password: String? = null,
 
-    var dialingCode: Short? = null,
 
-    var addition: MutableMap<String, String> = mutableMapOf(),
+    var addition: MutableMap<String, String>? = mutableMapOf(),
 
-    var email: String = "",
+    var email: String? = null,
 
     var language: String? = null
-) : VerificationAssociated()
+) {
+    fun hasEmail(): Boolean {
+        return dialingCode != null && !phoneNumber.isNullOrBlank()
+    }
+
+    fun hasPhone(): Boolean {
+        return !email.isNullOrBlank()
+    }
+
+    fun fullPhoneNumber(): String {
+        return "${dialingCode?.toString() ?: ""} ${phoneNumber ?: ""}"
+    }
+}

@@ -1,9 +1,9 @@
 package com.labijie.application.sms.service
 
 import com.labijie.application.component.AbstractRateLimitService
-import com.labijie.application.component.IVerificationCodeService
+import com.labijie.application.service.IOneTimeCodeService
 import com.labijie.application.model.VerificationCodeType
-import com.labijie.application.model.VerificationToken
+import com.labijie.application.model.OneTimeGenerationResult
 import com.labijie.application.sms.configuration.SmsServiceProperties
 import com.labijie.application.sms.model.TemplatedMessage
 import com.labijie.application.sms.provider.DummySmsServiceProvider
@@ -21,7 +21,7 @@ class DefaultSmsService(
     private val properties: SmsServiceProperties,
     cacheManager: ICacheManager,
     providers: Collection<ISmsServiceProvider>,
-    private val verificationCodeService: IVerificationCodeService,
+    private val oneTimeCodeService: IOneTimeCodeService,
 ) : AbstractRateLimitService(cacheManager), ISmsService {
 
     companion object {
@@ -86,21 +86,19 @@ class DefaultSmsService(
         dialingCode: Short,
         phoneNumber: String,
         type: VerificationCodeType
-    ): VerificationToken {
-        val clientStamp = ShortId.newId()
-
-        val code = verificationCodeService.generateCode(clientStamp)
+    ): OneTimeGenerationResult {
+        val code = oneTimeCodeService.generatePhoneCode(dialingCode, phoneNumber)
 
         val id = "sms:${dialingCode}${phoneNumber}:${type.toString().lowercase()}_code"
         if (rateLimited) {
             rateLimit(id, "Send sms verification code") {
-                mainProvider.sendVerificationCodeAsync(dialingCode, phoneNumber, code, type)
+                mainProvider.sendVerificationCodeAsync(dialingCode, phoneNumber, code.code, type)
             }
         } else {
-            mainProvider.sendVerificationCodeAsync(dialingCode, phoneNumber, code, type)
+            mainProvider.sendVerificationCodeAsync(dialingCode, phoneNumber, code.code, type)
         }
 
-        val verificationToken = VerificationToken(clientStamp)
+        val verificationToken = OneTimeGenerationResult(code.stamp)
         return verificationToken
     }
 

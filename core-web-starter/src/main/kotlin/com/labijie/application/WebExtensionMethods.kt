@@ -4,10 +4,57 @@
  */
 package com.labijie.application
 
+import com.labijie.application.exception.InvalidOneTimeCodeException
+import com.labijie.application.identity.data.pojo.User
+import com.labijie.application.model.OneTimeCodeTarget
+import com.labijie.application.model.OneTimeCodeVerifyRequest
+import com.labijie.application.model.OneTimeCodeVerifyResult.Companion.getInputOrThrow
+import com.labijie.application.service.IOneTimeCodeService
+import com.labijie.application.web.interceptor.OneTimeCodeInterceptor
 import com.labijie.infra.utils.ifNullOrBlank
 import jakarta.servlet.http.HttpServletRequest
 import org.springframework.http.HttpRequest
 import org.springframework.security.web.util.UrlUtils
+
+fun HttpServletRequest.getOneTimeCodeInRequest(): OneTimeCodeVerifyRequest? {
+    val code = this.getHeader(OneTimeCodeInterceptor.CODE_KEY) ?: this.getParameter(OneTimeCodeInterceptor.CODE_KEY)
+    val stamp = this.getHeader(OneTimeCodeInterceptor.STAMP_KEY) ?: this.getParameter(OneTimeCodeInterceptor.STAMP_KEY)
+
+    if(code.isNullOrBlank() || stamp.isNullOrBlank()) {
+        return null
+    }
+    return OneTimeCodeVerifyRequest(code, stamp)
+}
+
+fun IOneTimeCodeService.verify(request: OneTimeCodeVerifyRequest, user: User, throwInfInvalid: Boolean = true): Boolean {
+    val result = this.verifyCode(request.code, request.stamp)
+    if(!result.success && throwInfInvalid) {
+        throw InvalidOneTimeCodeException()
+    }
+    val input = result.getInputOrThrow()
+
+    val  valid = when(input.channel) {
+        OneTimeCodeTarget.Channel.Phone-> {
+            input.contact == user.fullPhoneNumber
+        }
+        OneTimeCodeTarget.Channel.Email -> {
+            input.contact == user.email
+        }
+    }
+    if(!valid && throwInfInvalid) {
+        throw InvalidOneTimeCodeException()
+    }
+    return valid
+}
+
+fun IOneTimeCodeService.verify(request: HttpServletRequest, user: User, throwInfInvalid: Boolean = true): Boolean {
+    val code = request.getOneTimeCodeInRequest()
+    if(code == null) {
+        if(throwInfInvalid) throw InvalidOneTimeCodeException()
+        return false
+    }
+    return verify(code, user, throwInfInvalid)
+}
 
 
 fun HttpServletRequest.printFriendlyString(bodyBytes: ByteArray? = null, title: String = "Coming HTTP Request", appending: ((StringBuilder)->Unit)? = null): String {

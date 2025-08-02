@@ -1,34 +1,45 @@
 package com.labijie.application.auth.configuration
 
-import com.labijie.application.auth.component.OAuth2UserDocParameterCustomizer
+import com.labijie.application.auth.doc.AuthServerOperationCustomizer
+import com.labijie.application.auth.doc.AuthServerSecuritySchemeNames
+import com.labijie.application.auth.doc.OAuth2ClientRequiredDocCustomizer
+import com.labijie.application.auth.doc.ServerIdTokenParameterCustomizer
+import com.labijie.application.auth.oauth2.OAuth2UserTokenArgumentResolver
 import com.labijie.infra.oauth2.AccessToken
 import com.labijie.infra.oauth2.OAuth2Constants
-import io.swagger.v3.oas.models.media.ArraySchema
-import io.swagger.v3.oas.models.media.BooleanSchema
-import io.swagger.v3.oas.models.media.MapSchema
-import io.swagger.v3.oas.models.media.NumberSchema
-import io.swagger.v3.oas.models.media.ObjectSchema
-import io.swagger.v3.oas.models.media.StringSchema
+import io.swagger.v3.oas.annotations.enums.SecuritySchemeType
+import io.swagger.v3.oas.annotations.security.SecurityScheme
+import io.swagger.v3.oas.models.media.*
 import org.springdoc.core.configuration.SpringDocConfiguration
 import org.springdoc.core.configuration.oauth2.SpringDocOAuth2Token
 import org.springdoc.core.utils.SpringDocUtils
 import org.springframework.beans.factory.InitializingBean
 import org.springframework.boot.autoconfigure.AutoConfigureBefore
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
-import org.springframework.context.annotation.Import
-import org.springframework.security.oauth2.core.OAuth2Token
 import org.springframework.security.oauth2.core.endpoint.OAuth2ParameterNames
-import org.springframework.security.oauth2.server.authorization.authentication.OAuth2AccessTokenAuthenticationToken
 import org.springframework.security.oauth2.server.authorization.client.RegisteredClient
 
 /**
  * @author Anders Xiao
  * @date 2023-12-02
  */
+@ConditionalOnProperty(prefix = "springdoc.swagger-ui", name = ["enabled"], havingValue = "true", matchIfMissing = true)
 @Configuration(proxyBeanMethods = false)
 @AutoConfigureBefore(SpringDocConfiguration::class)
+@SecurityScheme(
+    name = AuthServerSecuritySchemeNames.CLIENT_AUTHORIZATION,
+    type = SecuritySchemeType.HTTP,
+    scheme = "basic"
+)
+@SecurityScheme(
+    name = AuthServerSecuritySchemeNames.SERVER_ID_TOKEN,
+    type = SecuritySchemeType.APIKEY,
+    paramName = OAuth2UserTokenArgumentResolver.ID_TOKEN_KEY
+)
 class AuthDocAutoConfiguration : InitializingBean {
+
 
     private val oauth2TokenSchema by lazy {
         MapSchema().apply {
@@ -55,7 +66,17 @@ class AuthDocAutoConfiguration : InitializingBean {
     }
 
     @Bean
-    fun oauth2UserDocParameterCustomizer(): OAuth2UserDocParameterCustomizer {
-        return OAuth2UserDocParameterCustomizer()
+    fun oauth2UserDocParameterCustomizer(): ServerIdTokenParameterCustomizer {
+        return ServerIdTokenParameterCustomizer()
+    }
+
+    @Bean
+    fun oauth2ClientRequiredDocCustomizer(): OAuth2ClientRequiredDocCustomizer {
+        return OAuth2ClientRequiredDocCustomizer()
+    }
+
+    @Bean
+    fun authServerOperationCustomizer(): AuthServerOperationCustomizer {
+        return AuthServerOperationCustomizer()
     }
 }

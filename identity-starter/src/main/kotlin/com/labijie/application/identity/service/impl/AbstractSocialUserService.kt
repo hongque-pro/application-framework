@@ -5,7 +5,7 @@ import com.labijie.application.ErrorCodedException
 import com.labijie.application.configure
 import com.labijie.application.exception.OperationConcurrencyException
 import com.labijie.application.exception.UserNotFoundException
-import com.labijie.application.executeReadOnly
+import com.labijie.application.identity.component.ICustomUserDataPersistence
 import com.labijie.application.identity.configuration.IdentityProperties
 import com.labijie.application.identity.data.UserLoginTable
 import com.labijie.application.identity.data.UserOpenIdTable
@@ -18,7 +18,6 @@ import com.labijie.application.identity.data.pojo.dsl.UserLoginDSL.selectMany
 import com.labijie.application.identity.data.pojo.dsl.UserLoginDSL.selectOne
 import com.labijie.application.identity.data.pojo.dsl.UserOpenIdDSL.insert
 import com.labijie.application.identity.data.pojo.dsl.UserOpenIdDSL.selectOne
-import com.labijie.application.identity.exception.LoginProviderKeyAlreadyExistedException
 import com.labijie.application.identity.exception.UserAlreadyExistedException
 import com.labijie.application.identity.model.PlatformAccessToken
 import com.labijie.application.identity.model.RegisterBy
@@ -50,13 +49,15 @@ abstract class AbstractSocialUserService(
     passwordEncoder: PasswordEncoder,
     idGenerator: IIdGenerator,
     cacheManager: ICacheManager,
-    transactionTemplate: TransactionTemplate
+    transactionTemplate: TransactionTemplate,
+    customUserPersistence: ICustomUserDataPersistence?
 ) : AbstractUserService(
     transactionTemplate,
     authServerProperties,
     idGenerator,
     passwordEncoder,
     cacheManager,
+    customUserPersistence
 ), ISocialUserService {
 
 
@@ -122,7 +123,7 @@ abstract class AbstractSocialUserService(
                 this.addUserLogin(userId, loginProvider, r.token)
             }!!
         }catch (_: DuplicateKeyException){
-            throw LoginProviderKeyAlreadyExistedException(loginProvider)
+            throw IllegalStateException(loginProvider)
         }
     }
 
@@ -236,8 +237,8 @@ abstract class AbstractSocialUserService(
             socialRegisterInfo.phoneNumber = miniProvider.decryptPhoneNumber(socialRegisterInfo.phoneNumber, r.token, iv)
         }
 
-        val isByPhone = (by == RegisterBy.Phone || by == RegisterBy.Both)
-        val isByEmail = (by == RegisterBy.Email || by == RegisterBy.Both)
+        val isByPhone = by == RegisterBy.Phone
+        val isByEmail = by == RegisterBy.Email
 
         if (isByPhone) {
             phoneNumberValidator.validate(socialRegisterInfo.dialingCode, socialRegisterInfo.phoneNumber, true)
@@ -313,8 +314,8 @@ abstract class AbstractSocialUserService(
     ): Pair<SocialUserAndRoles, SocialUserRegistrationContext?> {
         val loginProvider = provider.name
 
-        val byPhone = by == RegisterBy.Phone || by == RegisterBy.Both
-        val byEmail = by == RegisterBy.Email || by == RegisterBy.Both
+        val byPhone = by == RegisterBy.Phone || by == RegisterBy.Email
+        val byEmail = by == RegisterBy.Email || by == RegisterBy.Phone
 
         //不存在第三方绑定，考虑手机号可能存在
         val user = if (byPhone)  {
@@ -344,7 +345,7 @@ abstract class AbstractSocialUserService(
                 val u =
                     socialSocialUserGenerator.generate(context, this.getDefaultUserType())
                 val roles = this.getDefaultUserRoles()
-                val userAndRoles = this.createUser(u, socialRegisterInfo.password, *roles)
+                val userAndRoles = this.createUser(u, socialRegisterInfo.password, roles)
                 this.addUserLogin(userAndRoles.user.id, loginProvider, token)
 
                 val reContext = SocialUserRegistrationContext(socialRegisterInfo, userAndRoles, provider, token)

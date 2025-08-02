@@ -40,8 +40,8 @@ class DefaultUserInitializer(private val properties: DefaultUserCreationProperti
             val u = userService.getUser(properties.username)
             if (u == null) {
                 val user = IdentityUtils.createUser(idGenerator.newId(), properties.username, 0)
-                val roles = properties.roles.split(",").map { it.trim() }.toTypedArray()
-                val r = userService.createUser(user, properties.password, *roles)
+                val roles = properties.roles.split(",").map { it.trim() }.toSet()
+                val r = userService.createUser(user, properties.password, roles)
                 logger.info("Default user created, user name: ${user.userName}, id: ${r.user.id}")
             }
         }

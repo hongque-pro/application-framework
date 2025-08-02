@@ -1,6 +1,7 @@
 package com.labijie.application.email.provider
 
 import com.labijie.application.email.model.TemplatedMail
+import com.labijie.application.model.VerificationCodeType
 import org.slf4j.LoggerFactory
 
 /**
@@ -23,6 +24,22 @@ object DummyEmailProvider : IEmailServiceProvider {
             appendLine("subject: ${mail.subject ?: "<null>"}")
             appendLine("template id: ${mail.templateId}")
             appendLine("template params: ${System.lineSeparator()}$param")
+            appendLine()
+        }.let {
+            logger.info(it.toString())
+        }
+    }
+
+    override fun sendVerificationCodeAsync(
+        to: String,
+        code: String,
+        type: VerificationCodeType
+    ) {
+        StringBuilder().apply {
+            appendLine("Dummy mail verification code sending:")
+            appendLine("to: $to")
+            appendLine("code: $code")
+            appendLine("type: $type")
             appendLine()
         }.let {
             logger.info(it.toString())

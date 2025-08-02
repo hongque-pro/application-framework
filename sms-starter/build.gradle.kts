@@ -1,6 +1,6 @@
-infra {
-    useSpringConfigurationProcessor(Versions.springBoot)
-}
+//infra {
+//    useSpringConfigurationProcessor(Versions.springBoot)
+//}
 
 dependencies {
     api(project(":core-starter"))

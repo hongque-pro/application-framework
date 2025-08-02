@@ -21,6 +21,7 @@ infra:
 application:
   httpclient:
     logger-enabled: true
+  localization-service: memory
 springdoc:
   api-docs:
     version: openapi_3_1

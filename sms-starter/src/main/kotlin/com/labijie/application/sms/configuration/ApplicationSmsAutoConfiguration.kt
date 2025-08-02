@@ -1,6 +1,6 @@
 package com.labijie.application.sms.configuration
 
-import com.labijie.application.component.IVerificationCodeService
+import com.labijie.application.service.IOneTimeCodeService
 import com.labijie.application.sms.provider.ISmsServiceProvider
 import com.labijie.application.sms.service.DefaultSmsService
 import com.labijie.application.sms.service.ISmsService
@@ -27,11 +27,11 @@ class ApplicationSmsAutoConfiguration {
     @ConditionalOnMissingBean(ISmsService::class)
     fun defaultSmsService(
         cacheManager: ICacheManager,
-        verificationCodeService: IVerificationCodeService,
+        oneTimeCodeService: IOneTimeCodeService,
         properties: SmsServiceProperties,
         providers: ObjectProvider<ISmsServiceProvider>
     ): DefaultSmsService {
         val providerList = providers.orderedStream().toList()
-        return DefaultSmsService(properties, cacheManager, providerList, verificationCodeService)
+        return DefaultSmsService(properties, cacheManager, providerList, oneTimeCodeService)
     }
 }

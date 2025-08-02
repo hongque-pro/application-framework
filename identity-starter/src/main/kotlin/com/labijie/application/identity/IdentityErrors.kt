@@ -38,8 +38,5 @@ object IdentityErrors {
     @ErrorDescription("Account has been locked", locale = Constants.EN_US)
     const val ACCOUNT_LOCKED = "account_locked"
 
-    @ErrorDescription("平台账号已经呗绑定")
-    @ErrorDescription("The platform account has already been bound to this user", locale = Constants.EN_US)
-    const val LOGIN_PROVIDER_KEY_ALREADY_EXISTED = "login_provider_key_already_existed"
 
 }

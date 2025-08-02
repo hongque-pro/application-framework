@@ -5,9 +5,11 @@ import com.labijie.application.ErrorDescription
 import com.labijie.application.IDescribeEnum
 import com.labijie.application.WellKnownClassNames
 import com.labijie.application.annotation.ImportErrorDefinition
+import com.labijie.application.component.impl.NoneHumanChecker
 import com.labijie.application.jackson.DescribeEnumDeserializer
 import com.labijie.application.jackson.DescribeEnumSerializer
 import com.labijie.application.model.LocalizationMessages
+import com.labijie.application.model.OneTimeCodeTarget
 import com.labijie.application.model.SimpleValue
 import com.labijie.application.thridparty.alipay.AlipayResponseBase
 import com.labijie.application.thridparty.wechat.WechatResponse
@@ -34,6 +36,8 @@ class ApplicationCoreRuntimeHintsRegistrar : RuntimeHintsRegistrar {
             XxsReject::class,
         )
 
+        hints.reflection().registerEnum(OneTimeCodeTarget.Channel::class)
+
         hints.reflection().registerPackageForJackson(SimpleValue::class.java)
 
         hints.reflection().registerTypes(
@@ -56,6 +60,7 @@ class ApplicationCoreRuntimeHintsRegistrar : RuntimeHintsRegistrar {
 
         hints.reflection().registerType("org.springframework.web.context.WebApplicationContext")
         hints.reflection().registerType(WellKnownClassNames.TwoFactorPrincipal)
+        hints.reflection().registerType(NoneHumanChecker::class.java)
 
         hints.reflection().registerTypes(
             listOf(

@@ -5,16 +5,13 @@ import com.labijie.application.ApplicationInitializationRunner
 import com.labijie.application.ErrorRegistry
 import com.labijie.application.IErrorRegistry
 import com.labijie.application.annotation.ImportErrorDefinition
-import com.labijie.application.component.IVerificationCodeService
-import com.labijie.application.component.impl.DefaultVerificationCodeService
+import com.labijie.application.service.IOneTimeCodeService
+import com.labijie.application.service.impl.DefaultOnetimeCodeService
 import com.labijie.application.data.LocalizationMessageTable
 import com.labijie.application.okhttp.OkHttpClientRequestFactoryBuilder
 import com.labijie.application.open.OpenApiErrors
 import com.labijie.infra.orm.annotation.TableScan
 import com.labijie.infra.security.IRfc6238TokenService
-import com.labijie.infra.security.Rfc6238TokenService
-import com.labijie.infra.utils.logger
-import org.springframework.boot.CommandLineRunner
 import org.springframework.boot.WebApplicationType
 import org.springframework.boot.autoconfigure.AutoConfigureAfter
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean
@@ -23,16 +20,11 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnNotWebAppli
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication
 import org.springframework.boot.autoconfigure.web.client.RestClientAutoConfiguration
 import org.springframework.boot.autoconfigure.web.client.RestTemplateAutoConfiguration
-import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.boot.web.client.RestTemplateBuilder
-import org.springframework.boot.web.reactive.context.AnnotationConfigReactiveWebServerApplicationContext
-import org.springframework.boot.web.servlet.context.AnnotationConfigServletWebServerApplicationContext
-import org.springframework.context.ConfigurableApplicationContext
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Lazy
-import org.springframework.web.WebApplicationInitializer
 import org.springframework.web.client.RestTemplate
 
 
@@ -46,9 +38,8 @@ import org.springframework.web.client.RestTemplate
 @EnableConfigurationProperties(
     ApplicationCoreProperties::class,
     ValidationProperties::class,
-    SmsBaseProperties::class,
     OpenApiClientProperties::class,
-    VerificationCodeProperties::class
+    OneTimeCodeProperties::class
 )
 @AutoConfigureAfter(RestTemplateAutoConfiguration::class, RestClientAutoConfiguration::class)
 @ImportErrorDefinition([OpenApiErrors::class, ApplicationErrors::class])
@@ -109,10 +100,11 @@ open class ApplicationCoreAutoConfiguration {
     }
 
     @Bean
-    @ConditionalOnMissingBean(IVerificationCodeService::class)
-    fun defaultVerificationCodeService(
+    @ConditionalOnMissingBean(IOneTimeCodeService::class)
+    fun defaultOnetimeCodeService(
+        coreProperties: ApplicationCoreProperties,
         rfc6238TokenService: IRfc6238TokenService,
-        properties: VerificationCodeProperties): DefaultVerificationCodeService {
-        return DefaultVerificationCodeService(properties, rfc6238TokenService)
+        properties: OneTimeCodeProperties): DefaultOnetimeCodeService {
+        return DefaultOnetimeCodeService(coreProperties, properties, rfc6238TokenService)
     }
 }

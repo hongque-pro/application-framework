@@ -1,26 +1,26 @@
 {
   "groups": [
     {
-      "name": "application.hcaptcha",
+      "name": "application.captcha.hcaptcha",
       "type": "com.labijie.application.hcaptcha.configuration.HCaptchaProperties",
       "sourceType": "com.labijie.application.hcaptcha.configuration.HCaptchaProperties"
     }
   ],
   "properties": [
     {
-      "name": "application.hcaptcha.enabled",
+      "name": "application.captcha.hcaptcha.enabled",
       "type": "java.lang.Boolean",
       "sourceType": "com.labijie.application.hcaptcha.configuration.HCaptchaProperties",
       "defaultValue": true
     },
     {
-      "name": "application.hcaptcha.endpoint",
+      "name": "application.captcha.hcaptcha.endpoint",
       "type": "java.lang.String",
       "sourceType": "com.labijie.application.hcaptcha.configuration.HCaptchaProperties",
       "defaultValue": "https://api.hcaptcha.com/siteverify"
     },
     {
-      "name": "application.hcaptcha.secret",
+      "name": "application.captcha.hcaptcha.secret",
       "type": "java.lang.String",
       "sourceType": "com.labijie.application.hcaptcha.configuration.HCaptchaProperties"
     }

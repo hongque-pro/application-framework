@@ -1,7 +1,9 @@
 package com.labijie.application
 
 import jakarta.validation.ConstraintViolation
+import jakarta.validation.ConstraintViolationException
 import jakarta.validation.Validation
+
 
 /**
  * @author Anders Xiao
@@ -13,7 +15,14 @@ object BeanValidator {
          factory.validator
     }
 
-    fun <T: Any> validate(bean: T): Set<ConstraintViolation<T>> {
-        return validator.validate(bean)
+    fun <T: Any> validate(bean: T, throwsIfError: Boolean = true): Set<ConstraintViolation<T>> {
+        val result = validator.validate(bean)
+
+        if (!result.isEmpty() && throwsIfError) {
+            // 创建包含所有错误的异常
+            throw ConstraintViolationException("Bean validation failed", result)
+        }
+
+        return result
     }
 }

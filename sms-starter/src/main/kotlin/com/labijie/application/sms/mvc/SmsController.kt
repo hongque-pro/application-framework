@@ -6,7 +6,7 @@ import com.labijie.application.exception.PhoneNumberNotVerifiedException
 import com.labijie.application.exception.UserNotFoundException
 import com.labijie.application.identity.service.IUserService
 import com.labijie.application.model.VerificationCodeType
-import com.labijie.application.model.VerificationToken
+import com.labijie.application.model.OneTimeGenerationResult
 import com.labijie.application.sms.model.SmsVerificationCodeSendRequest
 import com.labijie.application.sms.service.ISmsService
 import com.labijie.application.web.annotation.HumanVerify
@@ -42,18 +42,18 @@ class SmsController @Autowired constructor(
     }
 
     @PermitAll
-    @PutMapping("/verification-code")
+    @PutMapping("/totp")
     @HumanVerify
-    fun send(@RequestBody @Valid request: SmsVerificationCodeSendRequest): VerificationToken {
+    fun send(@RequestBody @Valid request: SmsVerificationCodeSendRequest): OneTimeGenerationResult {
         phoneValidator.validate(request.dialingCode, request.phoneNumber, true)
         return messageService.sendVerificationCode(request.dialingCode, request.phoneNumber, request.type)
     }
 
-    @PutMapping("/verification-code/to-me")
+    @PutMapping("/totp/me")
     fun sendToUser(
         @Parameter(required = true) type: VerificationCodeType,
         principal: TwoFactorPrincipal
-    ): VerificationToken {
+    ): OneTimeGenerationResult {
         val userId = principal.userId.toLong()
         val user = userService.getUserById(userId) ?: throw UserNotFoundException()
 

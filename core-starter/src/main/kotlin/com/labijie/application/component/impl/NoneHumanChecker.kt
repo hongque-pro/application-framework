@@ -7,7 +7,7 @@ import com.labijie.application.component.IHumanChecker
  * @author Anders Xiao
  * @date 2019-11-28
  */
-class NoneHumanChecker : IHumanChecker {
+object NoneHumanChecker : IHumanChecker {
 
     override fun check(token: String, clientStamp: String?, clientIp: String?): Boolean {
         return true

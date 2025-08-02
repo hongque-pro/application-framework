@@ -24,7 +24,6 @@ import org.springframework.context.ApplicationContextAware
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.ComponentScan
 import org.springframework.context.annotation.Configuration
-import org.springframework.context.annotation.Import
 import org.springframework.core.Ordered
 import org.springframework.core.env.Environment
 
@@ -55,12 +54,12 @@ class SpringDocAutoConfiguration(private val environment: Environment): Initiali
     fun defaultOpenAPI(humanChecker: IHumanChecker): OpenAPI {
 
         val humanToken = SecurityScheme().apply {
-            name = HumanVerifyInterceptor.TOKEN_HTTP_NAME
+            name = HumanVerifyInterceptor.TOKEN_KEY
             type(SecurityScheme.Type.APIKEY)
             `in` = SecurityScheme.In.QUERY
         }
         val humanStamp = SecurityScheme().apply {
-            name = HumanVerifyInterceptor.TOKEN_HTTP_STAMP_NAME
+            name = HumanVerifyInterceptor.STAMP_KEY
             type(SecurityScheme.Type.APIKEY)
             `in` = SecurityScheme.In.QUERY
         }

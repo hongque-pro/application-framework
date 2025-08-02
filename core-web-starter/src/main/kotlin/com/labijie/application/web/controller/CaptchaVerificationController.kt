@@ -4,6 +4,7 @@ import com.labijie.application.component.IHumanChecker
 import com.labijie.application.model.SimpleValue
 import com.labijie.application.model.toSimpleValue
 import com.labijie.application.web.InvalidRequestArgumentsException
+import com.labijie.application.web.interceptor.HumanVerifyInterceptor
 import jakarta.annotation.security.PermitAll
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.validation.constraints.NotBlank
@@ -28,8 +29,8 @@ class CaptchaVerificationController(
 ) {
     @PostMapping("/verify")
     fun verify(
-        @RequestParam(required = true) @NotBlank code: String,
-        @RequestParam(required = false) stamp: String? = null,
+        @RequestParam(name = HumanVerifyInterceptor.TOKEN_KEY, required = true) @NotBlank code: String,
+        @RequestParam(name = HumanVerifyInterceptor.STAMP_KEY, required = false) stamp: String? = null,
         request: HttpServletRequest): SimpleValue<Boolean> {
 
         if(stamp.isNullOrBlank() && captchaHumanChecker.clientStampRequired()){

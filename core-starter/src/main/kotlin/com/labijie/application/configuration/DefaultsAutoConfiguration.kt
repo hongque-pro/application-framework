@@ -24,7 +24,7 @@ class DefaultsAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean(IHumanChecker::class)
     fun noneHumanChecker(): NoneHumanChecker {
-        return NoneHumanChecker()
+        return NoneHumanChecker
     }
 
     @Bean

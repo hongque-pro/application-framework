@@ -1,11 +1,13 @@
 package com.labijie.application.configuration
 
 import com.labijie.application.component.IHumanChecker
+import com.labijie.application.component.impl.NoneHumanChecker
 import com.labijie.application.service.IOneTimeCodeService
 import com.labijie.application.service.CaptchaHumanChecker
 import com.labijie.application.web.controller.CaptchaVerificationController
 import com.labijie.application.web.controller.ImageCaptchaGenerationController
 import com.labijie.application.web.controller.OneTimeCodeController
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.config.BeanDefinition
 import org.springframework.boot.autoconfigure.AutoConfigureAfter
 import org.springframework.boot.autoconfigure.AutoConfigureBefore
@@ -52,12 +54,13 @@ class ApplicationWebDefaultsAutoConfiguration {
 
     @Configuration(proxyBeanMethods = false)
     @AutoConfigureAfter(ImageCaptchaAutoConfiguration::class)
-    @ConditionalOnBean(IHumanChecker::class)
     class CaptchaVerificationAutoConfiguration {
 
         @Bean
-        fun captchaVerificationController(humanChecker: IHumanChecker): CaptchaVerificationController {
-            return CaptchaVerificationController(humanChecker)
+        fun captchaVerificationController(
+            @Autowired(required = false)
+            humanChecker: IHumanChecker? = null): CaptchaVerificationController {
+            return CaptchaVerificationController(humanChecker ?: NoneHumanChecker)
         }
     }
 

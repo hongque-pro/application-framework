@@ -23,8 +23,8 @@ class HumanVerifyInterceptor(
     private val checker: IHumanChecker
 ) : HandlerInterceptor {
     companion object {
-        const val TOKEN_HTTP_NAME = "captcha"
-        const val TOKEN_HTTP_STAMP_NAME = "captcha_stamp"
+        const val TOKEN_KEY = "captcha"
+        const val STAMP_KEY = "captcha_stamp"
         val statusOnFailure = HttpStatus.FORBIDDEN
     }
 
@@ -36,8 +36,8 @@ class HumanVerifyInterceptor(
         if (method != null && checker.isEnabled) {
             val anno = method.getMethodAnnotation(HumanVerify::class.java)
             if (anno != null) {
-                val token = request.getHeader(TOKEN_HTTP_NAME) ?: request.getParameter(TOKEN_HTTP_NAME).orEmpty()
-                val tokenStamp = request.getHeader(TOKEN_HTTP_STAMP_NAME) ?: request.getParameter(TOKEN_HTTP_STAMP_NAME)
+                val token = request.getHeader(TOKEN_KEY) ?: request.getParameter(TOKEN_KEY).orEmpty()
+                val tokenStamp = request.getHeader(STAMP_KEY) ?: request.getParameter(STAMP_KEY)
 
                 var valid = false
                 if (token.isNotBlank() && (!tokenStamp.isNullOrBlank() || !checker.clientStampRequired())) {

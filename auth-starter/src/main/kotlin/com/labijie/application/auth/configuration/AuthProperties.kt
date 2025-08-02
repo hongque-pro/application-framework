@@ -4,17 +4,17 @@
  */
 package com.labijie.application.auth.configuration
 
-import com.labijie.application.identity.model.RegisterBy
 import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.boot.context.properties.NestedConfigurationProperty
 
 
 @ConfigurationProperties("application.auth")
 class AuthProperties {
-    var registerBy: RegisterBy? = RegisterBy.Phone
-    var registerControllerEnabled: Boolean = true
     var securitySecretKey = "c:zjLjK6JmKdRVw"
 
     @NestedConfigurationProperty
     val oauth2Login = OAuth2LoginSettings()
+
+    @NestedConfigurationProperty
+    val registerEndpoint = RegisterEndpointSettings()
 }

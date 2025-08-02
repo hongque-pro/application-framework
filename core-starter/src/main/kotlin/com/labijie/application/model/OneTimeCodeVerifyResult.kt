@@ -8,11 +8,11 @@ import com.labijie.application.exception.InvalidOneTimeCodeException
  */
 data class OneTimeCodeVerifyResult(
     var success: Boolean = false,
-    var input: OneTimeCodeTarget? = null
+    var target: OneTimeCodeTarget? = null
 ) {
     companion object {
         fun OneTimeCodeVerifyResult.getInputOrThrow() : OneTimeCodeTarget {
-            return input ?: throw InvalidOneTimeCodeException()
+            return target ?: throw InvalidOneTimeCodeException()
         }
     }
 }

@@ -10,7 +10,7 @@ import com.labijie.application.ErrorCodedException
 class InvalidRequestArgumentsException(fieldName: String?, errorMessage: String? = null) : ErrorCodedException(ApplicationErrors.BadRequestParameter, errorMessage ?: "Invalid arguments in request") {
     init {
         fieldName?.let {
-            args.putIfAbsent(fieldName, "Invalid value for $fieldName.")
+            args.putIfAbsent(fieldName, errorMessage ?: "Invalid value for $fieldName.")
         }
     }
 }

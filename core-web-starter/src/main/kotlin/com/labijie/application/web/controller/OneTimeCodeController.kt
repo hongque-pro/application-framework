@@ -26,7 +26,7 @@ class OneTimeCodeController(private val service: IOneTimeCodeService) {
         @RequestParam(OneTimeCodeInterceptor.CODE_KEY, required = true) @NotBlank code: String,
         @RequestParam(OneTimeCodeInterceptor.STAMP_KEY, required = true) @NotBlank stamp: String,
     ): CodeVerificationResult {
-        val result = service.verifyCode(code, stamp)
+        val result = service.verifyCode(code, stamp, throwIfInvalid = false)
         return CodeVerificationResult(result.success)
     }
 }

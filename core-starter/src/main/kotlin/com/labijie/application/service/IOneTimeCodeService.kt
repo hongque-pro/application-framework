@@ -11,7 +11,7 @@ import com.labijie.application.model.OneTimeCodeVerifyResult
 interface IOneTimeCodeService {
     fun decodeStamp(stamp: String): OneTimeCodeTarget
 
-    fun verifyCode(code: String, stamp: String, channel: OneTimeCodeTarget.Channel? = null, contract: String? = null, throwIfInvalid: Boolean = false): OneTimeCodeVerifyResult
+    fun verifyCode(code: String, stamp: String, channel: OneTimeCodeTarget.Channel? = null, contract: String? = null, throwIfInvalid: Boolean = true): OneTimeCodeVerifyResult
 
     fun generateCode(source: OneTimeCodeTarget): OneTimeCode
 

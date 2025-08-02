@@ -8,5 +8,5 @@ package com.labijie.application.identity.model
 enum class RegisterBy {
     Phone,
     Email,
-    Auto
+    Auto,
 }

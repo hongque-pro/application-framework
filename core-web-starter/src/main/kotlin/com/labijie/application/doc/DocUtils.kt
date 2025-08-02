@@ -1,8 +1,10 @@
 package com.labijie.application.doc
 
 import com.fasterxml.jackson.databind.JavaType
+import com.labijie.application.ApplicationErrors
 import com.labijie.application.IDescribeEnum
 import com.labijie.application.JAVA_LONG
+import com.labijie.application.web.interceptor.HumanVerifyInterceptor
 import com.labijie.infra.utils.ifNullOrBlank
 import com.labijie.infra.utils.toLocalDateTime
 import io.swagger.v3.oas.models.OpenAPI
@@ -14,6 +16,7 @@ import io.swagger.v3.oas.models.media.Schema
 import io.swagger.v3.oas.models.media.StringSchema
 import io.swagger.v3.oas.models.parameters.Parameter
 import io.swagger.v3.oas.models.responses.ApiResponse
+import io.swagger.v3.oas.models.security.SecurityRequirement
 import org.apache.commons.text.CaseUtils
 import org.springframework.boot.info.GitProperties
 import org.springframework.core.MethodParameter
@@ -81,6 +84,13 @@ object DocUtils {
                     .append(description)
             }
         }
+    }
+
+    fun Operation.addTotpSecuritySchema() {
+        this.addSecurityItem(SecurityRequirement().addList(SecuritySchemeNames.ONE_TIME_CODE))
+        this.addSecurityItem(SecurityRequirement().addList(SecuritySchemeNames.ONE_TIME_STAMP))
+        this.appendDescription("This method requires verification using a time-based one-time password (`TOTP`).")
+        this.addErrorResponse("TOTP", HumanVerifyInterceptor.statusOnFailure, ApplicationErrors.RobotDetected)
     }
 
     fun Operation.addErrorResponse(reason: String, httpStatus: HttpStatus, vararg errorCode: String) {

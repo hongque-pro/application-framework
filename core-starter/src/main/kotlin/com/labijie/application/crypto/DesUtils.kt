@@ -82,7 +82,7 @@ object DesUtils {
      * @param key
      * @return
      */
-    fun decrypt(content: String, key: String? = null, throwIfBadData:Boolean = false): String {
+    fun decrypt(content: String, key: String? = null, throwIfBadData:Boolean = false): String? {
         return try {
             val cipher: Cipher = Cipher.getInstance(DEFAULT_CIPHER_ALGORITHM)
             //使用密钥初始化，设置为解密模式
@@ -97,7 +97,7 @@ object DesUtils {
             if(throwIfBadData){
                 throw DesException( "AESContent = $content", e)
             }
-            ""
+            return null
         }
     }
 
@@ -110,9 +110,8 @@ object DesUtils {
     }
 
     fun verifyToken(token:String, modifier:String, key: String? = null, throwIfInvalid: Boolean = false) : Boolean{
-        val content =
-            decrypt(token, key, throwIfBadData = false)
-        if(content.isNotBlank()) {
+        val content = decrypt(token, key, throwIfBadData = false)
+        if(!content.isNullOrBlank()) {
             val segments = content.split("|").filter { it.isNotBlank() }
             if (segments.size == 2 && segments[0] == modifier) {
                 val time = segments[1].toLongOrNull()

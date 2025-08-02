@@ -3,6 +3,7 @@ package com.labijie.application.doc
 import com.labijie.application.ApplicationErrors
 import com.labijie.application.component.IHumanChecker
 import com.labijie.application.doc.DocUtils.addErrorResponse
+import com.labijie.application.doc.DocUtils.addTotpSecuritySchema
 import com.labijie.application.doc.DocUtils.appendDescription
 import com.labijie.application.isEnabled
 import com.labijie.application.web.annotation.HttpCache
@@ -72,12 +73,7 @@ class DocMethodCustomizer(private val humanChecker: IHumanChecker) : GlobalOpera
         operation: Operation
     ) {
         handlerMethod.getMethodAnnotation(OneTimeCodeVerify::class.java)?.let {
-
-            operation.addSecurityItem(SecurityRequirement().addList(SecuritySchemeNames.ONE_TIME_CODE))
-            operation.addSecurityItem(SecurityRequirement().addList(SecuritySchemeNames.ONE_TIME_STAMP))
-            operation.appendDescription("To ensure account security, this method requires verification using a time-based one-time password (`TOTP`).")
-            operation.addErrorResponse("TOTP", HumanVerifyInterceptor.statusOnFailure, ApplicationErrors.RobotDetected)
-
+            operation.addTotpSecuritySchema()
         }
     }
 }

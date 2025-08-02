@@ -27,7 +27,6 @@ import jakarta.servlet.http.HttpServletRequest
 import jakarta.validation.Valid
 import jakarta.validation.constraints.NotBlank
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.security.authentication.ott.InvalidOneTimeTokenException
 import org.springframework.validation.annotation.Validated
 import org.springframework.web.bind.annotation.*
 
@@ -121,7 +120,7 @@ class AccountSecurityController @Autowired constructor(
         if(password.isNullOrBlank()) {
             val code = httpRequest.getOneTimeCodeInRequest() ?: throw InvalidOneTimeCodeException()
             val r = oneTimeCodeService.verifyCode(code.code, code.stamp, throwIfInvalid = true)
-            val source = r.input ?: throw InvalidOneTimeCodeException()
+            val source = r.target ?: throw InvalidOneTimeCodeException()
             source.validateUser(user)
         }else {
             if (!userService.validatePassword(user, password)) {

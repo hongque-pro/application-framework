@@ -187,8 +187,8 @@ abstract class AbstractUserService(
 
         register.email = register.email?.trim()
         register.phoneNumber = register.phoneNumber?.trim()
-        val forceEmail = (forceBy == RegisterBy.Email || forceBy == RegisterBy.Phone)
-        val forcePhone = (forceBy == RegisterBy.Phone || forceBy == RegisterBy.Email)
+        val forceEmail = forceBy == RegisterBy.Email
+        val forcePhone = forceBy == RegisterBy.Phone
 
         if(!register.username.isNullOrBlank()) {
             register.username = register.username?.trim()
@@ -231,12 +231,12 @@ abstract class AbstractUserService(
         if(isByPhone){
             user.phoneCountryCode = register.dialingCode!!
             user.phoneNumber = register.phoneNumber!!
-            user.phoneNumberConfirmed = true
+            user.phoneNumberConfirmed = forceEmail
         }
 
         if(isByEmail){
             user.email = register.email!!
-            user.emailConfirmed = true
+            user.emailConfirmed = forcePhone
         }
 
 

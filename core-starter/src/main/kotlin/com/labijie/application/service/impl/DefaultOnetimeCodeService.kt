@@ -69,7 +69,10 @@ class DefaultOnetimeCodeService(
     }
 
     private fun decodeSource(encodedString: String): OneTimeCodeTarget? {
-        val value = DesUtils.decrypt(encodedString)
+        val value = DesUtils.decrypt(encodedString, applicationCoreProperties.desSecret, throwIfBadData = false)
+        if(value == null) {
+            return null
+        }
         val segments = value.split(":")
         if(segments.size != 3) {
             return null

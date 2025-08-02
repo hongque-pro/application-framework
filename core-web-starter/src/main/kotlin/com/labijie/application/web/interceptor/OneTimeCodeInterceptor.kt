@@ -57,7 +57,7 @@ class OneTimeCodeInterceptor(
                     errorHttpMessageConverter.write(err, null, serverResponse)
                     return false
                 }
-                valid.input?.let {
+                valid.target?.let {
                     source ->
                     VerifiedOneTimeCodeSourceHolder.set(valid)
                 }

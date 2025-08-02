@@ -1,9 +1,7 @@
 package com.labijie.application.web.interceptor
 
-import com.labijie.application.BeanValidator
 import com.labijie.application.component.VerifiedOneTimeCodeSourceHolder
 import com.labijie.application.model.OneTimeCodeTarget
-import com.labijie.application.model.OneTimeCodeVerifyRequest
 import com.labijie.application.model.OneTimeCodeVerifyResult
 import com.labijie.application.web.annotation.OneTimeCodeVerify
 import org.springframework.core.MethodParameter
@@ -46,7 +44,7 @@ class OneTimeCodeVerifyArgumentResolver : HandlerMethodArgumentResolver {
 //        }
 
         if(OneTimeCodeTarget::class.java == type) {
-            return VerifiedOneTimeCodeSourceHolder.get()?.input
+            return VerifiedOneTimeCodeSourceHolder.get()?.target
         }
 
         return VerifiedOneTimeCodeSourceHolder.get()

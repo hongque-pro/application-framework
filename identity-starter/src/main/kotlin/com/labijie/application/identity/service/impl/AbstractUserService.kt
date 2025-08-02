@@ -242,7 +242,7 @@ abstract class AbstractUserService(
 
         val u = this.transactionTemplate.execute {
             if(isByPhone) {
-                val p1 = UserTable.selectOne {
+                val p1 = UserTable.selectOne(UserTable.id) {
                     andWhere { UserTable.fullPhoneNumber.eq(user.fullPhoneNumber) }
                 }
                 if (p1 != null) {
@@ -251,7 +251,7 @@ abstract class AbstractUserService(
             }
 
             if(isByEmail) {
-                val p2 = UserTable.selectOne {
+                val p2 = UserTable.selectOne(UserTable.id) {
                     andWhere { UserTable.email.eq(user.email) }
                 }
                 if (p2 != null) {
@@ -281,6 +281,7 @@ abstract class AbstractUserService(
 
     override fun createUser(user: User, plainPassword:String?, roles: Set<String>?, registerInfo: Map<String, String>?): UserAndRoles {
 
+        user.must_reset_password = plainPassword.isNullOrBlank()
         val password = plainPassword.ifNullOrBlank { ShortId.newId() }
         user.passwordHash = passwordEncoder.encode(password)
 

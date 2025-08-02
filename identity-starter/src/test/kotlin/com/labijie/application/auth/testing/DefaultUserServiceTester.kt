@@ -74,7 +74,8 @@ open class DefaultUserServiceTester {
             snowflakeIdGenerator,
             passwordEncoder,
             cacheManager,
-            transactionTemplate
+            transactionTemplate,
+            null
         )
     }
 
@@ -103,7 +104,7 @@ open class DefaultUserServiceTester {
     @Test
     fun createRole() {
         val u = IdentityUtils.createUser(this.snowflakeIdGenerator.newId(), "t1", 1)
-        svc.createUser(u, "r1", "r2")
+        svc.createUser(u, "r1", setOf("r1", "r2"), null)
     }
 
 //    @Test

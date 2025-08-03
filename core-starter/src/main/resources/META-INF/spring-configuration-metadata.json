@@ -183,6 +183,12 @@
       "description": "The directory where the files are stored.",
       "sourceType": "com.labijie.application.component.storage.FileSystemStorageProperties",
       "defaultValue": true
+    },
+    {
+      "name": "application.object-storage.file.enabled",
+      "type": "java.lang.Boolean",
+      "sourceType": "com.labijie.application.component.storage.FileSystemStorageProperties",
+      "defaultValue": false
     }
   ],
   "hints": [

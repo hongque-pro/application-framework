@@ -1,18 +1,21 @@
-package com.labijie.application.auth.configuration
+package com.labijie.application.auth.doc
 
-import com.labijie.application.auth.doc.AuthServerOperationCustomizer
-import com.labijie.application.auth.doc.AuthServerSecuritySchemeNames
-import com.labijie.application.auth.doc.OAuth2ClientRequiredDocCustomizer
-import com.labijie.application.auth.doc.ServerIdTokenParameterCustomizer
+import com.labijie.application.auth.configuration.AuthProperties
 import com.labijie.application.auth.oauth2.OAuth2UserTokenArgumentResolver
+import com.labijie.application.configuration.ApplicationWebProperties
 import com.labijie.infra.oauth2.AccessToken
 import com.labijie.infra.oauth2.OAuth2Constants
 import io.swagger.v3.oas.annotations.enums.SecuritySchemeType
 import io.swagger.v3.oas.annotations.security.SecurityScheme
-import io.swagger.v3.oas.models.media.*
+import io.swagger.v3.oas.models.media.ArraySchema
+import io.swagger.v3.oas.models.media.BooleanSchema
+import io.swagger.v3.oas.models.media.MapSchema
+import io.swagger.v3.oas.models.media.NumberSchema
+import io.swagger.v3.oas.models.media.StringSchema
 import org.springdoc.core.configuration.SpringDocConfiguration
 import org.springdoc.core.configuration.oauth2.SpringDocOAuth2Token
 import org.springdoc.core.utils.SpringDocUtils
+import org.springframework.aot.hint.annotation.RegisterReflectionForBinding
 import org.springframework.beans.factory.InitializingBean
 import org.springframework.boot.autoconfigure.AutoConfigureBefore
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
@@ -36,8 +39,9 @@ import org.springframework.security.oauth2.server.authorization.client.Registere
 @SecurityScheme(
     name = AuthServerSecuritySchemeNames.SERVER_ID_TOKEN,
     type = SecuritySchemeType.APIKEY,
-    paramName = OAuth2UserTokenArgumentResolver.ID_TOKEN_KEY
+    paramName = OAuth2UserTokenArgumentResolver.Companion.ID_TOKEN_KEY
 )
+@RegisterReflectionForBinding(OAuth2ClientLoginError::class, OAuth2ClientLoginSuccess::class)
 class AuthDocAutoConfiguration : InitializingBean {
 
 
@@ -76,7 +80,7 @@ class AuthDocAutoConfiguration : InitializingBean {
     }
 
     @Bean
-    fun authServerOperationCustomizer(authProperties: AuthProperties): AuthServerOperationCustomizer {
-        return AuthServerOperationCustomizer(authProperties)
+    fun authServerOperationCustomizer(authProperties: AuthProperties, applicationWebProperties: ApplicationWebProperties): AuthServerOperationCustomizer {
+        return AuthServerOperationCustomizer(applicationWebProperties, authProperties)
     }
 }

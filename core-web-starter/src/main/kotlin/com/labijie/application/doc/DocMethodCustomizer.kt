@@ -7,12 +7,15 @@ import com.labijie.application.doc.DocUtils.addTotpSecuritySchema
 import com.labijie.application.doc.DocUtils.appendDescription
 import com.labijie.application.exception.InvalidOneTimeCodeException
 import com.labijie.application.exception.RobotDetectedException
+import com.labijie.application.identity.data.pojo.OAuth2Client
 import com.labijie.application.isEnabled
 import com.labijie.application.web.annotation.HttpCache
 import com.labijie.application.web.annotation.HumanVerify
 import com.labijie.application.web.annotation.OneTimeCodeVerify
 import com.labijie.application.web.interceptor.HumanVerifyInterceptor
+import com.labijie.infra.oauth2.mvc.ErrorOptionalResponse
 import io.swagger.v3.oas.models.Operation
+import io.swagger.v3.oas.models.responses.ApiResponse
 import io.swagger.v3.oas.models.security.SecurityRequirement
 import org.springdoc.core.customizers.GlobalOperationCustomizer
 import org.springframework.stereotype.Component
@@ -78,4 +81,5 @@ class DocMethodCustomizer(private val humanChecker: IHumanChecker) : GlobalOpera
             operation.addTotpSecuritySchema()
         }
     }
+
 }

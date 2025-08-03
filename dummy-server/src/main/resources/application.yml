@@ -1,5 +1,5 @@
 server:
-  port: 9898
+  port: 19898
 spring:
   application:
     name: framework-dummy

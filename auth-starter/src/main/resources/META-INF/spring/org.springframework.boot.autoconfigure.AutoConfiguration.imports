@@ -2,4 +2,4 @@ com.labijie.application.auth.configuration.PreAuthServerAutoConfiguration
 com.labijie.application.auth.configuration.ApplicationAuthServerControllerAutoConfiguration
 com.labijie.application.auth.configuration.PreResourceServerAutoConfiguration
 com.labijie.application.auth.configuration.OAuth2LoginAutoConfiguration
-com.labijie.application.auth.configuration.AuthDocAutoConfiguration
+com.labijie.application.auth.doc.AuthDocAutoConfiguration

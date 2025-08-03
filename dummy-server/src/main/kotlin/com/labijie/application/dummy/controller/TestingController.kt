@@ -4,9 +4,11 @@ import com.labijie.application.model.SimpleValue
 import com.labijie.application.model.toSimpleValue
 import com.labijie.application.web.annotation.HttpCache
 import com.labijie.application.web.annotation.HumanVerify
-import com.labijie.caching.annotation.Cache
+import com.labijie.infra.oauth2.AccessToken
 import com.labijie.infra.oauth2.filter.ClientRequired
+import com.labijie.infra.oauth2.mvc.OAuth2ClientLoginResponse
 import com.labijie.infra.utils.logger
+import jakarta.annotation.security.PermitAll
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping
@@ -29,6 +31,13 @@ open class TestingController {
 
     @Autowired(required = false)
     private lateinit var restTemplate: RestTemplate
+
+
+    @PermitAll
+    @RequestMapping("/oidc-response")
+    fun testResponse(): OAuth2ClientLoginResponse {
+        return OAuth2ClientLoginResponse.success(accessToken = AccessToken())
+    }
 
     @HumanVerify
     @GetMapping("/test-human-verify")

@@ -1,6 +1,7 @@
 package com.labijie.application.identity.model
 
 import com.labijie.application.validation.Username
+import jakarta.validation.constraints.Email
 import org.hibernate.validator.constraints.Length
 
 /**
@@ -22,16 +23,18 @@ data class RegisterInfo(
 
     var addition: MutableMap<String, String>? = mutableMapOf(),
 
+    @get:Email
     var email: String? = null,
 
     var language: String? = null
 ) {
     fun hasEmail(): Boolean {
-        return dialingCode != null && !phoneNumber.isNullOrBlank()
+        return !email.isNullOrBlank()
     }
 
     fun hasPhone(): Boolean {
-        return !email.isNullOrBlank()
+
+        return dialingCode != null && !phoneNumber.isNullOrBlank()
     }
 
     fun fullPhoneNumber(): String {

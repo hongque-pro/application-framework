@@ -8,20 +8,21 @@ import org.springframework.boot.context.properties.NestedConfigurationProperty
  * @date 2023-12-03
  */
 @ConfigurationProperties("application")
-class ApplicationCoreProperties {
-    companion object {
-        private const val DEFAULT_DES_SECRET = "!QAZde#@W1122"
-    }
+data class ApplicationCoreProperties(
+    var desSecret: String = DEFAULT_DES_SECRET,
+    var preloadLocales: String = "zh_CN,en_US",
 
-    var desSecret: String = DEFAULT_DES_SECRET
-    var preloadLocales: String = "zh_CN,en_US"
-
-    var localizationService: String = "memory"
+    var localizationService: String = "memory",
 
     @NestedConfigurationProperty
-    val file: FileSettings = FileSettings()
+    val file: FileSettings = FileSettings(),
 
-    val isDefaultDesSecret: Boolean
-        get() = desSecret == DEFAULT_DES_SECRET
 
+) {
+    companion object {
+        private const val DEFAULT_DES_SECRET = "!QAZde#@W1122"
+
+        val ApplicationCoreProperties.isDefaultDesSecret
+            get() = desSecret == DEFAULT_DES_SECRET
+    }
 }

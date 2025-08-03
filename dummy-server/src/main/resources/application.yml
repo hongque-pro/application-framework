@@ -8,16 +8,21 @@ spring:
     username: sa
     driver-class-name: org.h2.Driver
 
+
 infra:
+
   exposed:
     generate-schema:
       enabled: true
     show-sql: true
   oauth2:
     authorization-server:
-      client-repository: memory
-      default-client:
-        enabled: false
+      server-client:
+        default-client:
+          enabled: false
+        repository: memory
+      oauth2-client:
+        oidc-login-enabled: true
 application:
   httpclient:
     logger-enabled: true

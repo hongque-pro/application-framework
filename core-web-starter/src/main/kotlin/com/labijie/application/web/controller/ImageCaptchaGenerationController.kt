@@ -34,8 +34,8 @@ class ImageCaptchaGenerationController(private val applicationProperties: Applic
 
         val captcha = SpecCaptcha(w, h, l)
 
-        val tokenStamp = DesUtils.generateToken(captcha.text().lowercase(), Duration.ofMinutes(10), applicationProperties.desSecret)
+        val tokenStamp = DesUtils.generateToken(captcha.text().lowercase(), Duration.ofMinutes(2), applicationProperties.desSecret)
 
-        return CaptchaResponseData(captcha.toBase64(), tokenStamp, captcha.mimeType)
+        return CaptchaResponseData(captcha.toBase64(), tokenStamp, captcha.mimeType, 120)
     }
 }

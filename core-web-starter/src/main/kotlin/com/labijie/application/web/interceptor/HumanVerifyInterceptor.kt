@@ -1,16 +1,13 @@
 package com.labijie.application.web.interceptor
 
-import com.labijie.application.ApplicationErrors
 import com.labijie.application.component.IHumanChecker
+import com.labijie.application.exception.RobotDetectedException
 import com.labijie.application.isEnabled
-import com.labijie.application.localeErrorMessage
 import com.labijie.application.web.annotation.HumanVerify
+import com.labijie.infra.utils.throwIfNecessary
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
-import org.springframework.http.HttpStatus
-import org.springframework.http.server.ServletServerHttpResponse
-import org.springframework.security.oauth2.core.OAuth2Error
-import org.springframework.security.oauth2.core.http.converter.OAuth2ErrorHttpMessageConverter
+import org.slf4j.LoggerFactory
 import org.springframework.web.method.HandlerMethod
 import org.springframework.web.servlet.HandlerInterceptor
 
@@ -25,13 +22,12 @@ class HumanVerifyInterceptor(
     companion object {
         const val TOKEN_KEY = "captcha"
         const val STAMP_KEY = "captcha_stamp"
-        val statusOnFailure = HttpStatus.FORBIDDEN
+        private val logger by lazy {
+            LoggerFactory.getLogger(HumanVerifyInterceptor::class.java)
+        }
     }
-
-    private val errorHttpMessageConverter = OAuth2ErrorHttpMessageConverter()
-
-
     override fun preHandle(request: HttpServletRequest, response: HttpServletResponse, handler: Any): Boolean {
+
         val method = (handler as? HandlerMethod);
         if (method != null && checker.isEnabled) {
             val anno = method.getMethodAnnotation(HumanVerify::class.java)
@@ -39,21 +35,20 @@ class HumanVerifyInterceptor(
                 val token = request.getHeader(TOKEN_KEY) ?: request.getParameter(TOKEN_KEY).orEmpty()
                 val tokenStamp = request.getHeader(STAMP_KEY) ?: request.getParameter(STAMP_KEY)
 
-                var valid = false
                 if (token.isNotBlank() && (!tokenStamp.isNullOrBlank() || !checker.clientStampRequired())) {
-                    valid = checker.check(token, tokenStamp, request.remoteAddr)
-                }
-
-                if (!valid) {
-                    val err = OAuth2Error(
-                        ApplicationErrors.RobotDetected,
-                        localeErrorMessage(ApplicationErrors.RobotDetected), null
-                    )
-
-                    val serverResponse = ServletServerHttpResponse(response)
-                    serverResponse.setStatusCode(statusOnFailure)
-                    errorHttpMessageConverter.write(err, null, serverResponse)
-                    return false
+                    try {
+                        if(!checker.check(token, tokenStamp, request.remoteAddr))
+                        {
+                            throw RobotDetectedException()
+                        }
+                    }catch (re: RobotDetectedException) {
+                        throw re
+                    }
+                    catch (e: Throwable) {
+                        e.throwIfNecessary()
+                        logger.error("Human checker is expected is to return true /false, but got throw exception.", e)
+                        throw RobotDetectedException()
+                    }
                 }
             }
         }

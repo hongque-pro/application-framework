@@ -4,6 +4,8 @@ import com.fasterxml.jackson.databind.JavaType
 import com.labijie.application.ApplicationErrors
 import com.labijie.application.IDescribeEnum
 import com.labijie.application.JAVA_LONG
+import com.labijie.application.exception.InvalidOneTimeCodeException
+import com.labijie.application.exception.RobotDetectedException
 import com.labijie.application.web.interceptor.HumanVerifyInterceptor
 import com.labijie.infra.utils.ifNullOrBlank
 import com.labijie.infra.utils.toLocalDateTime
@@ -90,7 +92,7 @@ object DocUtils {
         this.addSecurityItem(SecurityRequirement().addList(SecuritySchemeNames.ONE_TIME_CODE))
         this.addSecurityItem(SecurityRequirement().addList(SecuritySchemeNames.ONE_TIME_STAMP))
         this.appendDescription("This method requires verification using a time-based one-time password (`TOTP`).")
-        this.addErrorResponse("TOTP", HumanVerifyInterceptor.statusOnFailure, ApplicationErrors.RobotDetected)
+        this.addErrorResponse("TOTP", InvalidOneTimeCodeException.statusOnFailure, ApplicationErrors.InvalidOneTimeCode)
     }
 
     fun Operation.addErrorResponse(reason: String, httpStatus: HttpStatus, vararg errorCode: String) {

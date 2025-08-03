@@ -5,15 +5,12 @@ import com.labijie.application.ErrorCodedStatusException
 import org.springframework.http.HttpStatus
 
 /**
- * Created with IntelliJ IDEA.
  * @author Anders Xiao
- * @date 2019-09-11
+ * @date 2025/8/3
  */
-class InvalidOneTimeCodeException(message: String? = null, cause: Throwable? = null) :
-    ErrorCodedStatusException(ApplicationErrors.InvalidOneTimeCode, message, cause = cause, status = statusOnFailure) {
-
+class RobotDetectedException(message:String? = null, args: Map<String, String>? = null, cause: Throwable? = null) :
+    ErrorCodedStatusException(ApplicationErrors.RobotDetected, message, cause, statusOnFailure, args) {
     companion object {
-
         val statusOnFailure = HttpStatus.FORBIDDEN
     }
 }

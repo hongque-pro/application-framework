@@ -14,13 +14,24 @@
       "defaultValue": true
     },
     {
-      "name": "application.captcha.hcaptcha.endpoint",
+      "name": "application.captcha.hcaptcha.log-error",
+      "type": "java.lang.Boolean",
+      "sourceType": "com.labijie.application.hcaptcha.configuration.HCaptchaProperties",
+      "defaultValue": false
+    },
+    {
+      "name": "application.captcha.hcaptcha.api-endpoint",
       "type": "java.lang.String",
       "sourceType": "com.labijie.application.hcaptcha.configuration.HCaptchaProperties",
       "defaultValue": "https://api.hcaptcha.com/siteverify"
     },
     {
       "name": "application.captcha.hcaptcha.secret",
+      "type": "java.lang.String",
+      "sourceType": "com.labijie.application.hcaptcha.configuration.HCaptchaProperties"
+    },
+    {
+      "name": "application.captcha.hcaptcha.site-key",
       "type": "java.lang.String",
       "sourceType": "com.labijie.application.hcaptcha.configuration.HCaptchaProperties"
     }

@@ -13,6 +13,7 @@ class HCaptchaProperties {
         const val DEFAULT_ENDPOINT = "https://api.hcaptcha.com/siteverify"
     }
     var enabled: Boolean = true
-    var endpoint: String = DEFAULT_ENDPOINT
+    var apiEndpoint: String = DEFAULT_ENDPOINT
     var secret: String = ""
+    var logError: Boolean = false
 }

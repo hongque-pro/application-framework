@@ -1,11 +1,12 @@
 package com.labijie.application.auth.doc
 
-import com.labijie.application.auth.AuthErrors.INVALID_CLIENT
+import com.labijie.application.auth.AuthErrors
 import com.labijie.application.auth.annotation.ServerIdToken
 import com.labijie.application.auth.configuration.AuthProperties
 import com.labijie.application.auth.controller.RegisterController
 import com.labijie.application.doc.DocUtils.addErrorResponse
 import com.labijie.application.doc.DocUtils.addTotpSecuritySchema
+import com.labijie.application.doc.DocUtils.appendDescription
 import io.swagger.v3.oas.models.Operation
 import io.swagger.v3.oas.models.security.SecurityRequirement
 import org.springdoc.core.customizers.GlobalOperationCustomizer
@@ -21,10 +22,6 @@ class AuthServerOperationCustomizer(private val authProperties: AuthProperties) 
         operation: Operation,
         handlerMethod: HandlerMethod?
     ): Operation? {
-        val containIdToken = handlerMethod?.methodParameters?.any {
-            it.parameter.getDeclaredAnnotation(ServerIdToken::class.java) != null
-        } ?: false
-
         if(authProperties.registerEndpoint.verifyEmailOrPhone &&
             handlerMethod?.beanType == RegisterController::class.java &&
             handlerMethod.method.name == RegisterController::register.name) {
@@ -32,13 +29,20 @@ class AuthServerOperationCustomizer(private val authProperties: AuthProperties) 
             //@Operation(description = "If the password is empty, `TOTP` verification will be required.")
         }
 
-        if (containIdToken) {
+        val serverIdAnnotation = handlerMethod?.methodParameters?.firstOrNull {
+            it.parameter.getDeclaredAnnotation(ServerIdToken::class.java) != null
+        }?.parameter?.getDeclaredAnnotation(ServerIdToken::class.java)
+
+
+        if (serverIdAnnotation != null) {
+            val options = if(serverIdAnnotation.required) "Required" else "Optional"
             operation.addSecurityItem(SecurityRequirement().addList(AuthServerSecuritySchemeNames.SERVER_ID_TOKEN))
+            operation.appendDescription("This method requires a server OIDC token (`id-token`) from server (`${options}`).")
             //HttpStatus.UNAUTHORIZED
             operation.addErrorResponse(
                 "Id Token",
                 HttpStatus.UNAUTHORIZED,
-                INVALID_CLIENT
+                AuthErrors.INVALID_TOKEN
             )
 
         }

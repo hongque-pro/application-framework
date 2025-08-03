@@ -35,13 +35,6 @@ class OneTimeCodeVerifyArgumentResolver : HandlerMethodArgumentResolver {
         binderFactory: WebDataBinderFactory?
     ): Any? {
         val type = parameter.parameterType
-//        if(OneTimeCodeVerifyRequest::class.java == type) {
-//            val code = webRequest.getParameter(OneTimeCodeInterceptor.CODE_KEY) ?: webRequest.getHeader(OneTimeCodeInterceptor.CODE_KEY)
-//            val header = webRequest.getParameter(OneTimeCodeInterceptor.STAMP_KEY) ?: webRequest.getHeader(OneTimeCodeInterceptor.STAMP_KEY)
-//            return OneTimeCodeVerifyRequest(code.orEmpty(), header.orEmpty()).let {
-//                BeanValidator.validate(it)
-//            }
-//        }
 
         if(OneTimeCodeTarget::class.java == type) {
             return VerifiedOneTimeCodeSourceHolder.get()?.target

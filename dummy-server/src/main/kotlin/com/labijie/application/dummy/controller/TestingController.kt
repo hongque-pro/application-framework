@@ -30,6 +30,12 @@ open class TestingController {
     @Autowired(required = false)
     private lateinit var restTemplate: RestTemplate
 
+    @HumanVerify
+    @GetMapping("/test-human-verify")
+    fun testHumanVerify(): SimpleValue<String> {
+        return "OK".toSimpleValue()
+    }
+
 
     @GetMapping("/array")
     fun getUrl(@RequestParam param: TestEnum, @RequestParam param2: TestEnum? = null) : SimpleValue<String> {

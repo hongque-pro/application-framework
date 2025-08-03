@@ -9,12 +9,12 @@ import org.springframework.boot.context.properties.NestedConfigurationProperty
 
 
 @ConfigurationProperties("application.auth")
-class AuthProperties {
-    var securitySecretKey = "c:zjLjK6JmKdRVw"
+data class AuthProperties(
+    var securitySecretKey: String = "c:zjLjK6JmKdRVw",
 
     @NestedConfigurationProperty
-    val oauth2Login = OAuth2LoginSettings()
+    val oauth2Login: OAuth2LoginSettings = OAuth2LoginSettings(),
 
     @NestedConfigurationProperty
-    val registerEndpoint = RegisterEndpointSettings()
-}
+    val registerEndpoint: RegisterEndpointSettings = RegisterEndpointSettings()
+)

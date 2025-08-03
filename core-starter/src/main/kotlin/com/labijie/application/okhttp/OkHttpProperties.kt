@@ -11,7 +11,7 @@ import java.time.Duration
  * @date 2025/6/21
  */
 @ConfigurationProperties(prefix = "application.okhttp")
-class OkHttpProperties {
+data class OkHttpProperties(
 
     /**
      * The interval between web socket pings initiated by this client. Use this to
@@ -22,21 +22,21 @@ class OkHttpProperties {
      *
      * The default value of 0 disables client-initiated pings.
      */
-    var pingInterval: Duration = Duration.ZERO
+    var pingInterval: Duration = Duration.ZERO,
 
 
     /**
      * Whether to retry or not when a connectivity problem is encountered.
      */
-    var retryOnConnectionFailure = true
+    var retryOnConnectionFailure: Boolean = true,
 
 
     @NestedConfigurationProperty
-    val cache = CacheProperties()
+    val cache: CacheProperties = CacheProperties(),
 
     @NestedConfigurationProperty
-    val connectionPool = ConnectionPoolProperties()
-}
+    val connectionPool: ConnectionPoolProperties = ConnectionPoolProperties()
+)
 
 /**
  * @author Lars Grefer

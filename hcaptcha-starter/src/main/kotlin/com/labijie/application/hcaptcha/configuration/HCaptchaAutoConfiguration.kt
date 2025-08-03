@@ -7,7 +7,6 @@ import org.springframework.boot.autoconfigure.AutoConfigureBefore
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.boot.context.properties.EnableConfigurationProperties
-import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.web.client.RestClient
 
@@ -20,7 +19,6 @@ import org.springframework.web.client.RestClient
 @EnableConfigurationProperties(HCaptchaProperties::class)
 class HCaptchaAutoConfiguration {
 
-    @Bean
     @ConditionalOnProperty(
         prefix = "application.captcha.hcaptcha",
         name = ["enabled"],
@@ -31,4 +29,5 @@ class HCaptchaAutoConfiguration {
     fun hcaptchaService(properties: HCaptchaProperties, restClient: RestClient.Builder): HCaptchaService {
         return HCaptchaService(properties, restClient)
     }
+
 }

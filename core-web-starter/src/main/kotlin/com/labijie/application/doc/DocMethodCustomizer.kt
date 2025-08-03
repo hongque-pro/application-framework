@@ -5,6 +5,8 @@ import com.labijie.application.component.IHumanChecker
 import com.labijie.application.doc.DocUtils.addErrorResponse
 import com.labijie.application.doc.DocUtils.addTotpSecuritySchema
 import com.labijie.application.doc.DocUtils.appendDescription
+import com.labijie.application.exception.InvalidOneTimeCodeException
+import com.labijie.application.exception.RobotDetectedException
 import com.labijie.application.isEnabled
 import com.labijie.application.web.annotation.HttpCache
 import com.labijie.application.web.annotation.HumanVerify
@@ -63,7 +65,7 @@ class DocMethodCustomizer(private val humanChecker: IHumanChecker) : GlobalOpera
             }
             val checkerStatus = if(humanChecker.isEnabled) "ON" else "`OFF`"
             operation.appendDescription("This method is protected by `CAPTCHA` (a human verification step), the verification status: ${checkerStatus}.")
-            operation.addErrorResponse("Human Verify", HumanVerifyInterceptor.statusOnFailure, ApplicationErrors.RobotDetected)
+            operation.addErrorResponse("Human Verify", RobotDetectedException.statusOnFailure, ApplicationErrors.RobotDetected)
 
         }
     }

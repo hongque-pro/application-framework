@@ -9,4 +9,5 @@ data class CaptchaResponseData(
     val image: String,
     val stamp: String,
     val mime: String,
+    val expireIn: Int,
 )

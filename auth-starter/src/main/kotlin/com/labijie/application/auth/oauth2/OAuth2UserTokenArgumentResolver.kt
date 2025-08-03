@@ -44,7 +44,7 @@ class OAuth2UserTokenArgumentResolver(
         }
 
         val tokenValue = webRequest.getParameter(ID_TOKEN_KEY) ?: webRequest.getHeader(ID_TOKEN_KEY)
-        val optional = parameter.isOptional || (annotation.required)
+        val optional = parameter.isOptional || (!annotation.required)
 
         if (optional && tokenValue.isNullOrBlank()) {
             return null

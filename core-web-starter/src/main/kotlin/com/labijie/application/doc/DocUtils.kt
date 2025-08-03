@@ -120,7 +120,7 @@ object DocUtils {
         if (!isEnumType(type)) {
             return baseSchema
         }
-        val dataClass = getClassFromType(type) ?: return@getEnumSchema baseSchema
+        val dataClass = getClassFromType(type) ?: return baseSchema
         val isDescriber = IDescribeEnum::class.java.isAssignableFrom(dataClass)
         val enumValues = dataClass.getEnumConstants()
         val typedValues: Map<Int, String> = enumValues.mapIndexed { index, enumValue ->
@@ -132,14 +132,16 @@ object DocUtils {
         }.toMap()
 
         val enumDesc = typedValues.map {
-            "${it.key}: ${it.value}"
-        }.joinToString("\n")
+            "`${it.key}`:${it.value}"
+        }.joinToString(", ")
+
+
 
         return IntegerSchema().apply {
             format("enum")
             enum = typedValues.keys.toList()
             setDefault(typedValues.firstNotNullOfOrNull { it.key })
-            description = baseSchema.description + "\n" + enumDesc
+            description = enumDesc
         }
     }
 

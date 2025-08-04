@@ -2,6 +2,7 @@ package com.labijie.application.doc
 
 import com.labijie.application.SpringContext.getApplicationGitProperties
 import com.labijie.application.component.IHumanChecker
+import com.labijie.application.configuration.ApplicationWebProperties
 import com.labijie.application.model.OneTimeCodeTarget
 import com.labijie.application.web.interceptor.HumanVerifyInterceptor
 import com.labijie.application.web.interceptor.OneTimeCodeInterceptor
@@ -38,15 +39,16 @@ import org.springframework.core.env.Environment
 @AutoConfigureOrder(Ordered.LOWEST_PRECEDENCE)
 @ConditionalOnProperty(prefix = "springdoc.swagger-ui", name = ["enabled"], havingValue = "true", matchIfMissing = true)
 @ConditionalOnWebApplication
-class SpringDocAutoConfiguration(private val environment: Environment): InitializingBean, ApplicationContextAware {
+class SpringDocAutoConfiguration(private val environment: Environment) : InitializingBean, ApplicationContextAware {
 
     private lateinit var applicationContext: ApplicationContext
 
 
-//    @Bean
-//    fun docServerBaseUrlCustomizer(webProperties: ApplicationWebProperties): DocServerBaseUrlCustomizer {
-//        return DocServerBaseUrlCustomizer(environment, webProperties)
-//    }
+    @Bean
+    @ConditionalOnProperty(name = ["application.web.server-base-url"])
+    fun docServerBaseUrlCustomizer(webProperties: ApplicationWebProperties): DocServerBaseUrlCustomizer {
+        return DocServerBaseUrlCustomizer(webProperties)
+    }
 
 
     @Bean
@@ -75,12 +77,15 @@ class SpringDocAutoConfiguration(private val environment: Environment): Initiali
             `in` = SecurityScheme.In.QUERY
         }
 
-        return DocUtils.createDefaultOpenAPI(environment.getApplicationName(), applicationContext.getApplicationGitProperties())
+        return DocUtils.createDefaultOpenAPI(
+            environment.getApplicationName(),
+            applicationContext.getApplicationGitProperties()
+        )
             .components(
                 Components()
                     .addSecuritySchemes(SecuritySchemeNames.HUMAN_VERIFY_TOKEN, humanToken)
                     .apply {
-                        if(humanChecker.clientStampRequired()) {
+                        if (humanChecker.clientStampRequired()) {
                             addSecuritySchemes(SecuritySchemeNames.HUMAN_VERIFY_STAMP, humanStamp)
                         }
                     }
@@ -104,7 +109,6 @@ class SpringDocAutoConfiguration(private val environment: Environment): Initiali
     }
 
 
-
 //    @Bean
 //    @ConditionalOnClass(name = ["com.labijie.application.dapr.configuration.ApplicationDaprAutoConfiguration"])
 //    @Lazy
@@ -119,7 +123,7 @@ class SpringDocAutoConfiguration(private val environment: Environment): Initiali
 
 
     @Bean
-    @ConditionalOnClass(name=["org.springframework.security.oauth2.server.authorization.OAuth2Authorization"])
+    @ConditionalOnClass(name = ["org.springframework.security.oauth2.server.authorization.OAuth2Authorization"])
     fun oauth2Api(): GroupedOpenApi {
         return GroupedOpenApi.builder()
             .group("OAuth2 Server")

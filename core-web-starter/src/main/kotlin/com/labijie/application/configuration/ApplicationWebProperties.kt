@@ -18,6 +18,8 @@ data class ApplicationWebProperties(
      */
     var jsonMode: JsonMode = JsonMode.JAVASCRIPT,
 
+    val serverBaseUrl: String = "",
+
     @NestedConfigurationProperty
     val localeResolver: LocaleResolverSettings = LocaleResolverSettings()
 )

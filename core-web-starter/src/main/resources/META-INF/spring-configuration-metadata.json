@@ -38,6 +38,12 @@
       "defaultValue": true
     },
     {
+      "name": "application.web.server-base-url",
+      "description": "Set web server base url instead auto got (Used as doc server).",
+      "type": "java.lang.String",
+      "sourceType": "com.labijie.application.configuration.ApplicationWebProperties",
+    },
+    {
       "name": "application.web.json-mode",
       "description": "If use javascript mode, web server will serialize int64, double to string in json, as same as deserialization",
       "type": "com.labijie.application.JsonMode",

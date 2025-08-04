@@ -3,8 +3,10 @@ package com.labijie.application.dapr.configuration
 import com.labijie.application.JsonMode
 import com.labijie.infra.utils.ifNullOrBlank
 import io.dapr.config.Properties
+import org.springframework.beans.factory.config.BeanDefinition
 import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.boot.context.properties.NestedConfigurationProperty
+import org.springframework.context.annotation.Role
 
 /**
  * @author Anders Xiao

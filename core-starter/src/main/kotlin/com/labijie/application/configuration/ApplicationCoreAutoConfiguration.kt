@@ -5,13 +5,10 @@ import com.labijie.application.ApplicationInitializationRunner
 import com.labijie.application.ErrorRegistry
 import com.labijie.application.IErrorRegistry
 import com.labijie.application.annotation.ImportErrorDefinition
-import com.labijie.application.service.IOneTimeCodeService
-import com.labijie.application.service.impl.DefaultOnetimeCodeService
 import com.labijie.application.data.LocalizationMessageTable
 import com.labijie.application.okhttp.OkHttpClientRequestFactoryBuilder
 import com.labijie.application.open.OpenApiErrors
 import com.labijie.infra.orm.annotation.TableScan
-import com.labijie.infra.security.IRfc6238TokenService
 import org.springframework.boot.WebApplicationType
 import org.springframework.boot.autoconfigure.AutoConfigureAfter
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean

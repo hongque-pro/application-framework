@@ -10,17 +10,20 @@ import com.labijie.application.service.impl.DefaultOnetimeCodeService
 import com.labijie.application.service.impl.FileIndexService
 import com.labijie.infra.IIdGenerator
 import com.labijie.infra.security.IRfc6238TokenService
+import org.springframework.beans.factory.config.BeanDefinition
 import org.springframework.boot.autoconfigure.AutoConfigureOrder
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.context.annotation.Role
 import org.springframework.core.Ordered
 import org.springframework.transaction.support.TransactionTemplate
 import javax.sql.DataSource
 
 @Configuration(proxyBeanMethods = false)
 @AutoConfigureOrder(Ordered.LOWEST_PRECEDENCE)
+@Role(BeanDefinition.ROLE_INFRASTRUCTURE)
 class DefaultsAutoConfiguration {
 
 

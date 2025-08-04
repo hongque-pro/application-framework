@@ -14,6 +14,7 @@ import io.swagger.v3.oas.models.media.NumberSchema
 import io.swagger.v3.oas.models.media.StringSchema
 import org.springdoc.core.configuration.SpringDocConfiguration
 import org.springdoc.core.configuration.oauth2.SpringDocOAuth2Token
+import org.springdoc.core.utils.Constants
 import org.springdoc.core.utils.SpringDocUtils
 import org.springframework.aot.hint.annotation.RegisterReflectionForBinding
 import org.springframework.beans.factory.InitializingBean
@@ -28,9 +29,9 @@ import org.springframework.security.oauth2.server.authorization.client.Registere
  * @author Anders Xiao
  * @date 2023-12-02
  */
-@ConditionalOnProperty(prefix = "springdoc.swagger-ui", name = ["enabled"], havingValue = "true", matchIfMissing = true)
 @Configuration(proxyBeanMethods = false)
 @AutoConfigureBefore(SpringDocConfiguration::class)
+@ConditionalOnProperty(name = [Constants.SPRINGDOC_ENABLED], matchIfMissing = true)
 @SecurityScheme(
     name = AuthServerSecuritySchemeNames.CLIENT_AUTHORIZATION,
     type = SecuritySchemeType.HTTP,

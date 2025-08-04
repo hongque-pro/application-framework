@@ -11,11 +11,13 @@ import com.labijie.infra.oauth2.TwoFactorPrincipal
 import io.swagger.v3.oas.models.Components
 import io.swagger.v3.oas.models.OpenAPI
 import io.swagger.v3.oas.models.security.SecurityScheme
+import org.springdoc.core.configuration.SpringDocConfiguration
 import org.springdoc.core.configuration.SpringDocSecurityOAuth2Customizer
 import org.springdoc.core.models.GroupedOpenApi
+import org.springdoc.core.utils.Constants
 import org.springdoc.core.utils.SpringDocUtils
 import org.springframework.beans.factory.InitializingBean
-import org.springframework.boot.autoconfigure.AutoConfigureOrder
+import org.springframework.boot.autoconfigure.AutoConfigureBefore
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
@@ -25,7 +27,7 @@ import org.springframework.context.ApplicationContextAware
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.ComponentScan
 import org.springframework.context.annotation.Configuration
-import org.springframework.core.Ordered
+import org.springframework.context.annotation.Lazy
 import org.springframework.core.env.Environment
 
 /**
@@ -36,8 +38,8 @@ import org.springframework.core.env.Environment
  */
 @Configuration(proxyBeanMethods = false)
 @ComponentScan(basePackageClasses = [DocPropertyCustomizer::class])
-@AutoConfigureOrder(Ordered.LOWEST_PRECEDENCE)
-@ConditionalOnProperty(prefix = "springdoc.swagger-ui", name = ["enabled"], havingValue = "true", matchIfMissing = true)
+@AutoConfigureBefore(SpringDocConfiguration::class)
+@ConditionalOnProperty(name = [Constants.SPRINGDOC_ENABLED], matchIfMissing = true)
 @ConditionalOnWebApplication
 class SpringDocAutoConfiguration(private val environment: Environment) : InitializingBean, ApplicationContextAware {
 
@@ -124,6 +126,7 @@ class SpringDocAutoConfiguration(private val environment: Environment) : Initial
 
 
     @Bean
+    @Lazy
     @ConditionalOnClass(name = ["org.springframework.security.oauth2.server.authorization.OAuth2Authorization"])
     fun oauth2Api(): GroupedOpenApi {
         return GroupedOpenApi.builder()
@@ -133,7 +136,8 @@ class SpringDocAutoConfiguration(private val environment: Environment) : Initial
             .addOpenApiCustomizer {
                 SpringDocSecurityOAuth2Customizer().apply {
                     setApplicationContext(applicationContext)
-                }.customise(it)
+                }
+                .customise(it)
             }
             .build()
     }

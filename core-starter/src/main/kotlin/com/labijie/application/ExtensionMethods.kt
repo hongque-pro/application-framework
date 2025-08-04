@@ -617,15 +617,18 @@ fun <T : Any> loadResources(
     name: String, classLoader: ClassLoader?,
     filter: ((InputStream) -> T?)? = null
 ): T? {
-    val systemResources: Enumeration<URL> =
-        (classLoader ?: ClassLoader.getSystemClassLoader()).getResources(name)
-    while (systemResources.hasMoreElements()) {
-        systemResources.nextElement().openStream().use { stream ->
-            val content: T? = filter?.invoke(stream)
-            return content
+    val loader = classLoader ?: ClassLoader.getSystemClassLoader()
+    val resources = loader.getResources(name).toList().reversed() // 收集并反转资源列表
+
+    for (url in resources) {
+        url.openStream().use { stream ->
+            val content = filter?.invoke(stream)
+            if (content != null) {
+                return content // 倒序返回第一个非空结果
+            }
         }
     }
-    return null
+    return null // 所有资源均未匹配
 }
 
 /**
@@ -692,6 +695,7 @@ fun getGitProperties(
         }
 
     } catch (e: IOException) {
+
         return null
     }
 }

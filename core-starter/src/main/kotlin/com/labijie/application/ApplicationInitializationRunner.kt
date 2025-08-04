@@ -1,5 +1,6 @@
 package com.labijie.application
 
+import com.labijie.application.SpringContext.findApplicationMainClass
 import com.labijie.application.SpringContext.getApplicationGitProperties
 import com.labijie.application.component.IBootPrinter
 import com.labijie.application.component.IHumanChecker

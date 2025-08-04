@@ -34,7 +34,7 @@ class ApplicationCoreRuntimeHintsRegistrar : RuntimeHintsRegistrar {
             StrongPassword::class,
             Username::class,
             XxsReject::class,
-            PhoneNumber::class,
+            PhoneNumber::class
         )
 
         hints.reflection().registerEnum(OneTimeCodeTarget.Channel::class)

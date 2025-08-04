@@ -61,7 +61,6 @@ import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandl
 @AutoConfigureBefore(DefaultsAutoConfiguration::class)
 @EnableConfigurationProperties(ApplicationWebProperties::class)
 @ConditionalOnWebApplication
-@Role(BeanDefinition.ROLE_INFRASTRUCTURE)
 class ApplicationWebAutoConfiguration(private val properties: ApplicationWebProperties) : WebMvcConfigurer,
     IResourceAuthorizationConfigurer, ApplicationContextAware {
 

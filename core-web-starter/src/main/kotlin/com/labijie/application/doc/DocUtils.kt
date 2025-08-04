@@ -187,9 +187,10 @@ object DocUtils {
                 Info().title("${CaseUtils.toCamelCase(applicationName, true, '-', '@', '_')} API")
                     .apply {
                         if (gitProperties != null) {
+                            val commitId = gitProperties.get("commit.id.abbrev")
                             version(gitProperties.get("build.version") ?: "1.0.0")
                             description(
-                                "git commit: ${gitProperties.get("commit.id.abbrev") ?: "--"}   " +
+                                "git commit: ${commitId?.let { "`${it}`" } ?: "--" }   " +
                                         "commit time: ${
                                             gitProperties.commitTime?.toLocalDateTime()
                                                 ?.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")) ?: "--"

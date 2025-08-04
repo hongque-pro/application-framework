@@ -45,6 +45,7 @@ class SpringDocAutoConfiguration(private val environment: Environment) : Initial
 
 
     @Bean
+    @ConditionalOnMissingBean(DocServerBaseUrlCustomizer::class)
     @ConditionalOnProperty(name = ["application.web.server-base-url"])
     fun docServerBaseUrlCustomizer(webProperties: ApplicationWebProperties): DocServerBaseUrlCustomizer {
         return DocServerBaseUrlCustomizer(webProperties)

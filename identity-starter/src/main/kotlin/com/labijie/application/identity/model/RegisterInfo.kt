@@ -1,5 +1,6 @@
 package com.labijie.application.identity.model
 
+import com.labijie.application.validation.PhoneNumber
 import com.labijie.application.validation.Username
 import jakarta.validation.constraints.Email
 import org.hibernate.validator.constraints.Length
@@ -9,12 +10,15 @@ import org.hibernate.validator.constraints.Length
  * @author Anders Xiao
  * @date 2019-09-11
  */
+
+@PhoneNumber("dialingCode", "phoneNumber")
 data class RegisterInfo(
     @get: Length(min=3, max = 16)
     @get: Username
     var username: String? = null,
 
     var dialingCode: Short? = null,
+
     var phoneNumber: String? = null,
 
     @get:Length(min=6)

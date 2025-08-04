@@ -8,7 +8,7 @@ import org.springframework.context.annotation.Conditional
  * @date 2023-12-04
  */
 @Retention(AnnotationRetention.RUNTIME)
-@Target(AnnotationTarget.TYPE, AnnotationTarget.FUNCTION)
+@Target(AnnotationTarget.CLASS, AnnotationTarget.FUNCTION)
 @MustBeDocumented
 @Conditional(DaprSideCondition::class)
 annotation class ConditionalOnDaprPubsub(val side: PubsubSide)

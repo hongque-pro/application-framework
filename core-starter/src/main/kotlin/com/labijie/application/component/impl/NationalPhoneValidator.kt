@@ -15,7 +15,7 @@ class NationalPhoneValidator : IPhoneValidator {
     override fun validate(dialingCode: Short, phoneNumber: String, throwIfInvalid: Boolean): Boolean {
         val number = phoneNumber.toLongOrNull()
 
-        if(number == null ||dialingCode < 0){
+        if(number == null ||dialingCode <= 0){
             if(throwIfInvalid){
                 throw InvalidPhoneNumberException(inputPhone = "$dialingCode $phoneNumber")
             }
@@ -23,12 +23,11 @@ class NationalPhoneValidator : IPhoneValidator {
         }
 
         val num = Phonenumber.PhoneNumber().apply {
-            setCountryCode(dialingCode.toInt())
+            countryCode = dialingCode.toInt()
             nationalNumber = number
         }
 
-        var valid = dialingCode == 86.toShort()
-        valid = valid && phoneNumber.isNotBlank() && PhoneNumberUtil.getInstance().isValidNumber(num)
+        val valid = phoneNumber.isNotBlank() && PhoneNumberUtil.getInstance().isValidNumber(num)
 
         if(!valid && throwIfInvalid){
             throw InvalidPhoneNumberException(inputPhone = "$dialingCode $phoneNumber")

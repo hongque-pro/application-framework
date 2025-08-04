@@ -11,6 +11,7 @@ import org.springframework.context.ApplicationContext
 import java.lang.reflect.Constructor
 import java.lang.reflect.Parameter
 import java.lang.reflect.ParameterizedType
+import java.time.Duration
 import kotlin.reflect.KClass
 
 
@@ -57,5 +58,22 @@ object ObjectUtils {
             it.declaredAnnotations.any { anno -> anno.annotationClass.java == Autowired::class.java }
         } ?: constructors.maxBy { it.parameters.size }
         return ctor ?: throw RuntimeException("Unable to got declared constructor from type: ${moduleClass.simpleName}")
+    }
+
+    fun Duration.toShortString(): String {
+        val millis: Long = this.toMillis()
+
+        if (millis < 1000) {
+            return millis.toString() + "ms"
+        } else if (millis < 60000) {
+            val seconds = millis / 1000
+            return seconds.toString() + "s"
+        } else if (millis < 3600000) {
+            val minutes = millis / 60000.0
+            return String.format("%.1fm", minutes)
+        } else {
+            val hours = millis / 3600000.0
+            return String.format("%.1fh", hours)
+        }
     }
 }

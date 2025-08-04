@@ -37,19 +37,22 @@ class DefaultEmailService(
     private val mainProvider by lazy {
 
         val main = properties.mainProvider
-        if(main.isBlank()) {
-            return@lazy this.providers.firstNotNullOfOrNull { it.value } ?: DummyEmailProvider
+        val mainProvider =  if(main.isBlank()) {
+            this.providers.firstNotNullOfOrNull { it.value } ?: DummyEmailProvider
         }
+        else {
+            val p = this.providers[main.lowercase()]
 
-        val p = this.providers[main.lowercase()]
-
-        if(p == null) {
-            val used = this.providers.firstNotNullOfOrNull { it.value } ?: DummyEmailProvider
-            logger.warn("Email service main provider '${properties.mainProvider}' not found, provider '${used.name}' used as main provider.")
-            used
-        }else {
-            p
+            if (p == null) {
+                val used = this.providers.firstNotNullOfOrNull { it.value } ?: DummyEmailProvider
+                logger.warn("Email service main provider '${properties.mainProvider}' not found.")
+                used
+            } else {
+                p
+            }
         }
+        logger.info("Email service use '${mainProvider.name}' as main provider.")
+        mainProvider
     }
 
     init {
@@ -79,7 +82,7 @@ class DefaultEmailService(
 
         val id = "mail:${to}:${type.toString().lowercase()}_code"
         rateLimit(id, "Send email verification code") {
-            this.mainProvider.sendVerificationCodeAsync(to, code.code, type)
+            this.mainProvider.sendVerificationCodeAsync(to, code.code, code.expiration, type)
         }
         return OneTimeGenerationResult(code.stamp)
     }

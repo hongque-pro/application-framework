@@ -2,6 +2,7 @@ package com.labijie.application.email.provider
 
 import com.labijie.application.email.model.TemplatedMail
 import com.labijie.application.model.VerificationCodeType
+import java.time.Duration
 
 /**
  * @author Anders Xiao
@@ -11,5 +12,5 @@ interface IEmailServiceProvider {
     val name: String
 
     fun sendTemplateMailAsync(mail: TemplatedMail)
-    fun sendVerificationCodeAsync(to: String, code: String, type: VerificationCodeType)
+    fun sendVerificationCodeAsync(to: String, code: String, codeExpiration: Duration, type: VerificationCodeType)
 }

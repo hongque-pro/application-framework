@@ -1,8 +1,10 @@
 package com.labijie.application.email.provider
 
+import com.labijie.application.ObjectUtils.toShortString
 import com.labijie.application.email.model.TemplatedMail
 import com.labijie.application.model.VerificationCodeType
 import org.slf4j.LoggerFactory
+import java.time.Duration
 
 /**
  * @author Anders Xiao
@@ -33,6 +35,7 @@ object DummyEmailProvider : IEmailServiceProvider {
     override fun sendVerificationCodeAsync(
         to: String,
         code: String,
+        codeExpiration: Duration,
         type: VerificationCodeType
     ) {
         StringBuilder().apply {
@@ -40,6 +43,7 @@ object DummyEmailProvider : IEmailServiceProvider {
             appendLine("to: $to")
             appendLine("code: $code")
             appendLine("type: $type")
+            appendLine("expiration: ${codeExpiration.toShortString()}")
             appendLine()
         }.let {
             logger.info(it.toString())

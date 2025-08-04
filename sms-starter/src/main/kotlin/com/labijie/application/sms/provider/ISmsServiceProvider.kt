@@ -2,6 +2,7 @@ package com.labijie.application.sms.provider
 
 import com.labijie.application.model.VerificationCodeType
 import com.labijie.application.sms.model.TemplatedMessage
+import java.time.Duration
 
 /**
  * @author Anders Xiao
@@ -9,6 +10,6 @@ import com.labijie.application.sms.model.TemplatedMessage
  */
 interface ISmsServiceProvider {
     val name: String
-    fun sendVerificationCodeAsync(dialingCode: Short, phoneNumber: String, code: String, type: VerificationCodeType)
+    fun sendVerificationCodeAsync(dialingCode: Short, phoneNumber: String, code: String, expiration: Duration, type: VerificationCodeType)
     fun sendTemplatedAsync(message: TemplatedMessage)
 }

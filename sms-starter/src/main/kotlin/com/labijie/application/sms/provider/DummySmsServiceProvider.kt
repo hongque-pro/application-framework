@@ -1,8 +1,10 @@
 package com.labijie.application.sms.provider
 
+import com.labijie.application.ObjectUtils.toShortString
 import com.labijie.application.model.VerificationCodeType
 import com.labijie.application.sms.model.TemplatedMessage
 import org.slf4j.LoggerFactory
+import java.time.Duration
 
 /**
  * @author Anders Xiao
@@ -16,6 +18,7 @@ object DummySmsServiceProvider : ISmsServiceProvider {
         dialingCode: Short,
         phoneNumber: String,
         code: String,
+        expiration: Duration,
         type: VerificationCodeType
     ) {
         StringBuilder().apply {
@@ -23,6 +26,7 @@ object DummySmsServiceProvider : ISmsServiceProvider {
             appendLine("to: ${dialingCode}${phoneNumber}")
             appendLine("code: $code")
             appendLine("type: $type")
+            appendLine("expiration: ${expiration.toShortString()}")
             appendLine()
         }.let {
             logger.info(it.toString())

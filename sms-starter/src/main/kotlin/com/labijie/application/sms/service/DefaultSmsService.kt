@@ -1,15 +1,14 @@
 package com.labijie.application.sms.service
 
 import com.labijie.application.component.AbstractRateLimitService
-import com.labijie.application.service.IOneTimeCodeService
-import com.labijie.application.model.VerificationCodeType
 import com.labijie.application.model.OneTimeGenerationResult
+import com.labijie.application.model.VerificationCodeType
+import com.labijie.application.service.IOneTimeCodeService
 import com.labijie.application.sms.configuration.SmsServiceProperties
 import com.labijie.application.sms.model.TemplatedMessage
 import com.labijie.application.sms.provider.DummySmsServiceProvider
 import com.labijie.application.sms.provider.ISmsServiceProvider
 import com.labijie.caching.ICacheManager
-import com.labijie.infra.utils.ShortId
 import org.slf4j.LoggerFactory
 import java.time.Duration
 
@@ -43,19 +42,22 @@ class DefaultSmsService(
     private val mainProvider by lazy {
 
         val main = properties.mainProvider
-        if (main.isBlank()) {
-            return@lazy this.providers.firstNotNullOfOrNull { it.value } ?: DummySmsServiceProvider
+        val mainProvider =  if(main.isBlank()) {
+            this.providers.firstNotNullOfOrNull { it.value } ?: DummySmsServiceProvider
         }
+        else {
+            val p = this.providers[main.lowercase()]
 
-        val p = this.providers[main.lowercase()]
-
-        if (p == null) {
-            val used = this.providers.firstNotNullOfOrNull { it.value } ?: DummySmsServiceProvider
-            logger.warn("Sms service main provider '${properties.mainProvider}' not found, provider '${used.name}' used as main provider.")
-            used
-        } else {
-            p
+            if (p == null) {
+                val used = this.providers.firstNotNullOfOrNull { it.value } ?: DummySmsServiceProvider
+                logger.warn("SMS service main provider '${properties.mainProvider}' not found.")
+                used
+            } else {
+                p
+            }
         }
+        logger.info("SMS service use '${mainProvider.name}' as main provider.")
+        mainProvider
     }
 
     init {
@@ -92,10 +94,10 @@ class DefaultSmsService(
         val id = "sms:${dialingCode}${phoneNumber}:${type.toString().lowercase()}_code"
         if (rateLimited) {
             rateLimit(id, "Send sms verification code") {
-                mainProvider.sendVerificationCodeAsync(dialingCode, phoneNumber, code.code, type)
+                mainProvider.sendVerificationCodeAsync(dialingCode, phoneNumber, code.code, code.expiration, type)
             }
         } else {
-            mainProvider.sendVerificationCodeAsync(dialingCode, phoneNumber, code.code, type)
+            mainProvider.sendVerificationCodeAsync(dialingCode, phoneNumber, code.code, code.expiration, type)
         }
 
         val verificationToken = OneTimeGenerationResult(code.stamp)

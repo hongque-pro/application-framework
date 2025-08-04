@@ -29,12 +29,14 @@ class DefaultsAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean(IHumanChecker::class)
+    @AutoConfigureOrder(Ordered.HIGHEST_PRECEDENCE)
     fun noneHumanChecker(): NoneHumanChecker {
         return NoneHumanChecker
     }
 
     @Bean
     @ConditionalOnMissingBean(IObjectStorage::class)
+    @AutoConfigureOrder(Ordered.HIGHEST_PRECEDENCE)
     fun noneObjectStorage(): IObjectStorage {
         return NoneObjectStorage()
     }
@@ -42,6 +44,7 @@ class DefaultsAutoConfiguration {
     @Bean
     @ConditionalOnBean(TransactionTemplate::class, DataSource::class)
     @ConditionalOnMissingBean(IFileIndexService::class)
+    @AutoConfigureOrder(Ordered.HIGHEST_PRECEDENCE)
     fun fileIndexService(
         applicationCoreProperties: ApplicationCoreProperties,
         objectStorage: IObjectStorage,
@@ -54,6 +57,7 @@ class DefaultsAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean(IOneTimeCodeService::class)
+    @AutoConfigureOrder(Ordered.HIGHEST_PRECEDENCE)
     fun defaultOnetimeCodeService(
         coreProperties: ApplicationCoreProperties,
         rfc6238TokenService: IRfc6238TokenService,

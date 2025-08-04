@@ -11,12 +11,11 @@ import com.labijie.infra.json.JacksonHelper
 import io.dapr.client.DaprClientBuilder
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.config.BeanPostProcessor
-import org.springframework.beans.factory.getBean
 import org.springframework.context.ApplicationContext
 import org.springframework.context.ApplicationContextAware
 
 
-class ApplicationDaprBeanPostProcessor() : BeanPostProcessor, ApplicationContextAware {
+class ApplicationDaprBeanPostProcessor(private val daprProperties: DaprProperties) : BeanPostProcessor, ApplicationContextAware {
 
     private var applicationContext: ApplicationContext? = null
 
@@ -24,25 +23,20 @@ class ApplicationDaprBeanPostProcessor() : BeanPostProcessor, ApplicationContext
         LoggerFactory.getLogger(ApplicationDaprBeanPostProcessor::class.java)
     }
 
-    private val daprProperties by lazy {
-        applicationContext?.getBean<DaprProperties>()
-    }
 
     override fun postProcessAfterInitialization(bean: Any, beanName: String): Any? {
-        daprProperties?.let {
-            properties ->
-            if (bean is DaprClientBuilder) {
-                val objectMapper =
-                    if (properties.jsonMode == JsonMode.JAVASCRIPT) JacksonHelper.webCompatibilityMapper else JacksonHelper.defaultObjectMapper
 
-                logger.info("Dapr client serialization mode: ${properties.jsonMode}")
+        if (bean is DaprClientBuilder) {
+            val objectMapper =
+                if (daprProperties.jsonMode == JsonMode.JAVASCRIPT) JacksonHelper.webCompatibilityMapper else JacksonHelper.defaultObjectMapper
 
-                val objectSerializer = DaprJsonSerializer(objectMapper)
-                bean.withObjectSerializer(objectSerializer)
-                val customizers = applicationContext?.getBeanProvider(IDaprClientBuildCustomizer::class.java)
-                customizers?.orderedStream()?.forEach {
-                    it.customize(bean)
-                }
+            logger.info("Dapr client serialization mode: ${daprProperties.jsonMode}")
+
+            val objectSerializer = DaprJsonSerializer(objectMapper)
+            bean.withObjectSerializer(objectSerializer)
+            val customizers = applicationContext?.getBeanProvider(IDaprClientBuildCustomizer::class.java)
+            customizers?.orderedStream()?.forEach {
+                it.customize(bean)
             }
         }
 

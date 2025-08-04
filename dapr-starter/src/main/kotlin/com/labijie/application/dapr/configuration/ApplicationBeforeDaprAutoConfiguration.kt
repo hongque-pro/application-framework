@@ -45,8 +45,8 @@ class ApplicationBeforeDaprAutoConfiguration {
     @Bean
     @Role(BeanDefinition.ROLE_INFRASTRUCTURE)
     @ConditionalOnMissingBean(ApplicationDaprBeanPostProcessor::class)
-    fun applicationDaprBeanPostProcessor(): ApplicationDaprBeanPostProcessor {
-        return ApplicationDaprBeanPostProcessor()
+    fun applicationDaprBeanPostProcessor(properties: DaprProperties): ApplicationDaprBeanPostProcessor {
+        return ApplicationDaprBeanPostProcessor(properties)
     }
 
 }

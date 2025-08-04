@@ -16,6 +16,7 @@ import org.springframework.context.annotation.Role
  * https://docs.dapr.io/reference/environment/
  */
 @ConfigurationProperties("application.dapr")
+@Role(BeanDefinition.ROLE_INFRASTRUCTURE)
 class DaprProperties {
     var pubServiceEnabled: Boolean = false
     var subServiceEnabled: Boolean = false

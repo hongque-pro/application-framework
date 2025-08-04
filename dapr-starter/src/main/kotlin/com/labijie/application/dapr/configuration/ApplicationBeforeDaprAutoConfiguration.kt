@@ -3,7 +3,6 @@ package com.labijie.application.dapr.configuration
 import com.labijie.application.dapr.DaprDisposable
 import com.labijie.infra.oauth2.resource.IResourceAuthorizationConfigurer
 import io.dapr.springboot.DaprAutoConfiguration
-import org.springframework.beans.factory.SmartInitializingSingleton
 import org.springframework.beans.factory.config.BeanDefinition
 import org.springframework.boot.autoconfigure.AutoConfigureBefore
 import org.springframework.boot.autoconfigure.AutoConfigureOrder
@@ -44,6 +43,7 @@ class ApplicationBeforeDaprAutoConfiguration {
 
 
     @Bean
+    @Role(BeanDefinition.ROLE_INFRASTRUCTURE)
     @ConditionalOnMissingBean(ApplicationDaprBeanPostProcessor::class)
     fun applicationDaprBeanPostProcessor(): ApplicationDaprBeanPostProcessor {
         return ApplicationDaprBeanPostProcessor()

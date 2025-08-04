@@ -17,9 +17,8 @@ import org.springframework.aot.hint.TypeReference
 class ApplicationDaprRuntimeHintsRegistrar : RuntimeHintsRegistrar {
     override fun registerHints(hints: RuntimeHints, classLoader: ClassLoader?) {
 
-
         hints.reflection().registerAnnotations(EnableDaprClusterEventListener::class)
-        hints.reflection().registerType(TypeReference.of("com.labijie.application.component.IMessageService"))
+
         hints.reflection().registerForJackson(
             DaprSms::class,
             DaprClusterEvent::class,
@@ -43,7 +42,7 @@ class ApplicationDaprRuntimeHintsRegistrar : RuntimeHintsRegistrar {
                 TypeReference.of("org.bouncycastle.jsse.BCSSLEngine"),
                 TypeReference.of("com.sun.jndi.dns.DnsContextFactory"),
                 TypeReference.of("com.sun.jndi.url.dns.dnsURLContextFactory"),
-                TypeReference.of("io.grpc.netty.shaded.io.netty.util.ReferenceCountUtil")
+                TypeReference.of("io.grpc.netty.shaded.io.netty.util.ReferenceCountUtil"),
 
                 )
         ) {

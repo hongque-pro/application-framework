@@ -51,6 +51,7 @@ class ApplicationAfterDaprAutoConfiguration {
         customizers.orderedStream().forEach {
             it.customize(builder)
         }
+        logger.info("Dapr client initialized (json mode: ${properties.jsonMode}).")
         return builder.build()
     }
 

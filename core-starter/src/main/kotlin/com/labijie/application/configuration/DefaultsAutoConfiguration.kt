@@ -5,8 +5,11 @@ import com.labijie.application.component.IObjectStorage
 import com.labijie.application.component.impl.NoneHumanChecker
 import com.labijie.application.component.impl.NoneObjectStorage
 import com.labijie.application.service.IFileIndexService
+import com.labijie.application.service.IOneTimeCodeService
+import com.labijie.application.service.impl.DefaultOnetimeCodeService
 import com.labijie.application.service.impl.FileIndexService
 import com.labijie.infra.IIdGenerator
+import com.labijie.infra.security.IRfc6238TokenService
 import org.springframework.boot.autoconfigure.AutoConfigureOrder
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
@@ -43,5 +46,15 @@ class DefaultsAutoConfiguration {
         transactionTemplate: TransactionTemplate,
     ) : FileIndexService {
         return FileIndexService(applicationCoreProperties, transactionTemplate, idGenerator, objectStorage)
+    }
+
+
+    @Bean
+    @ConditionalOnMissingBean(IOneTimeCodeService::class)
+    fun defaultOnetimeCodeService(
+        coreProperties: ApplicationCoreProperties,
+        rfc6238TokenService: IRfc6238TokenService,
+        properties: OneTimeCodeProperties): DefaultOnetimeCodeService {
+        return DefaultOnetimeCodeService(coreProperties, properties, rfc6238TokenService)
     }
 }

@@ -1,5 +1,6 @@
 package com.labijie.application.web
 
+import com.labijie.application.RequestUtils.isDefaultPort
 import com.labijie.infra.oauth2.OAuth2Constants
 import com.labijie.infra.oauth2.TwoFactorPrincipal
 import com.labijie.infra.utils.ifNullOrBlank
@@ -16,9 +17,7 @@ import org.springframework.web.context.request.ServletRequestAttributes
 import org.springframework.web.method.HandlerMethod
 import org.springframework.web.util.pattern.PathPatternParser
 import java.io.*
-import java.net.InetAddress
 import java.net.URLEncoder
-import java.net.UnknownHostException
 import java.nio.charset.Charset
 import kotlin.reflect.KClass
 
@@ -34,6 +33,33 @@ private const val LOCALHOST_IP = "127.0.0.1"
 private const val LOCALHOST_IPV6 = "0:0:0:0:0:0:0:1"
 
 private const val EMPTY_IPV4 = "0.0.0.0"
+
+object WebServerUtils {
+    fun getServerBaseUrl(): String {
+        val attrs = RequestContextHolder.getRequestAttributes() as? ServletRequestAttributes
+            ?: return ""
+
+        val request = attrs.request ?: return ""
+
+        val scheme = request.scheme
+        val serverName = request.serverName
+        val serverPort = request.serverPort
+        val contextPath = request.contextPath ?: ""
+
+        val portPart = if (isDefaultPort(scheme, serverPort)) "" else ":$serverPort"
+        return "$scheme://$serverName$portPart$contextPath"
+    }
+}
+
+fun HttpServletRequest.getServerBaseUrl(): String? {
+    val scheme = this.scheme
+    val serverName = this.serverName
+    val serverPort = this.serverPort
+    val contextPath = this.contextPath ?: ""
+
+    val portPart = if (isDefaultPort(scheme, serverPort)) "" else ":$serverPort"
+    return "$scheme://$serverName$portPart$contextPath"
+}
 
 private fun HttpServletRequest.getHeaderValue(name: String): String? {
     val headValue = this.getHeader(name) //squid

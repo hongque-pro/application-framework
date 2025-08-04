@@ -1,18 +1,12 @@
 package com.labijie.application.configuration
 
 import com.labijie.application.component.IHumanChecker
-import com.labijie.application.component.impl.NoneHumanChecker
-import com.labijie.application.service.IOneTimeCodeService
 import com.labijie.application.service.CaptchaHumanChecker
-import com.labijie.application.web.controller.CaptchaVerificationController
 import com.labijie.application.web.controller.ImageCaptchaGenerationController
-import com.labijie.application.web.controller.OneTimeCodeController
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.config.BeanDefinition
 import org.springframework.boot.autoconfigure.AutoConfigureAfter
 import org.springframework.boot.autoconfigure.AutoConfigureBefore
 import org.springframework.boot.autoconfigure.AutoConfigureOrder
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBean
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.boot.context.properties.EnableConfigurationProperties
@@ -50,22 +44,5 @@ class ApplicationWebDefaultsAutoConfiguration {
             return ImageCaptchaGenerationController(applicationProperties)
         }
 
-    }
-
-    @Configuration(proxyBeanMethods = false)
-    @AutoConfigureAfter(ImageCaptchaAutoConfiguration::class)
-    class CaptchaVerificationAutoConfiguration {
-
-        @Bean
-        fun captchaVerificationController(
-            @Autowired(required = false)
-            humanChecker: IHumanChecker? = null): CaptchaVerificationController {
-            return CaptchaVerificationController(humanChecker ?: NoneHumanChecker)
-        }
-    }
-
-    @Bean
-    fun verificationCodeController(verificationCodeService: IOneTimeCodeService): OneTimeCodeController {
-        return OneTimeCodeController(verificationCodeService)
     }
 }

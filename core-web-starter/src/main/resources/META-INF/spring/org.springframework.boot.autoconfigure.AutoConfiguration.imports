@@ -1,6 +1,7 @@
 
 com.labijie.application.configuration.ApplicationWebAutoConfiguration
-com.labijie.application.configuration.DefaultControllersAutoConfiguration
 com.labijie.application.configuration.ApplicationLocaleAutoConfiguration
+com.labijie.application.web.controller.ApplicationControllersAutoConfiguration
 com.labijie.application.configuration.ApplicationWebDefaultsAutoConfiguration
+com.labijie.application.configuration.FileSystemStorageAutoConfiguration
 com.labijie.application.doc.SpringDocAutoConfiguration

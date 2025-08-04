@@ -1,4 +1,3 @@
-com.labijie.application.configuration.FileSystemStorageAutoConfiguration
 com.labijie.application.configuration.RestTemplateAutoConfiguration
 com.labijie.application.configuration.RestClientAutoConfiguration
 com.labijie.application.configuration.ApplicationCoreAutoConfiguration

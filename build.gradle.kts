@@ -17,7 +17,9 @@ allprojects {
             useMavenProxy = false
         }
     }
-
+    configurations.all {
+        exclude(group = "org.springframework.boot", module = "spring-boot-starter-tomcat")
+    }
 
 //    forceDependencyVersion(group = "io.netty", "4.1.80.Final")
 }

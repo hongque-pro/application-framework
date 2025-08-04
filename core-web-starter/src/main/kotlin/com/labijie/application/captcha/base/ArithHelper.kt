@@ -83,7 +83,7 @@ object ArithHelper {
     fun div(v1: String, v2: String): Double {
         val b1 = BigDecimal(v1)
         val b2 = BigDecimal(v2)
-        return b1.divide(b2, DEF_DIV_SCALE, BigDecimal.ROUND_HALF_UP).toDouble()
+        return b1.divide(b2, DEF_DIV_SCALE, RoundingMode.HALF_UP).toDouble()
     }
 
     /**
@@ -98,7 +98,7 @@ object ArithHelper {
         require(scale >= 0) { "The   scale   must   be   a   positive   integer   or   zero" }
         val b1 = BigDecimal(v1.toString())
         val b2 = BigDecimal(v2.toString())
-        return b1.divide(b2, scale, BigDecimal.ROUND_HALF_UP).toDouble()
+        return b1.divide(b2, scale, RoundingMode.HALF_UP).toDouble()
     }
 
     /**

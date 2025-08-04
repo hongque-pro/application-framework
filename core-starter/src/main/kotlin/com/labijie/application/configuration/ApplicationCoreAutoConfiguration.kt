@@ -98,13 +98,4 @@ open class ApplicationCoreAutoConfiguration {
             }
         }
     }
-
-    @Bean
-    @ConditionalOnMissingBean(IOneTimeCodeService::class)
-    fun defaultOnetimeCodeService(
-        coreProperties: ApplicationCoreProperties,
-        rfc6238TokenService: IRfc6238TokenService,
-        properties: OneTimeCodeProperties): DefaultOnetimeCodeService {
-        return DefaultOnetimeCodeService(coreProperties, properties, rfc6238TokenService)
-    }
 }

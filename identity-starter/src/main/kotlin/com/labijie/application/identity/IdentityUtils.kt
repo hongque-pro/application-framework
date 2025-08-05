@@ -47,7 +47,7 @@ object IdentityUtils {
             this.userType = userType
             this.phoneNumber = "NoPhone"
             this.phoneCountryCode = 0
-            this.fullPhoneNumber = "NoPhone"
+            this.fullPhoneNumber = "0_${id}"
             this.phoneNumberConfirmed = false
             this.securityStamp = UUID.randomUUID().toString().replace("-", "")
             this.approved = true

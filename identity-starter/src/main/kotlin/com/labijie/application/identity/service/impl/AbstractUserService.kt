@@ -435,6 +435,7 @@ abstract class AbstractUserService(
             cacheManager.removeAfterTransactionCommit(cacheKey, authServerProperties.cacheRegion)
             val count = UserTable.update({UserTable.id eq userId}) {
                 it[UserTable.passwordHash] = passwordHash
+                it[UserTable.must_reset_password] = false
             }
             count == 1
         } ?: false
@@ -496,6 +497,7 @@ abstract class AbstractUserService(
             cacheManager.removeAfterTransactionCommit(cacheKey, authServerProperties.cacheRegion)
             val count = UserTable.update({UserTable.id eq  userId}) {
                 it[UserTable.passwordHash] = passwordHash
+                it[UserTable.must_reset_password] = false
             }
             count > 0
         } ?: false

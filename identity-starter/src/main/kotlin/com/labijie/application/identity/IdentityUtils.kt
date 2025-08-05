@@ -109,3 +109,13 @@ fun User.setPhoneNumber(countryCode: Short, number: String) {
     this.phoneNumber = number
     this.fullPhoneNumber = "${countryCode}${phoneNumber}"
 }
+
+fun User.setPhoneNumberToNull() {
+    this.phoneCountryCode = 0
+    this.phoneNumber = "N_${id}"
+    this.fullPhoneNumber = "0N_${id}"
+}
+
+fun User.setEmailToNull() {
+    this.email = "${id}@null.null"
+}

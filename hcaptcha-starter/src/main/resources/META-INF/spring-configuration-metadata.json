@@ -29,11 +29,6 @@
       "name": "application.captcha.hcaptcha.secret",
       "type": "java.lang.String",
       "sourceType": "com.labijie.application.hcaptcha.configuration.HCaptchaProperties"
-    },
-    {
-      "name": "application.captcha.hcaptcha.site-key",
-      "type": "java.lang.String",
-      "sourceType": "com.labijie.application.hcaptcha.configuration.HCaptchaProperties"
     }
   ],
   "hints": [],

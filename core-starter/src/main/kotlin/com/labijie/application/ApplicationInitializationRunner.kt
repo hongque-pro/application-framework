@@ -1,6 +1,6 @@
 package com.labijie.application
 
-import com.labijie.application.SpringContext.findApplicationMainClass
+import com.labijie.application.ObjectUtils.toTimeString
 import com.labijie.application.SpringContext.getApplicationGitProperties
 import com.labijie.application.component.IBootPrinter
 import com.labijie.application.component.IHumanChecker
@@ -316,6 +316,18 @@ class ApplicationInitializationRunner(
         return ""
     }
 
+    private fun printApplicationGitInfo(): String {
+        val git = applicationContext.getApplicationGitProperties()
+        return git?.let {
+            StringBuilder().apply {
+                git.buildVersion.letIfNotBlank { appendLine("Application build version: $it") }
+                git.shortCommitId.letIfNotBlank { appendLine("Application git commit: $it") }
+                git.commitTime?.let { appendLine("Application git commit time: ${it.toTimeString()}") }
+            }.toString()
+        } ?: ""
+
+    }
+
     private fun reportApplicationStatus(modules: List<IModuleInitializer>, printers: List<IBootPrinter>) {
         val moduleList = modules.joinToString { it.getModuleName() }
         val gitProperties = getGitProperties(this::class.java) {
@@ -327,7 +339,7 @@ class ApplicationInitializationRunner(
             builder.appendLine(
                 """
 Application '${this.applicationName}' has been started !! 
-${applicationContext.getApplicationGitProperties()?.buildVersion ?: ""}
+${printApplicationGitInfo()}
 
 ${printSystemInfo()}
 framework version: ${gitProperties?.get("build.version")}   

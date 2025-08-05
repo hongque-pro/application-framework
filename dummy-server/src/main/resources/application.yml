@@ -10,7 +10,6 @@ spring:
 
 
 infra:
-
   exposed:
     generate-schema:
       enabled: true
@@ -27,6 +26,8 @@ application:
   httpclient:
     logger-enabled: true
   localization-service: memory
+  dapr:
+    json-mode: javascript
 springdoc:
   api-docs:
     version: openapi_3_1

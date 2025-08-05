@@ -13,6 +13,7 @@ import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Role
 import org.springframework.core.Ordered
+import org.springframework.core.env.Environment
 
 /**
  * @author Anders Xiao
@@ -42,11 +43,14 @@ class ApplicationBeforeDaprAutoConfiguration {
     }
 
 
-    @Bean
-    @Role(BeanDefinition.ROLE_INFRASTRUCTURE)
-    @ConditionalOnMissingBean(ApplicationDaprBeanPostProcessor::class)
-    fun applicationDaprBeanPostProcessor(properties: DaprProperties): ApplicationDaprBeanPostProcessor {
-        return ApplicationDaprBeanPostProcessor(properties)
-    }
+   companion object {
+       @JvmStatic
+       @Bean
+       @Role(BeanDefinition.ROLE_INFRASTRUCTURE)
+       @ConditionalOnMissingBean(ApplicationDaprBeanPostProcessor::class)
+       fun applicationDaprBeanPostProcessor(environment: Environment): ApplicationDaprBeanPostProcessor {
+           return ApplicationDaprBeanPostProcessor(environment)
+       }
+   }
 
 }

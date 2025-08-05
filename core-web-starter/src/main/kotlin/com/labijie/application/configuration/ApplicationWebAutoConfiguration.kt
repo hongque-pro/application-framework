@@ -62,7 +62,7 @@ import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandl
 @EnableConfigurationProperties(ApplicationWebProperties::class)
 @ConditionalOnWebApplication
 class ApplicationWebAutoConfiguration(private val properties: ApplicationWebProperties) : WebMvcConfigurer,
-    IResourceAuthorizationConfigurer, ApplicationContextAware {
+    ApplicationContextAware {
 
     @Autowired(required = false)
     private var humanChecker: IHumanChecker? = null
@@ -147,58 +147,12 @@ class ApplicationWebAutoConfiguration(private val properties: ApplicationWebProp
     }
 
 
-    @Configuration(proxyBeanMethods = false)
-    @Role(BeanDefinition.ROLE_INFRASTRUCTURE)
-    class HibernateValidationAutoConfiguration {
-
-        @Bean
-        @ConditionalOnMissingBean(Validator::class)
-        fun validator(): Validator {
-            val validatorFactory = Validation.byProvider(HibernateValidator::class.java)
-                .configure()
-                .addProperty(HibernateValidatorConfiguration.FAIL_FAST, "true")
-                .buildValidatorFactory()
-            return validatorFactory.validator
-        }
-    }
-
-
-    @Bean
-    @ConditionalOnMissingBean(MethodValidationPostProcessor::class)
-    fun methodValidationPostProcessor(validator: Validator): MethodValidationPostProcessor {
-        val postProcessor = MethodValidationPostProcessor()
-        postProcessor.setValidator(validator);
-        return postProcessor
-    }
-
     @Bean
     fun controllerExceptionHandler(messageSource: MessageSource): ControllerExceptionHandler {
         return ControllerExceptionHandler(messageSource)
     }
 
 
-    private fun getPermitAllUrlsFromAnnotations(): MutableSet<String> {
-        val requestMappingHandlerMapping = applicationContext.getBean(RequestMappingHandlerMapping::class.java)
-        val handlerMethodMap = requestMappingHandlerMapping.handlerMethods
-        val urlList = mutableSetOf<String>()
-        handlerMethodMap.forEach { (key, value) ->
-            val anno =
-                value.getMethodAnnotation(PermitAll::class.java) ?: value.beanType.getAnnotation(PermitAll::class.java)
-            if (anno != null) {
-                key.pathPatternsCondition?.patterns?.let { urls ->
-                    urls.forEach {
-                        urlList.add(it.patternString)
-                    }
-                }
-            }
-        }
-        return urlList
-    }
-
-    override fun configure(registry: AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry) {
-        val list = getPermitAllUrlsFromAnnotations()
-        registry.antMatchers(*list.toTypedArray(), ignoreCase = true).permitAll()
-    }
 
     override fun setApplicationContext(applicationContext: ApplicationContext) {
         this.applicationContext = applicationContext

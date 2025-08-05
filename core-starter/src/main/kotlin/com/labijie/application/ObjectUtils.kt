@@ -12,10 +12,19 @@ import java.lang.reflect.Constructor
 import java.lang.reflect.Parameter
 import java.lang.reflect.ParameterizedType
 import java.time.Duration
+import java.time.Instant
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 import kotlin.reflect.KClass
 
 
 object ObjectUtils {
+
+    val DEFAULT_DATE_TIME_FORMATTER by lazy {
+        DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
+            .withZone(ZoneId.systemDefault()) // 可换成 Zon
+    }
+
     @Suppress("UNCHECKED_CAST")
     fun <T : Any> constructObjectWithInjection(clazz: KClass<T>, context: ApplicationContext?): T {
         return constructInjection(clazz, context) as T
@@ -75,5 +84,10 @@ object ObjectUtils {
             val hours = millis / 3600000.0
             return String.format("%.1fh", hours)
         }
+    }
+
+    fun Instant.toTimeString(formatter: DateTimeFormatter? = null): String {
+        val formatted = (formatter ?: DEFAULT_DATE_TIME_FORMATTER).format(this)
+        return formatted.orEmpty()
     }
 }

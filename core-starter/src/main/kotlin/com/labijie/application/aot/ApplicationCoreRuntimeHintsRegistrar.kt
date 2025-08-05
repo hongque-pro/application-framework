@@ -3,7 +3,9 @@ package com.labijie.application.aot
 import com.labijie.application.ApplicationErrorRegistration
 import com.labijie.application.ErrorDescription
 import com.labijie.application.IDescribeEnum
+import com.labijie.application.JsonMode
 import com.labijie.application.WellKnownClassNames
+import com.labijie.application.annotation.GradleApplication
 import com.labijie.application.annotation.ImportErrorDefinition
 import com.labijie.application.component.impl.NoneHumanChecker
 import com.labijie.application.jackson.DescribeEnumDeserializer
@@ -34,10 +36,12 @@ class ApplicationCoreRuntimeHintsRegistrar : RuntimeHintsRegistrar {
             StrongPassword::class,
             Username::class,
             XxsReject::class,
-            PhoneNumber::class
+            PhoneNumber::class,
+            GradleApplication::class
         )
 
         hints.reflection().registerEnum(OneTimeCodeTarget.Channel::class)
+        hints.reflection().registerEnum(JsonMode::class)
 
         hints.reflection().registerPackageForJackson(SimpleValue::class.java)
 

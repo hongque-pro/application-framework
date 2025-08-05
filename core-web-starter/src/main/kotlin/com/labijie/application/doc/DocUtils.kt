@@ -4,8 +4,11 @@ import com.fasterxml.jackson.databind.JavaType
 import com.labijie.application.ApplicationErrors
 import com.labijie.application.IDescribeEnum
 import com.labijie.application.JAVA_LONG
+import com.labijie.application.ObjectUtils.toTimeString
+import com.labijie.application.buildVersion
 import com.labijie.application.exception.InvalidOneTimeCodeException
 import com.labijie.application.exception.RobotDetectedException
+import com.labijie.application.letIfNotBlank
 import com.labijie.application.web.interceptor.HumanVerifyInterceptor
 import com.labijie.infra.utils.ifNullOrBlank
 import com.labijie.infra.utils.toLocalDateTime
@@ -78,7 +81,7 @@ object DocUtils {
     }
 
     fun Operation.appendDescription(description: String) {
-        if(description.isNotBlank()) {
+        if (description.isNotBlank()) {
             if (this.description.isNullOrBlank()) {
                 this.description = description
             } else {
@@ -97,7 +100,7 @@ object DocUtils {
 
     fun Operation.addErrorResponse(reason: String, httpStatus: HttpStatus, vararg errorCode: String) {
 
-        val errorList = errorCode.toSet().mapNotNull { if(it.isBlank()) null else "`${it.trim()}`" }
+        val errorList = errorCode.toSet().mapNotNull { if (it.isBlank()) null else "`${it.trim()}`" }
 
         val key = if (reason.isNotEmpty()) "${httpStatus.value()} (${reason})" else httpStatus.value().toString()
         if (!this.responses.contains(key)) {
@@ -177,6 +180,17 @@ object DocUtils {
         }
     }
 
+    private fun printGitInfo(git: GitProperties): String {
+        return git.let {
+            StringBuilder().apply {
+                git.branch?.letIfNotBlank { appendLine("Git branch: `${it}`\n") }
+                git.shortCommitId.letIfNotBlank { appendLine("Git commit: `$it`\n") }
+                git.buildVersion.letIfNotBlank { appendLine("Git build version: $it\n") }
+                git.commitTime?.let { appendLine("Git commit time: ${it.toTimeString()}\n") }
+            }.toString()
+        }
+    }
+
     fun createDefaultOpenAPI(
         applicationName: String,
         gitProperties: GitProperties? = null,
@@ -187,15 +201,7 @@ object DocUtils {
                 Info().title("${CaseUtils.toCamelCase(applicationName, true, '-', '@', '_')} API")
                     .apply {
                         if (gitProperties != null) {
-                            val commitId = gitProperties.get("commit.id.abbrev")
-                            version(gitProperties.get("build.version") ?: "1.0.0")
-                            description(
-                                "git commit: ${commitId?.let { "`${it}`" } ?: "--" }   " +
-                                        "commit time: ${
-                                            gitProperties.commitTime?.toLocalDateTime()
-                                                ?.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")) ?: "--"
-                                        }"
-                            )
+                            description(printGitInfo(gitProperties))
                         }
 
                         if (!version.isNullOrBlank()) {

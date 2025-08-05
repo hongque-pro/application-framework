@@ -1,4 +1,5 @@
 
+com.labijie.application.configuration.ApplicationWebBeanPostProcessorAutoConfiguration
 com.labijie.application.configuration.ApplicationWebAutoConfiguration
 com.labijie.application.configuration.ApplicationLocaleAutoConfiguration
 com.labijie.application.web.controller.ApplicationControllersAutoConfiguration

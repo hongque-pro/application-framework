@@ -1,6 +1,7 @@
 package com.labijie.application.dapr.configuration
 
 import com.labijie.application.JsonMode
+import com.labijie.application.dapr.configuration.DaprProperties.Companion.CONFIGURATION_PREFIX
 import com.labijie.infra.utils.ifNullOrBlank
 import io.dapr.config.Properties
 import org.springframework.beans.factory.config.BeanDefinition
@@ -15,9 +16,15 @@ import org.springframework.context.annotation.Role
  * some environment refer:
  * https://docs.dapr.io/reference/environment/
  */
-@ConfigurationProperties("application.dapr")
+@ConfigurationProperties(CONFIGURATION_PREFIX)
 @Role(BeanDefinition.ROLE_INFRASTRUCTURE)
 class DaprProperties {
+
+    companion object {
+        const val CONFIGURATION_PREFIX = "application.dapr"
+        const val JSON_MODEL_CONFIG_KEY = "${CONFIGURATION_PREFIX}.json-mode"
+    }
+
     var pubServiceEnabled: Boolean = false
     var subServiceEnabled: Boolean = false
     var jsonMode: JsonMode = JsonMode.NORMAL

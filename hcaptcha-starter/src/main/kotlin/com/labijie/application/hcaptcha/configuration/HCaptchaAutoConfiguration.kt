@@ -20,13 +20,18 @@ import org.springframework.web.client.RestClient
 @EnableConfigurationProperties(HCaptchaProperties::class)
 class HCaptchaAutoConfiguration {
 
+    companion object {
+        const val HCAPTCHA_CONFIG_PREFIX = "application.captcha.hcaptcha"
+    }
+
     @Bean
     @ConditionalOnProperty(
-        prefix = "application.captcha.hcaptcha",
+        prefix = HCAPTCHA_CONFIG_PREFIX,
         name = ["enabled"],
         havingValue = "true",
         matchIfMissing = true
     )
+    @ConditionalOnProperty(prefix = HCAPTCHA_CONFIG_PREFIX, name = ["secret"])
     @ConditionalOnMissingBean(IHumanChecker::class)
     fun hcaptchaService(properties: HCaptchaProperties, restClient: RestClient.Builder): HCaptchaService {
         return HCaptchaService(properties, restClient)

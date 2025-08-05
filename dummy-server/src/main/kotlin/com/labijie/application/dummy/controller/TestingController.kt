@@ -31,7 +31,7 @@ import org.springframework.web.client.RestTemplate
 open class TestingController {
 
     init {
-        logger.warn("${TestingController::class.simpleName} loaded")
+        logger.info("${TestingController::class.simpleName} loaded")
     }
 
     @PhoneNumber("country", "number")

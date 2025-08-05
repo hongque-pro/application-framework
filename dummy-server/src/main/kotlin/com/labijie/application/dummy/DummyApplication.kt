@@ -1,5 +1,6 @@
 package com.labijie.application.dummy
 
+import com.labijie.application.annotation.GradleApplication
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
@@ -13,6 +14,7 @@ import java.util.*
  */
 @EnableWebSecurity
 @SpringBootApplication
+@GradleApplication(projectGroup = "com.labijie.application", projectName = "dummy-server")
 class DummyApplication
 
 fun main(args: Array<String>) {

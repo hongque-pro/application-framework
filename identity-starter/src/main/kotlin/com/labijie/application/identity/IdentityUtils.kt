@@ -32,7 +32,7 @@ object IdentityUtils {
             this.language = (locale ?: Locale.US).getId()
             this.accessFailedCount = 0
             this.concurrencyStamp = ShortId.newId()
-            this.email = "${username.lowercase()}@null.null"
+            this.email = "${id}@null.null"
             this.emailConfirmed = false
             this.lastClientVersion = "1.0"
             this.lastSignInArea = ""
@@ -45,9 +45,9 @@ object IdentityUtils {
             this.timeZone = ZoneOffset.ofHours(8).id
             this.twoFactorEnabled = true
             this.userType = userType
-            this.phoneNumber = "NoPhone"
+            this.phoneNumber = "N_${id}"
             this.phoneCountryCode = 0
-            this.fullPhoneNumber = "0_${id}"
+            this.fullPhoneNumber = "0N${id}"
             this.phoneNumberConfirmed = false
             this.securityStamp = UUID.randomUUID().toString().replace("-", "")
             this.approved = true
@@ -63,7 +63,7 @@ val User.isNullEmail
     get() = this.email.endsWith("@null.null")
 
 val User.isNullPhoneNumber
-    get() = this.phoneNumber.startsWith("N_") || this.phoneCountryCode == 0.toShort()
+    get() = this.phoneCountryCode == 0.toShort() || this.phoneNumber.startsWith("N_")
 
 fun User.isEnabled(): Boolean = !this.lockoutEnabled || this.lockoutEnd < System.currentTimeMillis()
 

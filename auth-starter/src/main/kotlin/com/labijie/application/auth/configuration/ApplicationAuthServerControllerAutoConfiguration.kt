@@ -21,7 +21,8 @@ class ApplicationAuthServerControllerAutoConfiguration {
 
     @Configuration(proxyBeanMethods = false)
     @ConditionalOnProperty(
-        name = ["application.auth.register-controller-enabled"],
+        prefix = "application.auth.register-endpoint",
+        name = ["enabled"],
         havingValue = "true",
         matchIfMissing = true
     )

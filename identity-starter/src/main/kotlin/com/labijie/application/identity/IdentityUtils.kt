@@ -17,12 +17,14 @@ import java.util.*
 object IdentityUtils {
 
     @JvmStatic
-    fun createUser(id: Long,
-                   userName: String? = null,
-                   userType: Byte = 0,
-                   locale: Locale? = null): User {
+    fun createUser(
+        id: Long,
+        userName: String? = null,
+        userType: Byte = 0,
+        locale: Locale? = null
+    ): User {
 
-        val username:  String = if(userName.isNullOrBlank()) id.toString() else userName
+        val username: String = if (userName.isNullOrBlank()) id.toString() else userName
 
         return User().apply {
             this.id = id
@@ -57,7 +59,8 @@ object IdentityUtils {
 }
 
 val User.isNullUserName
-    get() = this.userName.isBlank() || this.userName == this.id.toString() || userName.substring(0, 1).toIntOrNull() != null
+    get() = this.userName.isBlank() || this.userName == this.id.toString() || userName.substring(0, 1)
+        .toIntOrNull() != null
 
 val User.isNullEmail
     get() = this.email.endsWith("@null.null")
@@ -70,7 +73,7 @@ fun User.isEnabled(): Boolean = !this.lockoutEnabled || this.lockoutEnd < System
 val User.locale: Locale?
     get() = try {
         LocaleUtils.toLocale(this.language)
-    }catch (e: IllegalArgumentException) {
+    } catch (e: IllegalArgumentException) {
         null
     }
 
@@ -78,15 +81,15 @@ val User.locale: Locale?
  * set phone/email empty if that is a placeholder
  */
 fun User.normalizedIdentifier() {
-    if(isNullUserName) {
+    if (isNullUserName) {
         this.userName = ""
     }
-    if(isNullPhoneNumber) {
+    if (isNullPhoneNumber) {
         this.phoneNumber = ""
         this.fullPhoneNumber = ""
         this.phoneCountryCode = 0
     }
-    if(isNullEmail) {
+    if (isNullEmail) {
         this.email = ""
     }
 }
@@ -99,4 +102,10 @@ fun User.getIdentityType(identifier: String): UserIdentifierType {
         else -> UserIdentifierType.Unknown
     }
     return type
+}
+
+fun User.setPhoneNumber(countryCode: Short, number: String) {
+    this.phoneCountryCode = countryCode
+    this.phoneNumber = number
+    this.fullPhoneNumber = "${countryCode}${phoneNumber}"
 }

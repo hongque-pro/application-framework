@@ -29,6 +29,7 @@ class HttpClientLoggingInterceptor(
 
         @JvmStatic
         fun ClientHttpResponse.toBodyString(): String {
+
             val body = this.body.readAllBytes()
             val contentType = this.headers.contentType ?: MediaType.APPLICATION_OCTET_STREAM
             return when {
@@ -177,7 +178,8 @@ class HttpClientLoggingInterceptor(
                     println(message)
                 }
             }
+        }else {
+            return execution.execute(request, body)
         }
-        return execution.execute(request, body)
     }
 }

@@ -14,7 +14,7 @@ allprojects {
             includeSource = true
             includeDocument = true
             infraBomVersion = Versions.infraBom
-            useMavenProxy = true
+            useMavenProxy = false
         }
     }
     configurations.all {

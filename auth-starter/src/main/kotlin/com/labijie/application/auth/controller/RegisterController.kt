@@ -55,14 +55,14 @@ class RegisterController(
                 throw InvalidRequestArgumentsException("identifier", "Email or Phone is required")
             }
 
-            val totpRequest = httpRequest.getOneTimeCodeInRequest() ?: throw InvalidOneTimeCodeException()
+            val totpRequest = httpRequest.getOneTimeCodeInRequest() ?: throw InvalidOneTimeCodeException(InvalidOneTimeCodeException.REASON_MISS_REQUEST_PARAM)
             val result = oneTimeCodeService.verifyCode(totpRequest.code, totpRequest.stamp, throwIfInvalid = true)
             val t = result.target ?: throw InvalidOneTimeCodeException()
             if(info.email == t.contact) {
                 registerBy = RegisterBy.Email
             }
             if(info.fullPhoneNumber() == t.contact) {
-                registerBy = RegisterBy.Email
+                registerBy = RegisterBy.Phone
             }
         }
 

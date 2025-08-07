@@ -40,9 +40,7 @@ class OneTimeCodeInterceptor(
                 }
 
                 val valid =  try {
-                    oneTimeCodeService.verifyCode(code.code, code.stamp, throwIfInvalid = false)
-                }catch (e: InvalidOneTimeCodeException) {
-                    throw e
+                    oneTimeCodeService.verifyCode(code.code, code.stamp, throwIfInvalid = true)
                 }catch (e: Throwable){
                     e.throwIfNecessary()
                     logger.error("IOneTimeCodeService is expected is to return true /false, but got throw exception.", e)

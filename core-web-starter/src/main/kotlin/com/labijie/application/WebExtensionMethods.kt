@@ -33,12 +33,19 @@ fun IOneTimeCodeService.verify(request: OneTimeCodeVerifyRequest, user: User, th
     }
     val input = result.getInputOrThrow()
 
+    var reason: String? = null
     val  valid = when(input.channel) {
         OneTimeCodeTarget.Channel.Phone-> {
-            input.contact == user.fullPhoneNumber
+            val v = input.contact == user.fullPhoneNumber
+            if(!v) {
+                reason = InvalidOneTimeCodeException.REASON_INVALID_CONTACT
+            }
+            v
         }
         OneTimeCodeTarget.Channel.Email -> {
-            input.contact == user.email
+            val v = (input.contact == user.email)
+            reason = InvalidOneTimeCodeException.REASON_INVALID_CONTACT
+            v
         }
     }
     if(!valid && throwInfInvalid) {

@@ -21,7 +21,11 @@ class DefaultOnetimeCodeService(
     private val applicationCoreProperties: ApplicationCoreProperties,
     private val properties: OneTimeCodeProperties,
     private val rfc6238TokenService: IRfc6238TokenService
-): IOneTimeCodeService {
+) : IOneTimeCodeService {
+
+    companion object {
+
+    }
 
     constructor() : this(ApplicationCoreProperties(), OneTimeCodeProperties(), Rfc6238TokenService())
 
@@ -34,32 +38,40 @@ class DefaultOnetimeCodeService(
     ): OneTimeCodeVerifyResult {
 
         var result = this.rfc6238TokenService.validateCodeString(code, stamp, properties.expiration)
+        var reason: String? = null
         val code = decodeSource(stamp)
-        val source = if(result) {
-            if(code == null) {
+        val source = if (result) {
+            if (code == null) {
                 result = false
-            }
-            else {
+            } else {
                 val validSource = contract?.let {
-                    code.contact == contract
+                    val validContact = code.contact == contract
+                    if(!validContact) {
+                        reason = InvalidOneTimeCodeException.REASON_INVALID_CONTACT
+                    }
+                    validContact
                 } ?: true
 
                 val validType = contract?.let {
-                    code.channel == channel
+                    val validChannel = (code.channel == channel)
+                    if(!validChannel) {
+                        reason = InvalidOneTimeCodeException.REASON_INVALID_CHANNEL
+                    }
+                    validChannel
                 } ?: true
 
                 result = validSource && validType
             }
             code
-        }else {
+        } else {
             null
         }
 
         if (throwIfInvalid && !result) {
-            throw InvalidOneTimeCodeException()
+            throw InvalidOneTimeCodeException(reason)
         }
 
-        return OneTimeCodeVerifyResult(result, source)
+        return OneTimeCodeVerifyResult( result, source)
     }
 
     private fun encodeSource(source: OneTimeCodeTarget): String {
@@ -70,11 +82,11 @@ class DefaultOnetimeCodeService(
 
     private fun decodeSource(encodedString: String): OneTimeCodeTarget? {
         val value = DesUtils.decrypt(encodedString, applicationCoreProperties.desSecret, throwIfBadData = false)
-        if(value == null) {
+        if (value == null) {
             return null
         }
         val segments = value.split(":")
-        if(segments.size != 3) {
+        if (segments.size != 3) {
             return null
         }
 

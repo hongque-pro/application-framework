@@ -20,16 +20,24 @@ abstract class HttpClientAutoConfigurationBase {
     @Bean
     @ConfigurationProperties("application.httpclient")
     @ConditionalOnMissingBean(HttpClientProperties::class)
-    fun httpclientProperties() : HttpClientProperties {
+    fun httpclientProperties(): HttpClientProperties {
         return HttpClientProperties()
     }
 
-    protected fun MutableList<HttpMessageConverter<*>>.applyDefaultConverter(){
-        this.removeIf {
-            it is MappingJackson2HttpMessageConverter
-        }
+    protected fun MutableList<HttpMessageConverter<*>>.applyDefaultConverter() {
 
-        this.add(0, MappingJackson2HttpMessageConverter(JacksonHelper.defaultObjectMapper))
+        val jsonMessageConverter = MappingJackson2HttpMessageConverter(JacksonHelper.defaultObjectMapper)
+
+        val index = this.indexOfLast { it is MappingJackson2HttpMessageConverter }
+
+        if (index >= 0) {
+            this.removeIf {
+                it is MappingJackson2HttpMessageConverter
+            }
+            this.add(index, jsonMessageConverter)
+        } else {
+            this.add(jsonMessageConverter)
+        }
 
         //修正 UTF-8 编码
         this.filterIsInstance<AbstractHttpMessageConverter<*>>().forEach {
@@ -37,6 +45,7 @@ abstract class HttpClientAutoConfigurationBase {
                 is StringHttpMessageConverter -> {
                     it.defaultCharset = Charsets.UTF_8
                 }
+
                 !is ByteArrayHttpMessageConverter -> {
                     it.defaultCharset = Charsets.UTF_8
                 }

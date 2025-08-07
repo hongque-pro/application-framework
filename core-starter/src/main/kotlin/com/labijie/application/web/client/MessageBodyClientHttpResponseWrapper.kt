@@ -15,16 +15,11 @@ import java.io.PushbackInputStream
  * @Date: 2022/2/17
  * @Description:
  */
-internal class MessageBodyClientHttpResponseWrapper(response: ClientHttpResponse) :
+internal class MessageBodyClientHttpResponseWrapper(private val response: ClientHttpResponse) :
     ClientHttpResponse {
-    private val response: ClientHttpResponse
 
     @Nullable
     private var pushbackInputStream: PushbackInputStream? = null
-
-    init {
-        this.response = response
-    }
 
     fun pushBack() {
 

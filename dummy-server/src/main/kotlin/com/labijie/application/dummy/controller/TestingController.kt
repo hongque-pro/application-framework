@@ -6,19 +6,13 @@ import com.labijie.application.model.toSimpleValue
 import com.labijie.application.validation.PhoneNumber
 import com.labijie.application.web.annotation.HttpCache
 import com.labijie.application.web.annotation.HumanVerify
-import com.labijie.infra.oauth2.AccessToken
 import com.labijie.infra.oauth2.filter.ClientRequired
-import com.labijie.infra.oauth2.mvc.OAuth2ClientLoginResponse
 import com.labijie.infra.utils.logger
 import jakarta.annotation.security.PermitAll
 import jakarta.validation.Valid
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.RequestBody
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RequestParam
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.bind.annotation.*
+import org.springframework.web.client.RestClient
 import org.springframework.web.client.RestTemplate
 
 /**
@@ -28,10 +22,19 @@ import org.springframework.web.client.RestTemplate
  */
 @RestController
 @RequestMapping("/test")
-open class TestingController {
+open class TestingController(builder: RestClient.Builder) {
+
+
+    private val restClient: RestClient
+
+    class TestInfo {
+        var area: String? = null
+    }
 
     init {
         logger.info("${TestingController::class.simpleName} loaded")
+        restClient = builder.build()
+
     }
 
     @PhoneNumber("country", "number")

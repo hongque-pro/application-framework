@@ -1,6 +1,5 @@
 package com.labijie.application.configuration
 
-import org.springframework.boot.context.properties.ConfigurationProperties
 import java.time.Duration
 
 /**

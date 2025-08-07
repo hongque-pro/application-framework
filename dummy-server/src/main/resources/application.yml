@@ -25,6 +25,7 @@ infra:
 application:
   httpclient:
     logger-enabled: true
+    read-timeout: 5s
   localization-service: memory
   dapr:
     json-mode: javascript

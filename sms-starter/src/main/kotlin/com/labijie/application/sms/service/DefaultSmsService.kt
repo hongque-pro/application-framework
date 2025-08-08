@@ -100,7 +100,7 @@ class DefaultSmsService(
             mainProvider.sendVerificationCodeAsync(dialingCode, phoneNumber, code.code, code.expiration, type)
         }
 
-        val verificationToken = OneTimeGenerationResult(code.stamp)
+        val verificationToken = OneTimeGenerationResult(code.stamp, code.expiration.toSeconds().toInt())
         return verificationToken
     }
 

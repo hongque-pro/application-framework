@@ -27,7 +27,7 @@ class OneTimeCodeTarget {
 
         fun fromPhone(phoneNumber: String): OneTimeCodeTarget {
             return OneTimeCodeTarget().apply {
-                channel = Channel.Email
+                channel = Channel.Phone
                 contact = phoneNumber
             }
         }

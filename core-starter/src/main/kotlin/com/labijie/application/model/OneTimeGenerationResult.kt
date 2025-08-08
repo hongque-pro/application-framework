@@ -8,5 +8,8 @@ import com.fasterxml.jackson.annotation.JsonProperty
  */
 data class OneTimeGenerationResult(
     @get:JsonProperty("ot_stamp")
-    val otStamp: String = ""
+    val otStamp: String = "",
+
+    @get:JsonProperty("expire_in")
+    val expireIn: Int = 0
 )

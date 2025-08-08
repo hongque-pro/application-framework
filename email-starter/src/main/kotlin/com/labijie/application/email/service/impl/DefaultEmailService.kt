@@ -84,7 +84,7 @@ class DefaultEmailService(
         rateLimit(id, "Send email verification code") {
             this.mainProvider.sendVerificationCodeAsync(to, code.code, code.expiration, type)
         }
-        return OneTimeGenerationResult(code.stamp)
+        return OneTimeGenerationResult(code.stamp, code.expiration.toSeconds().toInt())
     }
 
 }

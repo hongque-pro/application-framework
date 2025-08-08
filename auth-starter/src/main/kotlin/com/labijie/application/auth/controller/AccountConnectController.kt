@@ -112,8 +112,8 @@ class AccountConnectController(
         twoFactorPrincipal: TwoFactorPrincipal
     ): SimpleValue<Boolean> {
         val userId = twoFactorPrincipal.userId.toLong()
-        //Todo: Rremove
-        return SimpleValue(true)
+        val login = oauth2UserService.deleteUserLoginToUser(userId, provider)
+        return SimpleValue(login != null)
     }
 
 }

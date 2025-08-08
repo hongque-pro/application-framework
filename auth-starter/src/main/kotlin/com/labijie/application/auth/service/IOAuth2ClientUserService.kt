@@ -4,6 +4,7 @@
  */
 package com.labijie.application.auth.service
 
+import com.labijie.application.identity.data.pojo.UserLogin
 import com.labijie.application.identity.model.RegisterBy
 import com.labijie.application.identity.model.RegisterInfo
 import com.labijie.application.identity.model.UserAndRoles
@@ -14,6 +15,8 @@ interface IOAuth2ClientUserService {
     fun getUserByOAuth2User(provider: String, oauth2UserId: String, includeRoles: Boolean = false): UserAndRoles?
 
     fun addUserLoginToUser(userId: Long, oauth2UserToken: StandardOidcUser)
+
+    fun deleteUserLoginToUser(userId: Long, provider: String) : UserLogin?
 
     fun addUserLoginToUser(user: String, oauth2UserToken: StandardOidcUser)
 

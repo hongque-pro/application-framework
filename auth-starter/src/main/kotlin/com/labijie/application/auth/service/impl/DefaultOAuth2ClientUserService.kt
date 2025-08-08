@@ -15,6 +15,7 @@ import com.labijie.application.identity.data.pojo.dsl.UserDSL.selectByPrimaryKey
 import com.labijie.application.identity.data.pojo.dsl.UserLoginDSL.deleteByPrimaryKey
 import com.labijie.application.identity.data.pojo.dsl.UserLoginDSL.insert
 import com.labijie.application.identity.data.pojo.dsl.UserLoginDSL.selectByPrimaryKey
+import com.labijie.application.identity.data.pojo.dsl.UserLoginDSL.selectOne
 import com.labijie.application.identity.model.RegisterBy
 import com.labijie.application.identity.model.RegisterInfo
 import com.labijie.application.identity.model.UserAndRoles
@@ -24,6 +25,8 @@ import com.labijie.infra.oauth2.StandardOidcUser
 import com.labijie.infra.oauth2.client.exception.OAuth2AccountLinkedAnotherUserException
 import com.labijie.infra.oauth2.client.exception.OAuth2LoginException
 import com.labijie.infra.oauth2.client.exception.OAuth2ProviderAlreadyLinkedException
+import org.jetbrains.exposed.sql.and
+import org.jetbrains.exposed.sql.andWhere
 import org.slf4j.LoggerFactory
 import org.springframework.transaction.support.TransactionTemplate
 
@@ -86,15 +89,14 @@ class DefaultOAuth2ClientUserService(
             }
             if (login.userId != userId) {
                 throw OAuth2AccountLinkedAnotherUserException(oauth2User.provider)
-            }
-            else if(login.providerKey != oauth2User.userId) {
+            } else if (login.providerKey != oauth2User.userId) {
                 throw OAuth2ProviderAlreadyLinkedException(oauth2User.provider)
             }
         }
     }
 
     override fun addUserLoginToUser(user: String, oauth2UserToken: StandardOidcUser) {
-        if(user.isBlank()) {
+        if (user.isBlank()) {
             throw UserNotFoundException(user)
         }
         this.transactionTemplate.execute {
@@ -104,7 +106,7 @@ class DefaultOAuth2ClientUserService(
     }
 
     override fun addUserLoginToUser(userId: Long, oauth2UserToken: StandardOidcUser) {
-        if(userId <= 0) throw UserNotFoundException()
+        if (userId <= 0) throw UserNotFoundException()
         transactionTemplate.execute {
             val user = UserTable.selectByPrimaryKey(userId, UserTable.id) ?: throw UserNotFoundException()
             bindUserToOAuth2User(user, oauth2UserToken)
@@ -135,5 +137,18 @@ class DefaultOAuth2ClientUserService(
             UserLoginTable.insert(userLogin)
             u
         }!!
+    }
+
+    override fun deleteUserLoginToUser(userId: Long, provider: String): UserLogin? {
+        return this.transactionTemplate.execute {
+            UserLoginTable.selectOne {
+                andWhere {
+                    UserLoginTable.userId.eq(userId) and
+                    UserLoginTable.loginProvider.eq(provider)
+                }
+            }?.apply {
+                UserLoginTable.deleteByPrimaryKey(this.loginProvider, this.providerKey)
+            }
+        }
     }
 }

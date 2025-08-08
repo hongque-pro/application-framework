@@ -22,6 +22,9 @@ infra:
         repository: memory
       oauth2-client:
         oidc-login-enabled: true
+        oidc-login:
+          apple:
+            audience-set: ${APPLE_OIDC_AUD:}
 application:
   httpclient:
     logger-enabled: true

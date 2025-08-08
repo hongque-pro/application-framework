@@ -18,7 +18,10 @@ class UsernameValidator : IUserNameValidator {
     }
 
     override fun validate(username: String?, throwIfInvalid: Boolean): Boolean {
-        val valid = (!username.isNullOrBlank() && pattern.matcher(username).matches())
+        if(username.isNullOrEmpty()) {
+            return true
+        }
+        val valid = (!pattern.matcher(username).matches())
 
         if (!valid && throwIfInvalid) {
             throw InvalidUsernameException(inputUsername = username)

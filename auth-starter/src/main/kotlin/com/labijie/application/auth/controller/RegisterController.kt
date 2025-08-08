@@ -52,6 +52,10 @@ class RegisterController(
             info.attachIdToken(idToken)
         }
 
+        if(info.username.isNullOrBlank()) {
+            info.username = null
+        }
+
         var registerBy: RegisterBy? = null
         if(authProperties.registerEndpoint.verifyEmailOrPhone) {
             if(!info.hasEmail() && !info.hasPhone()) {

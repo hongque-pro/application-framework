@@ -13,6 +13,8 @@ import com.labijie.application.getOneTimeCodeInRequest
 import com.labijie.application.identity.model.RegisterBy
 import com.labijie.application.identity.model.RegisterInfo
 import com.labijie.application.identity.service.IUserService
+import com.labijie.application.model.OneTimeCodeTarget
+import com.labijie.application.model.OneTimeCodeVerifyResult.Companion.getInputOrThrow
 import com.labijie.application.service.IOneTimeCodeService
 import com.labijie.application.web.InvalidRequestArgumentsException
 import com.labijie.infra.oauth2.AccessToken
@@ -21,6 +23,7 @@ import com.labijie.infra.oauth2.TwoFactorSignInHelper
 import com.labijie.infra.oauth2.filter.ClientRequired
 import jakarta.annotation.security.PermitAll
 import jakarta.servlet.http.HttpServletRequest
+import jakarta.validation.Valid
 import org.springframework.security.oauth2.server.authorization.client.RegisteredClient
 import org.springframework.validation.annotation.Validated
 import org.springframework.web.bind.annotation.PostMapping
@@ -42,7 +45,7 @@ class RegisterController(
     @PostMapping
     fun register(
         @ServerIdToken(required = false) idToken: String? = null,
-        @RequestBody @Validated info: RegisterInfo, client: RegisteredClient,
+        @RequestBody @Valid info: RegisterInfo, client: RegisteredClient,
         httpRequest: HttpServletRequest): AccessToken {
 
         if(!idToken.isNullOrBlank()) {
@@ -57,12 +60,21 @@ class RegisterController(
 
             val totpRequest = httpRequest.getOneTimeCodeInRequest() ?: throw InvalidOneTimeCodeException(InvalidOneTimeCodeException.REASON_MISS_REQUEST_PARAM)
             val result = oneTimeCodeService.verifyCode(totpRequest.code, totpRequest.stamp, throwIfInvalid = true)
-            val t = result.target ?: throw InvalidOneTimeCodeException()
-            if(info.email == t.contact) {
-                registerBy = RegisterBy.Email
-            }
-            if(info.fullPhoneNumber() == t.contact) {
-                registerBy = RegisterBy.Phone
+            val t = result.getInputOrThrow()
+            when(t.channel)
+            {
+                OneTimeCodeTarget.Channel.Email -> {
+                    registerBy = RegisterBy.Email
+                    if(t.contact != info.email) {
+                        throw InvalidOneTimeCodeException(InvalidOneTimeCodeException.REASON_INVALID_CONTACT)
+                    }
+                }
+                OneTimeCodeTarget.Channel.Phone -> {
+                    registerBy = RegisterBy.Phone
+                    if(t.contact != info.fullPhoneNumber()) {
+                        throw InvalidOneTimeCodeException(InvalidOneTimeCodeException.REASON_INVALID_CONTACT)
+                    }
+                }
             }
         }
 

@@ -313,7 +313,7 @@ abstract class AbstractUserService(
             } else {
                 listOf()
             }
-            UserAndRoles(user, rolesExisted)
+            UserAndRoles(newUser, rolesExisted)
         }!!
     }
 

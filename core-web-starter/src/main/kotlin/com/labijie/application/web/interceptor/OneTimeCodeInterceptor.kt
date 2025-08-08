@@ -23,7 +23,7 @@ class OneTimeCodeInterceptor(
         const val CODE_KEY = "ot_code"
         const val STAMP_KEY = "ot_stamp"
 
-        private val logger by lazy {
+        val logger by lazy {
             LoggerFactory.getLogger(OneTimeCodeInterceptor::class.java)
         }
     }
@@ -36,7 +36,10 @@ class OneTimeCodeInterceptor(
                 val code = request.getOneTimeCodeInRequest()
 
                 if(code == null) {
-                    throw InvalidOneTimeCodeException()
+                    if(logger.isDebugEnabled) {
+                        logger.warn("Unable to got one-time code or stamp.")
+                    }
+                    throw InvalidOneTimeCodeException(InvalidOneTimeCodeException.REASON_MISS_REQUEST_PARAM)
                 }
 
                 val valid =  try {

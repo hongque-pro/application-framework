@@ -27,7 +27,14 @@ class DefaultOnetimeCodeService(
 
     }
 
-    constructor() : this(ApplicationCoreProperties(), OneTimeCodeProperties(), Rfc6238TokenService())
+    constructor(desSecret: String? = null) : this(
+        ApplicationCoreProperties().also {
+            properties->
+            desSecret?.let { properties.desSecret = it }
+        },
+        OneTimeCodeProperties(),
+        Rfc6238TokenService()
+    )
 
     override fun verifyCode(
         code: String,
@@ -46,7 +53,7 @@ class DefaultOnetimeCodeService(
             } else {
                 val validSource = contract?.let {
                     val validContact = code.contact == contract
-                    if(!validContact) {
+                    if (!validContact) {
                         reason = InvalidOneTimeCodeException.REASON_INVALID_CONTACT
                     }
                     validContact
@@ -54,7 +61,7 @@ class DefaultOnetimeCodeService(
 
                 val validType = contract?.let {
                     val validChannel = (code.channel == channel)
-                    if(!validChannel) {
+                    if (!validChannel) {
                         reason = InvalidOneTimeCodeException.REASON_INVALID_CHANNEL
                     }
                     validChannel
@@ -71,7 +78,7 @@ class DefaultOnetimeCodeService(
             throw InvalidOneTimeCodeException(reason)
         }
 
-        return OneTimeCodeVerifyResult( result, source)
+        return OneTimeCodeVerifyResult(result, source)
     }
 
     private fun encodeSource(source: OneTimeCodeTarget): String {

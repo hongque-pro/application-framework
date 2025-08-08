@@ -12,6 +12,7 @@ import com.labijie.application.model.OneTimeCodeVerifyResult.Companion.getInputO
 import com.labijie.application.service.IOneTimeCodeService
 import com.labijie.application.web.interceptor.OneTimeCodeInterceptor
 import com.labijie.infra.utils.ifNullOrBlank
+import com.labijie.infra.utils.logger
 import jakarta.servlet.http.HttpServletRequest
 import org.springframework.http.HttpRequest
 import org.springframework.security.web.util.UrlUtils
@@ -20,6 +21,9 @@ fun HttpServletRequest.getOneTimeCodeInRequest(): OneTimeCodeVerifyRequest? {
     val code = this.getHeader(OneTimeCodeInterceptor.CODE_KEY) ?: this.getParameter(OneTimeCodeInterceptor.CODE_KEY)
     val stamp = this.getHeader(OneTimeCodeInterceptor.STAMP_KEY) ?: this.getParameter(OneTimeCodeInterceptor.STAMP_KEY)
 
+    if(OneTimeCodeInterceptor.logger.isDebugEnabled){
+        logger.debug("Got one-time code request, CODE: $code, STAMP: $stamp")
+    }
     if(code.isNullOrBlank() || stamp.isNullOrBlank()) {
         return null
     }

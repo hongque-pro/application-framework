@@ -113,7 +113,7 @@ class DefaultOnetimeCodeService(
 
         val stamp = encodeSource(source)
 
-        val code = this.rfc6238TokenService.generateCode(stamp, properties.expiration)
-        return OneTimeCode(code.toString(), stamp, properties.expiration)
+        val code = this.rfc6238TokenService.generateCodeString(stamp, properties.expiration)
+        return OneTimeCode(code, stamp, properties.expiration)
     }
 }

@@ -5,7 +5,7 @@ infra {
 }
 
 dependencies {
-    compileOnly("org.graalvm.nativeimage:svm:24.2.1")
+    compileOnly("org.graalvm.nativeimage:svm:${Versions.graalvmSvm}")
 
     api("io.github.classgraph:classgraph:${Versions.classGraph}")
     api("com.labijie.infra:commons-springboot-starter:${Versions.infraCommons}")

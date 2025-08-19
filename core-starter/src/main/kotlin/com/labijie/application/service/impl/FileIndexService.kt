@@ -122,7 +122,7 @@ open class FileIndexService(
                 this.fileType = IFileIndexService.TEMP_FILE_TYPE
                 this.timeCreated = System.currentTimeMillis()
                 this.fileAccess = modifier
-                this.sizeIntBytes = fileSizeInBytes ?: 0
+                this.sizeInBytes = fileSizeInBytes ?: 0
 
             }
 
@@ -156,7 +156,7 @@ open class FileIndexService(
             fileType = IFileIndexService.TEMP_FILE_TYPE
             fileAccess = modifier
             path = filePath
-            sizeIntBytes = length ?: 0
+            sizeInBytes = length ?: 0
             timeCreated = System.currentTimeMillis()
         }
         transactionTemplate.execute {
@@ -190,15 +190,15 @@ open class FileIndexService(
 
     override fun getIndexAndRefreshFileSize(filePath: String, checkFileExisted: Boolean): FileIndex? {
         val index = getFileIndex(filePath, false)?.also { file ->
-            if (file.sizeIntBytes <= 0) {
+            if (file.sizeInBytes <= 0) {
                 val size = objectStorage.getObjectSizeInBytes(key = filePath, file.fileAccess.toObjectBucket())
                 size?.let {
                     this.transactionTemplate.execute {
                         FileIndexTable.updateByPrimaryKey(file.id) {
-                            it[sizeIntBytes] = size
+                            it[sizeInBytes] = size
                         }
                     }
-                    file.sizeIntBytes = size
+                    file.sizeInBytes = size
                 }
             }
         }
@@ -246,7 +246,7 @@ open class FileIndexService(
             return existedFile
         }
 
-        val wantToGetFileSize = (fileSizeInBytes == null && existedFile.sizeIntBytes <= 0)
+        val wantToGetFileSize = (fileSizeInBytes == null && existedFile.sizeInBytes <= 0)
         //如果后面需要从获取文件大小，这里可以少一次检查， 因为 getObjectSizeInBytes 会检查文件是否存在
         if (checkFileExisted && !wantToGetFileSize) {
             checkFileInStorage(existedFile.path, true)
@@ -255,7 +255,7 @@ open class FileIndexService(
 
         if (temp?.isExpired() == true) throw TemporaryFileTimoutException()
 
-        val sizeToUpdate = if (existedFile.sizeIntBytes <= 0) {
+        val sizeToUpdate = if (existedFile.sizeInBytes <= 0) {
             val sizeInBytes =
                 fileSizeInBytes ?: objectStorage.getObjectSizeInBytes(
                     existedFile.path,
@@ -271,7 +271,7 @@ open class FileIndexService(
         existedFile.entityId = entityId ?: 0
         existedFile.timeCreated = System.currentTimeMillis()
         sizeToUpdate?.let {
-            existedFile.sizeIntBytes = sizeToUpdate
+            existedFile.sizeInBytes = sizeToUpdate
         }
 
 
@@ -282,7 +282,7 @@ open class FileIndexService(
                     FileIndexTable.fileType,
                     FileIndexTable.entityId,
                     FileIndexTable.timeCreated,
-                    FileIndexTable.sizeIntBytes
+                    FileIndexTable.sizeInBytes
                 )
             } else {
                 arrayOf<Column<*>>(
@@ -466,7 +466,7 @@ open class FileIndexService(
                     entityId = destEntityId ?: 0
                     fileAccess = destModifierValue
                     timeCreated = System.currentTimeMillis()
-                    sizeIntBytes = index.sizeIntBytes
+                    sizeInBytes = index.sizeInBytes
                 }
                 FileIndexTable.insert(file)
                 file

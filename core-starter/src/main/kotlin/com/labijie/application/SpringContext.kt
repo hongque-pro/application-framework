@@ -49,46 +49,28 @@ object SpringContext {
         return null
     }
 
-    private val applicationGitPropertiesSync = Any()
-    private var applicationGitProperties: GitProperties? = null
-    private var applicationGitPropertiesLoaded = false
-
-    fun ApplicationContext.getApplicationGitProperties(): GitProperties? {
-        if(!isInitialized) {
-            return null
-        }
-        if(applicationGitPropertiesLoaded) {
-            return applicationGitProperties
-        }
-        else {
-            synchronized(applicationGitPropertiesSync) {
-                if(!applicationGitPropertiesLoaded) {
-                    val main = findApplicationMainClass()
-                    if (main != null) {
-                        val anno = main::class.java.getAnnotation(GradleApplication::class.java)
-                        if (anno != null && !anno.projectGroup.isBlank()) {
-                            val properties = getGitProperties(main::class.java) {
-                                anno.projectGroup.equals(it.getProperty("project.group"), ignoreCase = true) &&
-                                        (anno.projectName.isBlank() || anno.projectName.equals(
-                                            it.getProperty("project.name"),
-                                            ignoreCase = true
-                                        ))
-                            }
-                            if (properties != null) {
-                                applicationGitProperties = properties
-                                applicationGitPropertiesLoaded = true
-                            }
-                        }
-                    }
-
-                    if(!applicationGitPropertiesLoaded) {
-                        applicationGitProperties = main?.let { getGitProperties(it::class.java) }
-                        applicationGitPropertiesLoaded = true
-                    }
+    private val applicationGitProperties: GitProperties? by lazy {
+        val main = current.findApplicationMainClass()
+        if (main != null) {
+            val anno = main::class.java.getAnnotation(GradleApplication::class.java)
+            if (anno != null && !anno.projectGroup.isBlank()) {
+                val properties = getGitProperties(main::class.java) {
+                    anno.projectGroup.equals(it.getProperty("project.group"), ignoreCase = true) &&
+                            (anno.projectName.isBlank() || anno.projectName.equals(
+                                it.getProperty("project.name"),
+                                ignoreCase = true
+                            ))
+                }
+                if (properties != null) {
+                    return@lazy properties
                 }
             }
+            return@lazy getGitProperties(main::class.java)
         }
+        null
+    }
 
+    fun ApplicationContext.getApplicationGitProperties(): GitProperties? {
         return applicationGitProperties
     }
 

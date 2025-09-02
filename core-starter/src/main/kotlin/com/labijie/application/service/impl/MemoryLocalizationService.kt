@@ -10,24 +10,20 @@ import com.labijie.application.model.LocalizationMessages
 import com.labijie.application.service.ILocalizationService
 import org.apache.commons.lang3.LocaleUtils
 import java.util.*
+import java.util.concurrent.ConcurrentHashMap
 
 
 class MemoryLocalizationService : ILocalizationService {
 
-    private val map = mutableMapOf<String, MutableMap<String, String>>()
-    private val writeLock = Any()
+    private val map = ConcurrentHashMap<String, ConcurrentHashMap<String, String>>()
     private var defaultLocal: String? = null
 
-    fun MutableMap<String, String>.set(key:String, value: String, override: Boolean): Boolean {
-        if(!this.containsKey(key)){
-            this.putIfAbsent(key, value)
-            return true
+    fun ConcurrentHashMap<String, String>.set(key:String, value: String, override: Boolean): Boolean {
+        if(!override){
+            return this.putIfAbsent(key, value) == null
         }
-        if(override) {
-            this[key] = value
-            return true
-        }
-        return false
+        this[key] = value
+        return true
     }
 
     override fun allLocales(): List<Locale> {
@@ -55,20 +51,16 @@ class MemoryLocalizationService : ILocalizationService {
     }
 
     override fun setMessage(code: String, message: String, locale: Locale, override: Boolean): Boolean {
-        return synchronized(writeLock) {
-            val values = map.getOrPut(code) { mutableMapOf() }
-            values.set(code, message, override)
-        }
+        val values = map.getOrPut(code) { ConcurrentHashMap() }
+        return values.set(code, message, override)
     }
 
     override fun setMessages(messages: Map<String, String>, locale: Locale, override: Boolean): Int {
         var count = 0
-        synchronized(writeLock) {
-            val values = map.getOrPut(locale.getId()) { mutableMapOf() }
-            messages.forEach {
-                if(values.set(it.key, it.value, override)) {
-                    count++
-                }
+        val values = map.getOrPut(locale.getId()) { ConcurrentHashMap() }
+        messages.forEach {
+            if(values.set(it.key, it.value, override)) {
+                count++
             }
         }
         return count
@@ -80,17 +72,15 @@ class MemoryLocalizationService : ILocalizationService {
     }
 
     override fun getLocaleMessages(locale: Locale): LocalizationMessages {
-        val messages = map.getOrPut(locale.getId()) { mutableMapOf() }
+        val messages = map.getOrPut(locale.getId()) { ConcurrentHashMap() }
         return LocalizationMessages(locale, messages)
     }
 
     override fun saveLocaleMessages(message: LocalizationMessages, override: Boolean) {
         val id = message.locale.getId()
-        synchronized(writeLock) {
-            val data = map.getOrPut(id) { mutableMapOf() }
-            message.messages.forEach { (code, message) ->
-                data.set(code, message, override)
-            }
+        val data = map.getOrPut(id) { ConcurrentHashMap() }
+        message.messages.forEach { (code, message) ->
+            data.set(code, message, override)
         }
     }
 

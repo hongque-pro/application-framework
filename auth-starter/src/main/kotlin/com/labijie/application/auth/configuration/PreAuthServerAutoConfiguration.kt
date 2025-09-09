@@ -79,7 +79,7 @@ class PreAuthServerAutoConfiguration {
 
     @Bean
     @ConditionalOnProperty(
-        prefix = "application.default-user-creation",
+        prefix = "application.auth.default-user-creation",
         name = ["enabled"],
         havingValue = "true",
         matchIfMissing = false

@@ -5,6 +5,7 @@ import com.labijie.application.component.IBootPrinter
 import com.labijie.application.configuration.DefaultsAutoConfiguration
 import com.labijie.application.dapr.IDaprClientBuildCustomizer
 import com.labijie.application.dapr.components.DaprClusterEventPublisher
+import com.labijie.application.dapr.components.DaprHttpExchangeAdapter
 import com.labijie.application.dapr.components.DaprJsonSerializer
 import com.labijie.application.dapr.components.IClusterEventPublisher
 import com.labijie.application.dapr.localization.LocalLocalizationEventListener
@@ -16,7 +17,6 @@ import io.dapr.springboot.DaprAutoConfiguration
 import org.slf4j.LoggerFactory
 import org.springdoc.core.models.GroupedOpenApi
 import org.springframework.beans.factory.ObjectProvider
-import org.springframework.boot.autoconfigure.AutoConfiguration
 import org.springframework.boot.autoconfigure.AutoConfigureAfter
 import org.springframework.boot.autoconfigure.AutoConfigureBefore
 import org.springframework.boot.autoconfigure.AutoConfigureOrder
@@ -25,6 +25,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.core.Ordered
+
 
 /**
  * @author Anders Xiao
@@ -74,7 +75,7 @@ class ApplicationAfterDaprAutoConfiguration {
     }
 
     @Configuration(proxyBeanMethods = false)
-    @ConditionalOnClass(name=["org.springdoc.core.models"])
+    @ConditionalOnClass(name=["org.springdoc.core.models.GroupedOpenApi"])
     protected class DaprDocAutoConfiguration {
 
         @Bean

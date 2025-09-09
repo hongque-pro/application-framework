@@ -7,7 +7,7 @@ package com.labijie.application.configuration
 import com.labijie.application.SpringContext
 import com.labijie.application.httpclient.HttpClientLoggingInterceptor
 import com.labijie.application.okhttp.OkHttpClientRequestFactoryBuilder
-import org.springframework.boot.autoconfigure.AutoConfigureAfter
+import org.springframework.boot.autoconfigure.AutoConfigureBefore
 import org.springframework.boot.autoconfigure.web.client.RestClientAutoConfiguration
 import org.springframework.boot.web.client.RestClientCustomizer
 import org.springframework.context.annotation.Bean
@@ -17,8 +17,8 @@ import org.springframework.web.client.RestClient
 
 
 @Configuration(proxyBeanMethods = false)
-@AutoConfigureAfter(RestClientAutoConfiguration::class)
-class RestClientAutoConfiguration : HttpClientAutoConfigurationBase() {
+@AutoConfigureBefore(RestClientAutoConfiguration::class)
+class RestClientCustomizationAutoConfiguration : HttpClientAutoConfigurationBase() {
 
     @Bean
     fun applicationRestClientCustomizer(

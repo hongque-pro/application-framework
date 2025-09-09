@@ -4,6 +4,7 @@ import com.fasterxml.jackson.datatype.jsr310.deser.OffsetTimeDeserializer
 import com.fasterxml.jackson.datatype.jsr310.ser.OffsetDateTimeSerializer
 import com.labijie.application.aot.registerAnnotations
 import com.labijie.application.aot.registerForJackson
+import com.labijie.application.aot.registerType
 import com.labijie.application.dapr.DaprClusterEvent
 import com.labijie.application.dapr.annotation.EnableDaprClusterEventListener
 import com.labijie.application.dapr.model.DaprSms
@@ -17,6 +18,7 @@ import org.springframework.aot.hint.TypeReference
 class ApplicationDaprRuntimeHintsRegistrar : RuntimeHintsRegistrar {
     override fun registerHints(hints: RuntimeHints, classLoader: ClassLoader?) {
 
+        hints.reflection().registerType("org.springdoc.core.models.GroupedOpenApi")
         hints.reflection().registerAnnotations(EnableDaprClusterEventListener::class)
 
         hints.reflection().registerForJackson(

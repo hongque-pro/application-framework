@@ -11,6 +11,8 @@ import org.springframework.context.ApplicationContext
 import java.lang.reflect.Constructor
 import java.lang.reflect.Parameter
 import java.lang.reflect.ParameterizedType
+import java.net.URI
+import java.net.URLDecoder
 import java.time.Duration
 import java.time.Instant
 import java.time.ZoneId
@@ -89,5 +91,19 @@ object ObjectUtils {
     fun Instant.toTimeString(formatter: DateTimeFormatter? = null): String {
         val formatted = (formatter ?: DEFAULT_DATE_TIME_FORMATTER).format(this)
         return formatted.orEmpty()
+    }
+
+    fun URI.parseQueryStringDecoded(): Map<String, List<String>> {
+        return this.query
+            ?.split("&")
+            ?.mapNotNull { pair ->
+                val parts = pair.split("=", limit = 2)
+                if (parts.isNotEmpty()) {
+                    val key = URLDecoder.decode(parts[0], Charsets.UTF_8.name())
+                    val value = URLDecoder.decode(parts.getOrElse(1) { "" }, Charsets.UTF_8.name())
+                    key to value
+                } else null
+            }
+            ?.groupBy({ it.first }, { it.second }) ?: emptyMap()
     }
 }

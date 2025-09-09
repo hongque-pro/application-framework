@@ -13,7 +13,7 @@ import org.springframework.context.annotation.Configuration
  */
 @Configuration(proxyBeanMethods = false)
 @AutoConfigureBefore(RestTemplateAutoConfiguration::class)
-class RestTemplateAutoConfiguration : HttpClientAutoConfigurationBase() {
+class RestTemplateCustomizationAutoConfiguration : HttpClientAutoConfigurationBase() {
 
     @Bean
     fun applicationRestTemplateCustomizer(httpClientProperties: HttpClientProperties): RestTemplateCustomizer {

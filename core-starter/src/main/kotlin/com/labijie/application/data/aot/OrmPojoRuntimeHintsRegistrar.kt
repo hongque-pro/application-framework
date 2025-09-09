@@ -27,6 +27,9 @@ internal class OrmPojoRuntimeHintsRegistrar : RuntimeHintsRegistrar {
   override fun registerHints(hints: RuntimeHints, classLoader: ClassLoader?) {
     // Begin Table Pojo types hint register
     hints.registerOrmPojoType("com.labijie.application.data.pojo.FileIndex")
+    hints.registerOrmPojoType("com.labijie.application.data.pojo.LocalizationCode")
+    hints.registerOrmPojoType("com.labijie.application.data.pojo.LocalizationLanguage")
+    hints.registerOrmPojoType("com.labijie.application.data.pojo.LocalizationMessage")
     hints.registerOrmPojoType("com.labijie.application.data.pojo.TempFileIndex")
     // Begin Column types hint register
     hints.reflection().registerType(FileModifier::class.java) {

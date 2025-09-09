@@ -30,8 +30,6 @@ class DaprProperties {
     var jsonMode: JsonMode = JsonMode.NORMAL
     var shutdownDaprOnExit: Boolean = true
 
-    @NestedConfigurationProperty
-    val messageService: MessageServiceConfig = MessageServiceConfig()
 
     @NestedConfigurationProperty
     val clusterNotification: ClusterNotificationSettings = ClusterNotificationSettings()
@@ -42,7 +40,7 @@ class DaprProperties {
     }
 
 
-    val getDaprHttpPort: Int by lazy {
+    val daprHttpPort: Int by lazy {
         Properties.HTTP_PORT.get()
     }
 

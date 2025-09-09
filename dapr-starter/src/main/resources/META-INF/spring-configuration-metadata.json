@@ -6,12 +6,6 @@
       "sourceType": "com.labijie.application.dapr.configuration.DaprProperties"
     },
     {
-      "name": "application.dapr.message-service",
-      "type": "com.labijie.application.dapr.configuration.MessageServiceConfig",
-      "sourceType": "com.labijie.application.dapr.configuration.DaprProperties",
-      "sourceMethod": "getMessageService()"
-    },
-    {
       "name": "application.dapr.cluster-notification",
       "type": "com.labijie.application.dapr.configuration.ClusterNotificationSettings",
       "sourceType": "com.labijie.application.dapr.configuration.DaprProperties",
@@ -50,31 +44,16 @@
       "defaultValue": "cluster-event"
     },
     {
-      "name": "application.dapr.message-service.sms-pubsub-name",
-      "type": "java.lang.String",
-      "sourceType": "com.labijie.application.dapr.configuration.MessageServiceConfig"
-    },
-    {
-      "name": "application.dapr.message-service.sms-topic",
-      "type": "java.lang.String",
-      "defaultValue": "pubsub",
-      "sourceType": "com.labijie.application.dapr.configuration.MessageServiceConfig"
-    },
-    {
-      "name": "application.dapr.message-service.enabled",
-      "type": "java.lang.Boolean",
-      "defaultValue": true,
-      "sourceType": "com.labijie.application.dapr.configuration.MessageServiceConfig"
-    },
-    {
       "name": "application.dapr.pub-service-enabled",
       "type": "java.lang.Boolean",
-      "sourceType": "com.labijie.application.dapr.configuration.DaprProperties"
+      "sourceType": "com.labijie.application.dapr.configuration.DaprProperties",
+      "defaultValue": false
     },
     {
       "name": "application.dapr.sub-service-enabled",
       "type": "java.lang.Boolean",
-      "sourceType": "com.labijie.application.dapr.configuration.DaprProperties"
+      "sourceType": "com.labijie.application.dapr.configuration.DaprProperties",
+      "defaultValue": false
     }
   ],
   "hints": []

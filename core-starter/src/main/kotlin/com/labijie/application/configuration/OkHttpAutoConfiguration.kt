@@ -5,7 +5,6 @@ import com.labijie.application.okhttp.OkHttpClientRequestFactoryBuilder
 import com.labijie.application.okhttp.OkHttpProperties
 import com.labijie.infra.utils.ifNullOrBlank
 import jakarta.annotation.PreDestroy
-import jdk.internal.util.StaticProperty
 import okhttp3.Cache
 import okhttp3.ConnectionPool
 import okhttp3.OkHttpClient
@@ -15,6 +14,8 @@ import org.springframework.beans.factory.ObjectProvider
 import org.springframework.boot.autoconfigure.AutoConfigureBefore
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
+import org.springframework.boot.autoconfigure.web.client.RestClientAutoConfiguration
+import org.springframework.boot.autoconfigure.web.client.RestTemplateAutoConfiguration
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.boot.http.client.ClientHttpRequestFactoryBuilder
 import org.springframework.context.annotation.Bean
@@ -35,9 +36,11 @@ import kotlin.io.path.isDirectory
 @EnableConfigurationProperties(OkHttpProperties::class)
 @Configuration(proxyBeanMethods = false)
 @AutoConfigureBefore(
-    ApplicationCoreAutoConfiguration::class,
+    RestClientAutoConfiguration::class,
     RestTemplateAutoConfiguration::class,
-    RestClientAutoConfiguration::class
+    ApplicationCoreAutoConfiguration::class,
+    RestTemplateCustomizationAutoConfiguration::class,
+    RestClientCustomizationAutoConfiguration::class
 )
 class OkHttpAutoConfiguration : HttpClientAutoConfigurationBase() {
 

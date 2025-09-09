@@ -321,6 +321,7 @@ class ApplicationInitializationRunner(
         return git?.let {
             StringBuilder().apply {
                 git.buildVersion.letIfNotBlank { appendLine("Application build version: $it") }
+                git.branch.letIfNotBlank { appendLine("Application git branch: $it") }
                 git.shortCommitId.letIfNotBlank { appendLine("Application git commit: $it") }
                 git.commitTime?.let { appendLine("Application git commit time: ${it.toTimeString()}") }
             }.toString()

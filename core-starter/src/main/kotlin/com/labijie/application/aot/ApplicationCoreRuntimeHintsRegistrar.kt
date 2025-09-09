@@ -27,6 +27,8 @@ class ApplicationCoreRuntimeHintsRegistrar : RuntimeHintsRegistrar {
 
         hints.registerGitInfo()
 
+        hints.reflection().registerType("org.springframework.web.reactive.DispatcherHandler")
+        hints.reflection().registerType("javax.servlet.Servlet")
 
         hints.reflection().registerAnnotations(
             ImportErrorDefinition::class,

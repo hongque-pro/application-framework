@@ -16,9 +16,11 @@ import io.dapr.springboot.DaprAutoConfiguration
 import org.slf4j.LoggerFactory
 import org.springdoc.core.models.GroupedOpenApi
 import org.springframework.beans.factory.ObjectProvider
+import org.springframework.boot.autoconfigure.AutoConfiguration
 import org.springframework.boot.autoconfigure.AutoConfigureAfter
 import org.springframework.boot.autoconfigure.AutoConfigureBefore
 import org.springframework.boot.autoconfigure.AutoConfigureOrder
+import org.springframework.boot.autoconfigure.condition.ConditionalOnClass
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -71,22 +73,27 @@ class ApplicationAfterDaprAutoConfiguration {
         return LocalLocalizationEventListener(clusterEventPublisher)
     }
 
-    @Bean
-    fun daprGroup(): GroupedOpenApi {
-        return GroupedOpenApi.builder()
-            .group("Dapr-SDK")
-            .packagesToScan("io.dapr")
-            .build()
-    }
+    @Configuration(proxyBeanMethods = false)
+    @ConditionalOnClass(name=["org.springdoc.core.models"])
+    protected class DaprDocAutoConfiguration {
 
-    @Bean
-    fun daprApplicationGroup(): GroupedOpenApi {
-        return GroupedOpenApi.builder()
-            .group("Dapr-Application")
-            .addOpenApiMethodFilter { method ->
-                method.annotations.any { it.annotationClass == Topic::class.java }
-            }
-            .build()
+        @Bean
+        fun daprGroup(): GroupedOpenApi {
+            return GroupedOpenApi.builder()
+                .group("Dapr-SDK")
+                .packagesToScan("io.dapr")
+                .build()
+        }
+
+        @Bean
+        fun daprApplicationGroup(): GroupedOpenApi {
+            return GroupedOpenApi.builder()
+                .group("Dapr-Application")
+                .addOpenApiMethodFilter { method ->
+                    method.annotations.any { it.annotationClass == Topic::class.java }
+                }
+                .build()
+        }
     }
 
     class DaprBootPrinter : IBootPrinter {

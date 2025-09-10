@@ -82,6 +82,10 @@ object ApplicationErrors {
     const val DataMaybeChanged = "data_maybe_changed"
 
     @ErrorDescription("你没有权限编辑或操作该数据")
+    @ErrorDescription("Dependent data not found or condition not matched", locale = Constants.EN_US)
+    const val DataConditionalCheckFailed = "data_conditional_check_failed"
+
+    @ErrorDescription("你没有权限编辑或操作该数据")
     @ErrorDescription("You do not have permission to edit or operate on this data", locale = Constants.EN_US)
     const val DataOwnerMissMatched = "data_owner_unmatched"
 

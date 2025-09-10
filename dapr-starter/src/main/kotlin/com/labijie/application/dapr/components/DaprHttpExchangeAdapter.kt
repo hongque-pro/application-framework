@@ -95,7 +95,7 @@ class DaprHttpExchangeAdapter(
         bodyType: ParameterizedTypeReference<T>
     ): T {
         val request = newRequest(requestValues)
-        val bodyType = TypeRef.get<T>(bodyType.type)
+        val bodyType = TypeRef.get<T?>(bodyType.type)
         return daprClient.invokeMethod(request, bodyType).block()
     }
 

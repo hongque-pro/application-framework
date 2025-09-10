@@ -46,8 +46,7 @@ class DefaultServerClientRepository(
                 this.autoApprove = false
                 this.enabled = true
                 this.redirectUrls = StringUtils.collectionToCommaDelimitedString(client.redirectUris)
-                this.authorizedGrantTypes =
-                    StringUtils.collectionToCommaDelimitedString(client.authorizationGrantTypes.map { it.value })
+                this.authorizedGrantTypes = client.authorizationGrantTypes.joinToString(",") { it.value }
             }
             clientService.add(record)
         }
@@ -67,12 +66,16 @@ class DefaultServerClientRepository(
                         uris.addAll(StringUtils.commaDelimitedListToStringArray(it.redirectUrls.orEmpty()))
                     }
                     .authorizationGrantTypes { types ->
-                        types.addAll(
-                            StringUtils.commaDelimitedListToStringArray(it.authorizedGrantTypes.orEmpty())
-                                .map { t -> AuthorizationGrantType(t) })
+                        val list = it.authorizedGrantTypes.split(",")
+                            .filter { name -> name.isNotBlank() }
+                            .distinct()
+                            .map { t -> AuthorizationGrantType(t) }
+                        if (list.isNotEmpty()) {
+                            types.addAll(list)
+                        }
                     }
                     .scopes { ss ->
-                        ss.addAll(StringUtils.commaDelimitedListToStringArray(it.scopes.orEmpty()))
+                        ss.addAll(StringUtils.commaDelimitedListToStringArray(it.scopes))
                     }
                     .tokenSettings(
                         TokenSettings
@@ -98,6 +101,7 @@ class DefaultServerClientRepository(
     }
 
     override fun setApplicationContext(applicationContext: ApplicationContext) {
-        oauth2ServerProperties = applicationContext.getBeansOfType(OAuth2ServerProperties::class.java).values.firstOrNull()
+        oauth2ServerProperties =
+            applicationContext.getBeansOfType(OAuth2ServerProperties::class.java).values.firstOrNull()
     }
 }

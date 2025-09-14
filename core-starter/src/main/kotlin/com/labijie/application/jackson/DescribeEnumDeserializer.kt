@@ -1,6 +1,5 @@
 package com.labijie.application.jackson
 
-import com.fasterxml.jackson.core.JacksonException
 import com.fasterxml.jackson.core.JsonParseException
 import com.fasterxml.jackson.core.JsonParser
 import com.fasterxml.jackson.databind.BeanProperty
@@ -8,7 +7,6 @@ import com.fasterxml.jackson.databind.DeserializationContext
 import com.fasterxml.jackson.databind.JavaType
 import com.fasterxml.jackson.databind.JsonDeserializer
 import com.fasterxml.jackson.databind.deser.ContextualDeserializer
-import com.labijie.application.IDescribeEnum
 import com.labijie.application.getEnumFromNumber
 import com.labijie.application.getEnumFromString
 

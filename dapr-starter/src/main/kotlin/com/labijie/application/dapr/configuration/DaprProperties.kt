@@ -8,6 +8,7 @@ import org.springframework.beans.factory.config.BeanDefinition
 import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.boot.context.properties.NestedConfigurationProperty
 import org.springframework.context.annotation.Role
+import java.time.Duration
 
 /**
  * @author Anders Xiao
@@ -30,6 +31,8 @@ class DaprProperties {
     var jsonMode: JsonMode = JsonMode.NORMAL
     var shutdownDaprOnExit: Boolean = true
 
+    @NestedConfigurationProperty
+    val client: DaprClientSettings = DaprClientSettings()
 
     @NestedConfigurationProperty
     val clusterNotification: ClusterNotificationSettings = ClusterNotificationSettings()

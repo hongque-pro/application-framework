@@ -1,20 +1,28 @@
 package com.labijie.application.dapr.components
 
+import com.fasterxml.jackson.core.JsonParseException
+import com.fasterxml.jackson.core.type.TypeReference
+import com.labijie.application.ErrorCodedStatusException
 import com.labijie.application.ObjectUtils.parseQueryStringDecoded
+import com.labijie.application.dapr.components.DaprHttpExchangeAdapter.DaprApiResult.Companion.toException
+import com.labijie.application.orDefault
+import com.labijie.application.web.handler.ErrorResponse
+import com.labijie.infra.json.JacksonHelper
 import io.dapr.client.DaprClient
 import io.dapr.client.DaprHttp
 import io.dapr.client.domain.HttpExtension
 import io.dapr.client.domain.InvokeMethodRequest
+import io.dapr.exceptions.DaprException
 import io.dapr.utils.TypeRef
 import org.springframework.core.ParameterizedTypeReference
-import org.springframework.http.HttpCookie
-import org.springframework.http.HttpHeaders
-import org.springframework.http.HttpMethod
-import org.springframework.http.ResponseEntity
+import org.springframework.http.*
 import org.springframework.web.service.invoker.HttpExchangeAdapter
 import org.springframework.web.service.invoker.HttpRequestValues
 import org.springframework.web.util.UriTemplate
+import java.io.IOException
+import java.lang.reflect.Type
 import java.util.function.Consumer
+
 
 /**
  * @author Anders Xiao
@@ -22,13 +30,91 @@ import java.util.function.Consumer
  */
 class DaprHttpExchangeAdapter(
     private val daprClient: DaprClient,
-    private val appId: String
+    private val appId: String,
+    private val useGrpc: Boolean = false
 ) : HttpExchangeAdapter {
 
     companion object {
         @JvmStatic
         fun create(daprClient: DaprClient, appId: String): DaprHttpExchangeAdapter {
             return DaprHttpExchangeAdapter(daprClient, appId)
+        }
+
+        private fun <T> Type.toTypeReference(): TypeReference<T> {
+            val t = this
+            return object : TypeReference<T>() {
+                val type: Type
+                    get() = t
+            }
+        }
+    }
+
+
+
+    class DaprApiResult<T>(private val daprAppId: String) {
+        private var error: ErrorResponse? = null
+        var data: T? = null
+            private set
+
+        fun isError(): Boolean {
+            return error != null
+        }
+
+        fun getError(): ErrorResponse? {
+            return error
+        }
+
+        fun getResultOrError(httpStatus: Int? = null): T {
+            error?.let {
+                err->
+                throw err.toException(daprAppId, httpStatus)
+            }
+            return data!!
+        }
+
+        companion object {
+            fun ErrorResponse.toException(daprAppId: String, httpStatus: Int? = null): ErrorCodedStatusException {
+                val err = this
+                return ErrorCodedStatusException(err.error, err.errorDescription, status = httpStatus?.let { HttpStatus.valueOf(it) }).apply {
+                    err.details?.forEach {
+                        if(it.value is String) {
+                            args.putIfAbsent(it.key, it.value as String)
+                        }
+                    }
+                    if(daprAppId.isNotBlank()) {
+                        args["dapr_app_id"] = daprAppId
+                    }
+                }
+            }
+
+            @Throws(Exception::class)
+            fun <T> fromJson(daprAppId: String, byte: ByteArray, type: Type): DaprApiResult<T> {
+
+                val root = JacksonHelper.webCompatibilityMapper.readTree(byte)
+                val result = DaprApiResult<T>(daprAppId)
+                if (root.has("error")) {
+                    result.error = JacksonHelper.webCompatibilityMapper.treeToValue(root, ErrorResponse::class.java)
+                } else {
+                    result.data = JacksonHelper.webCompatibilityMapper.treeToValue<T>(root, type.toTypeReference())
+                }
+                return result
+            }
+
+            @Throws(Exception::class)
+            fun fromError(byte: ByteArray): ErrorResponse? {
+                try {
+                    val root = JacksonHelper.webCompatibilityMapper.readTree(byte)
+                    if (root.has("error")) {
+                        return JacksonHelper.webCompatibilityMapper.treeToValue(root, ErrorResponse::class.java)
+                    }
+                    return null
+                }catch (_: IOException) {
+                    return null
+                }
+                catch (_: JsonParseException) {
+                    return null
+                }
+            }
         }
     }
 
@@ -97,14 +183,44 @@ class DaprHttpExchangeAdapter(
         return request
     }
 
+    private fun <T : Any?> invokeHttp(
+        requestValues: HttpRequestValues,
+        bodyType: ParameterizedTypeReference<T>?
+    ): T? {
+        try {
+            val request = newRequest(requestValues)
+            if (bodyType != null && bodyType.type != null) {
+                val bytes = daprClient.invokeMethod(request, TypeRef.BYTE_ARRAY).block()
+                val result = DaprApiResult.fromJson<T>(
+                    this.appId,
+                    bytes.orDefault(),
+                    bodyType.type,
+                )
+                return result.getResultOrError()
+            } else {
+                daprClient.invokeMethod(request, TypeRef.VOID).block()
+                @Suppress("UNCHECKED_CAST")
+                return null
+            }
+        }catch (e: DaprException) {
+            val msg = e.payload // 包含 body
+            msg?.let {
+                val err = DaprApiResult.fromError(it)
+                err?.let { throw err.toException(this.appId, e.httpStatusCode) }
+            }
+            throw e
+        }
+    }
+
+
     override fun supportsRequestAttributes(): Boolean {
         return false
     }
 
     override fun exchange(requestValues: HttpRequestValues) {
-        val request = newRequest(requestValues)
-        daprClient.invokeMethod(request, TypeRef.VOID).block()
+        invokeHttp<Void>(requestValues, null)
     }
+
 
     override fun exchangeForHeaders(requestValues: HttpRequestValues): HttpHeaders {
         return HttpHeaders.EMPTY
@@ -113,15 +229,8 @@ class DaprHttpExchangeAdapter(
     override fun <T : Any?> exchangeForBody(
         requestValues: HttpRequestValues,
         bodyType: ParameterizedTypeReference<T>?
-    ): T {
-        val request = newRequest(requestValues)
-        if(bodyType != null && bodyType.type != null) {
-            return daprClient.invokeMethod(request, TypeRef.get<T>(bodyType.type)).block()
-        }else {
-            daprClient.invokeMethod(request, TypeRef.VOID).block()
-            @Suppress("UNCHECKED_CAST")
-            return null as T
-        }
+    ): T? {
+        return invokeHttp(requestValues, bodyType)
     }
 
     override fun exchangeForBodilessEntity(requestValues: HttpRequestValues): ResponseEntity<Void?> {

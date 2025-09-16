@@ -447,8 +447,12 @@ fun BigInteger?.orDefault(value: BigInteger = BigInteger.ZERO): BigInteger {
     return this ?: value
 }
 
-fun ByteArray?.orDefault(value: ByteArray = ByteArray(0)): ByteArray {
+fun ByteArray?.orDefault(value: ByteArray): ByteArray {
     return this ?: value
+}
+
+fun ByteArray?.orDefault(value: (()->ByteArray)? = null): ByteArray {
+    return this ?: value?.invoke() ?: ByteArray(0)
 }
 
 

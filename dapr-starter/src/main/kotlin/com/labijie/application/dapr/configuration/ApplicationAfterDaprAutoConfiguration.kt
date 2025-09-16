@@ -5,7 +5,6 @@ import com.labijie.application.component.IBootPrinter
 import com.labijie.application.configuration.DefaultsAutoConfiguration
 import com.labijie.application.dapr.IDaprClientBuildCustomizer
 import com.labijie.application.dapr.components.DaprClusterEventPublisher
-import com.labijie.application.dapr.components.DaprHttpExchangeAdapter
 import com.labijie.application.dapr.components.DaprJsonSerializer
 import com.labijie.application.dapr.components.IClusterEventPublisher
 import com.labijie.application.dapr.localization.LocalLocalizationEventListener
@@ -13,6 +12,7 @@ import com.labijie.infra.json.JacksonHelper
 import io.dapr.Topic
 import io.dapr.client.DaprClient
 import io.dapr.client.DaprClientBuilder
+import io.dapr.client.resiliency.ResiliencyOptions
 import io.dapr.springboot.DaprAutoConfiguration
 import org.slf4j.LoggerFactory
 import org.springdoc.core.models.GroupedOpenApi
@@ -51,6 +51,10 @@ class ApplicationAfterDaprAutoConfiguration {
 
         val objectSerializer = DaprJsonSerializer(objectMapper)
         val builder = DaprClientBuilder().withObjectSerializer(objectSerializer)
+            .withResiliencyOptions(ResiliencyOptions().apply {
+                this.timeout = properties.client.timeout
+                this.maxRetries = properties.client.maxRetries
+            })
         customizers.orderedStream().forEach {
             it.customize(builder)
         }

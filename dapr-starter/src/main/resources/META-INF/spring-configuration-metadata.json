@@ -16,6 +16,12 @@
       "type": "com.labijie.application.dapr.configuration.ClusterEventPubsub",
       "sourceType": "com.labijie.application.dapr.configuration.ClusterNotificationSettings",
       "sourceMethod": "getLocalization()"
+    },
+    {
+      "name": "application.dapr.client",
+      "type": "com.labijie.application.dapr.configuration.DaprClientSettings",
+      "sourceType": "com.labijie.application.dapr.configuration.DaprProperties",
+      "sourceMethod": "getClient()"
     }
   ],
   "properties": [
@@ -54,6 +60,18 @@
       "type": "java.lang.Boolean",
       "sourceType": "com.labijie.application.dapr.configuration.DaprProperties",
       "defaultValue": false
+    },
+    {
+      "name": "application.dapr.client.timeout",
+      "type": "java.time.Duration",
+      "sourceType": "com.labijie.application.dapr.configuration.DaprClientSettings",
+      "defaultValue": "5s"
+    },
+    {
+      "name": "application.dapr.client.max-retries",
+      "type": "java.lang.Integer",
+      "sourceType": "com.labijie.application.dapr.configuration.DaprClientSettings",
+      "defaultValue": 1
     }
   ],
   "hints": []

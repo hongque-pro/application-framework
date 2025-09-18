@@ -4,6 +4,7 @@
  */
 package com.labijie.application.configuration
 
+import com.labijie.application.api.VersionedRequestMappingHandlerMapping
 import com.labijie.application.component.ApplicationLocaleResolver
 import com.labijie.application.service.ILocalizationService
 import org.springframework.boot.autoconfigure.AutoConfigureAfter
@@ -12,9 +13,15 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplicat
 import org.springframework.boot.autoconfigure.web.servlet.WebMvcAutoConfiguration
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.format.support.FormattingConversionService
+import org.springframework.lang.Nullable
+import org.springframework.web.accept.ContentNegotiationManager
 import org.springframework.web.servlet.LocaleResolver
 import org.springframework.web.servlet.config.annotation.DelegatingWebMvcConfiguration
+import org.springframework.web.servlet.handler.AbstractHandlerMapping
 import org.springframework.web.servlet.i18n.AcceptHeaderLocaleResolver
+import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping
+import org.springframework.web.servlet.resource.ResourceUrlProvider
 
 
 @Configuration(proxyBeanMethods = false)
@@ -31,5 +38,9 @@ class ApplicationLocaleAutoConfiguration(
             return ApplicationLocaleResolver(localizationService)
         }
         return AcceptHeaderLocaleResolver()
+    }
+
+    override fun createRequestMappingHandlerMapping(): RequestMappingHandlerMapping {
+        return VersionedRequestMappingHandlerMapping()
     }
 }

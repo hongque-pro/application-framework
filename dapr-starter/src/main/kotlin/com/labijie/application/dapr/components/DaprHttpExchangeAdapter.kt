@@ -1,7 +1,6 @@
 package com.labijie.application.dapr.components
 
 import com.fasterxml.jackson.core.JsonParseException
-import com.fasterxml.jackson.core.type.TypeReference
 import com.labijie.application.ErrorCodedStatusException
 import com.labijie.application.ObjectUtils.parseQueryStringDecoded
 import com.labijie.application.dapr.components.DaprHttpExchangeAdapter.DaprApiResult.Companion.toException
@@ -38,14 +37,6 @@ class DaprHttpExchangeAdapter(
         @JvmStatic
         fun create(daprClient: DaprClient, appId: String): DaprHttpExchangeAdapter {
             return DaprHttpExchangeAdapter(daprClient, appId)
-        }
-
-        private fun <T> Type.toTypeReference(): TypeReference<T> {
-            val t = this
-            return object : TypeReference<T>() {
-                val type: Type
-                    get() = t
-            }
         }
     }
 
@@ -95,7 +86,9 @@ class DaprHttpExchangeAdapter(
                 if (root.has("error")) {
                     result.error = JacksonHelper.webCompatibilityMapper.treeToValue(root, ErrorResponse::class.java)
                 } else {
-                    result.data = JacksonHelper.webCompatibilityMapper.treeToValue<T>(root, type.toTypeReference())
+                    val tf  = JacksonHelper.webCompatibilityMapper.typeFactory
+                    val javaType = tf.constructType(type)
+                    result.data = JacksonHelper.webCompatibilityMapper.treeToValue<T>(root, javaType)
                 }
                 return result
             }

@@ -35,9 +35,22 @@ class VersionedRequestMappingHandlerMapping : RequestMappingHandlerMapping() {
 
     //--------------------- 动态注册URI -----------------------//
     protected override fun getMappingForMethod(method: Method, handlerType: Class<*>): RequestMappingInfo? {
-        var info: RequestMappingInfo? = this.createRequestMappingInfo(method)
+        var ignoreTypeCondition = false
+
+        var apiVersion: ApiVersion? = AnnotationUtils.getAnnotation(method, ApiVersion::class.java)
+        if (apiVersion == null) {
+            apiVersion = AnnotationUtils.getAnnotation(handlerType, ApiVersion::class.java)
+        }else {
+            ignoreTypeCondition = true
+        }
+
+        if(apiVersion == null) {
+            return super.getMappingForMethod(method, handlerType)
+        }
+
+        var info: RequestMappingInfo? = this.getElementMapping(method)
         if (info != null) {
-            val typeInfo: RequestMappingInfo? = this.createRequestMappingInfo(handlerType)
+            val typeInfo: RequestMappingInfo? = this.getElementMapping(handlerType, ignoreTypeCondition)
             if (typeInfo != null) {
                 info = typeInfo.combine(info)
             }
@@ -60,19 +73,21 @@ class VersionedRequestMappingHandlerMapping : RequestMappingHandlerMapping() {
         return info
     }
 
-    private fun createRequestMappingInfo(element: AnnotatedElement): RequestMappingInfo? {
+    private fun getElementMapping(element: AnnotatedElement, ignoreVersion: Boolean = false): RequestMappingInfo? {
         val requestMapping: RequestMapping? =
             AnnotatedElementUtils.findMergedAnnotation(element, RequestMapping::class.java)
 
         if (requestMapping == null) return null
+
+        if(ignoreVersion) {
+            return this.createRequestMappingInfo(requestMapping, null)
+        }
 
         val condition = when (element) {
             is Class<*> -> this.getCustomTypeCondition(element)
             is Method -> this.getCustomMethodCondition(element)
             else -> return null
         }
-        return condition?.let {
-            this.createRequestMappingInfo(requestMapping, condition)
-        }
+        return this.createRequestMappingInfo(requestMapping, condition)
     }
 }

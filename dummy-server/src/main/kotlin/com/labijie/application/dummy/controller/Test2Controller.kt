@@ -1,5 +1,6 @@
 package com.labijie.application.dummy.controller
 
+import com.labijie.application.api.ApiVersion
 import com.labijie.application.getOneTimeCodeInRequest
 import com.labijie.application.model.OneTimeCodeVerifyRequest
 import com.labijie.application.model.SimpleValue
@@ -28,6 +29,13 @@ class Test2Controller(builder: RestClient.Builder) {
     @OneTimeCodeVerify
     @PostMapping("/test")
     fun testOneTimeCode(): String {
+        return "ok"
+    }
+
+    @OneTimeCodeVerify
+    @PostMapping("/test")
+    @ApiVersion("2.0")
+    fun testOneTimeCodeV2(): String {
         return "ok"
     }
 
